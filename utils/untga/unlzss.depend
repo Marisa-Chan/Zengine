@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1284103880 source:/home/marisa/work/unlzss/lzss.cpp
+	<sl.h>
+	<stdlib.h>
+	<inttypes.h>
+
+1284105521 source:/home/marisa/work/unlzss/main.cpp
+	<stdlib.h>
+	<inttypes.h>
+	<stdio.h>
+	<string.h>
+

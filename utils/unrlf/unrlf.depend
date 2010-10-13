@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1286245245 source:/home/marisa/work/unrlf/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<inttypes.h>
+	<math.h>
+	<string.h>
+
+1286654315 source:/home/zidane/Projects/unrlf/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<inttypes.h>
+	<math.h>
+	<string.h>
+

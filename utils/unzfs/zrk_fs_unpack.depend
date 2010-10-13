@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1284102049 source:/home/zidane/Projects/zrk_fs_unpack/main.cpp
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<inttypes.h>
+	<string.h>
+
+1284090829 source:/home/marisa/work/zfs/main.cpp
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+	<inttypes.h>
+
