@@ -1,0 +1,139 @@
+# depslib dependency file v1.0
+1286354579 source:/home/marisa/work/Zengine/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"System.h"
+	"Game.h"
+
+1286358134 source:/home/marisa/work/Zengine/Game.cpp
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<ctype.h>
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_gfxPrimitives.h>
+	<SDL/SDL_rotozoom.h>
+	"Game.h"
+	"mylist.h"
+	"System.h"
+
+1286267213 /home/marisa/work/Zengine/mylist.h
+
+1286356437 source:/home/marisa/work/Zengine/mylist.cpp
+	<stdlib.h>
+	"mylist.h"
+
+1286354554 /home/marisa/work/Zengine/Game.h
+	<inttypes.h>
+	"mylist.h"
+
+1286359035 source:/home/marisa/work/Zengine/System.cpp
+	<SDL/SDL.h>
+	<inttypes.h>
+	<time.h>
+	<dirent.h>
+	<asm/stat.h>
+	"System.h"
+	"mylist.h"
+
+1286352260 /home/marisa/work/Zengine/System.h
+	<inttypes.h>
+	<SDL/SDL.h>
+
+1286987950 source:/home/zidane/Projects/Zengine/Game.cpp
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<ctype.h>
+	"Graph.h"
+	"Game.h"
+	"mylist.h"
+	"System.h"
+
+1286984104 /home/zidane/Projects/Zengine/Game.h
+	<inttypes.h>
+	"mylist.h"
+	"Graph.h"
+
+1286943981 /home/zidane/Projects/Zengine/mylist.h
+
+1286941373 /home/zidane/Projects/Zengine/System.h
+	<inttypes.h>
+	<SDL/SDL.h>
+
+1286941370 source:/home/zidane/Projects/Zengine/System.cpp
+	<SDL/SDL.h>
+	<inttypes.h>
+	<time.h>
+	<dirent.h>
+	<asm/stat.h>
+	"System.h"
+	"mylist.h"
+
+1286941359 source:/home/zidane/Projects/Zengine/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"System.h"
+	"Game.h"
+	"Graph.h"
+
+1286943927 source:/home/zidane/Projects/Zengine/mylist.cpp
+	<stdlib.h>
+	"mylist.h"
+
+1286946308 /home/zidane/Projects/Zengine/Graph.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_gfxPrimitives.h>
+	<SDL/SDL_rotozoom.h>
+
+1286946616 source:/home/zidane/Projects/Zengine/Graph.cpp
+	"Graph.h"
+	"System.h"
+
+1235304511 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlscreen.c
+	"SDL/SDL_error.h"
+	"SDL/SDL_video.h"
+	"SDL_stretch.h"
+	"SDL_stretchcode.h"
+	"SDL_stretchasm.h"
+	"SDL_stretchtest.hh"
+
+1286690999 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretch.h
+	<SDL/SDL_video.h>
+
+1242911970 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchcode.h
+
+1235304336 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchasm.h
+
+1286691003 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchtest.hh
+	<SDL/SDL_video.h>
+
+1235303046 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretch.c
+	"SDL/SDL_error.h"
+	"SDL/SDL_video.h"
+	"SDL_stretch.h"
+	"SDL_stretchcode.h"
+	"SDL_stretchasm.h"
+
+1235245039 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretch23.c
+	"SDL/SDL_error.h"
+	"SDL/SDL_video.h"
+	"SDL_stretch.h"
+	"SDL_stretchasm.h"
+
+1235304174 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretchcode.c
+	"config.h"
+	"SDL/SDL_error.h"
+	"SDL/SDL_video.h"
+	"SDL_stretchcode.h"
+	"SDL_stretchasm.h"
+	<unistd.h>
+	<sys/mman.h>
+	<malloc.h>
+
+1286690465 /home/zidane/Projects/Zengine/SDL_stretch/config.h
+
