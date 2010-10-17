@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include "mylist.h"
 #include "Graph.h"
+#include "Sound.h"
 
 
 
@@ -149,5 +150,14 @@ void GameLoop();
 void InitGameLoop();
 
 
+
+struct musicnode
+{
+    int         slot;
+    Mix_Chunk *chunk;
+    int         chn;
+};
+
+void ProcessWavs();
 
 #endif // GAME_H_INCLUDED

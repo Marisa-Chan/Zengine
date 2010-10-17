@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "System.h"
+#include "Sound.h"
 
 
 const int FiveBitToEightBitLookupTable [32] =
@@ -29,6 +30,9 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b)
     bpp=b;
 
     screen=SDL_SetVideoMode(wi, he, b, SFTYPE);
+
+
+    InitMusic();
 
     return screen;
 }

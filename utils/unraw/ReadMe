@@ -1,0 +1,121 @@
+.data:0045DA28 dword_45DA28    dd 0                            //Raw -0;   Packed - 1
+.data:0045DA2C                 dd 2B11h                        //SampleRate
+.data:0045DA30                 dd 0                            //8/16 bit ??
+.data:0045DA34                 dd 0                            //Mono - 0; Stereo - 1
+.data:0045DA38 dword_45DA38    dd 34h                  ; 4     //LastChar
+.data:0045DA3C                 dd 0
+.data:0045DA40                 dd 2B11h
+.data:0045DA44                 dd 0
+.data:0045DA48                 dd 1
+.data:0045DA4C                 dd 35h                  ; 5
+.data:0045DA50                 dd 0
+.data:0045DA54                 dd 2B11h
+.data:0045DA58                 dd 1
+.data:0045DA5C                 dd 0
+.data:0045DA60                 dd 36h                  ; 6
+.data:0045DA64                 dd 0
+.data:0045DA68                 dd 2B11h
+.data:0045DA6C                 dd 1
+.data:0045DA70                 dd 1
+.data:0045DA74                 dd 37h                  ; 7
+.data:0045DA78                 dd 0
+.data:0045DA7C                 dd 5622h
+.data:0045DA80                 dd 0
+.data:0045DA84                 dd 0
+.data:0045DA88                 dd 38h                  ; 8
+.data:0045DA8C                 dd 0
+.data:0045DA90                 dd 5622h
+.data:0045DA94                 dd 0
+.data:0045DA98                 dd 1
+.data:0045DA9C                 dd 39h                  ; 9
+.data:0045DAA0                 dd 0
+.data:0045DAA4                 dd 5622h
+.data:0045DAA8                 dd 1
+.data:0045DAAC                 dd 0
+.data:0045DAB0                 dd 41h                  ; A
+.data:0045DAB4                 dd 0
+.data:0045DAB8                 dd 5622h
+.data:0045DABC                 dd 1
+.data:0045DAC0                 dd 1
+.data:0045DAC4                 dd 42h                  ; B
+.data:0045DAC8                 dd 0
+.data:0045DACC                 dd 0AC44h
+.data:0045DAD0                 dd 0
+.data:0045DAD4                 dd 0
+.data:0045DAD8                 dd 43h                  ; C
+.data:0045DADC                 dd 0
+.data:0045DAE0                 dd 0AC44h
+.data:0045DAE4                 dd 0
+.data:0045DAE8                 dd 1
+.data:0045DAEC                 dd 44h                  ; D
+.data:0045DAF0                 dd 0
+.data:0045DAF4                 dd 0AC44h
+.data:0045DAF8                 dd 1
+.data:0045DAFC                 dd 0
+.data:0045DB00                 dd 45h                  ; E
+.data:0045DB04                 dd 0
+.data:0045DB08                 dd 0AC44h
+.data:0045DB0C                 dd 1
+.data:0045DB10                 dd 1
+.data:0045DB14                 dd 46h                  ; F
+.data:0045DB18                 dd 1
+.data:0045DB1C                 dd 2B11h
+.data:0045DB20                 dd 0
+.data:0045DB24                 dd 0
+.data:0045DB28                 dd 47h                  ; G
+.data:0045DB2C                 dd 1
+.data:0045DB30                 dd 2B11h
+.data:0045DB34                 dd 0
+.data:0045DB38                 dd 1
+.data:0045DB3C                 dd 48h                  ; H
+.data:0045DB40                 dd 1
+.data:0045DB44                 dd 2B11h
+.data:0045DB48                 dd 1
+.data:0045DB4C                 dd 0
+.data:0045DB50                 dd 4Ah                  ; J
+.data:0045DB54                 dd 1
+.data:0045DB58                 dd 2B11h
+.data:0045DB5C                 dd 1
+.data:0045DB60                 dd 1
+.data:0045DB64                 dd 4Bh                  ; K
+.data:0045DB68                 dd 1
+.data:0045DB6C                 dd 5622h
+.data:0045DB70                 dd 0
+.data:0045DB74                 dd 0
+.data:0045DB78                 dd 4Dh                  ; M
+.data:0045DB7C                 dd 1
+.data:0045DB80                 dd 5622h
+.data:0045DB84                 dd 0
+.data:0045DB88                 dd 1
+.data:0045DB8C                 dd 4Eh                  ; N
+.data:0045DB90                 dd 1
+.data:0045DB94                 dd 5622h
+.data:0045DB98                 dd 1
+.data:0045DB9C                 dd 0
+.data:0045DBA0                 dd 50h                  ; P
+.data:0045DBA4                 dd 1
+.data:0045DBA8                 dd 5622h
+.data:0045DBAC                 dd 1
+.data:0045DBB0                 dd 1
+.data:0045DBB4                 dd 51h                  ; Q
+.data:0045DBB8                 dd 1
+.data:0045DBBC                 dd 0AC44h
+.data:0045DBC0                 dd 0
+.data:0045DBC4                 dd 0
+.data:0045DBC8                 dd 52h                  ; R
+.data:0045DBCC                 dd 1
+.data:0045DBD0                 dd 0AC44h
+.data:0045DBD4                 dd 0
+.data:0045DBD8                 dd 1
+.data:0045DBDC                 dd 53h                  ; S
+.data:0045DBE0                 dd 1
+.data:0045DBE4                 dd 0AC44h
+.data:0045DBE8                 dd 1
+.data:0045DBEC                 dd 0
+.data:0045DBF0                 dd 54h                  ; T
+.data:0045DBF4                 dd 1
+.data:0045DBF8                 dd 0AC44h
+.data:0045DBFC                 dd 1
+.data:0045DC00                 dd 1
+.data:0045DC04                 dd 55h                  ; U
+

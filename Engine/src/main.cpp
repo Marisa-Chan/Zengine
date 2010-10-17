@@ -25,13 +25,20 @@ int main(int argc, char **argv)
     sprintf(buf,"%s/%s",pa,"ZASSETS1/MONAST1");
     ListDir(buf);
 
+    sprintf(buf,"%s/%s",pa,"ZGI_MX");
+    ListDir(buf);
+
     sprintf(buf,"%s/%s",pa,"CURSOR");
     ListDir(buf);
 
     sprintf(buf,"%s/%s",pa,"SCRIPTS");
     ListDir(buf);
 
+    sprintf(buf,"%s/%s",pa,"ZASSETS2/UNDERG2");
+    ListDir(buf);
+
     AddReplacer("TGA","PNG");
+    AddReplacer("RAW","WAV");
 
 
 

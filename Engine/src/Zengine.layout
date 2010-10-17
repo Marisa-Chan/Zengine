@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="./Game.cpp" open="1" top="1" tabpos="0">
-		<Cursor position="34819" topLine="1416" />
+	<File name="./Game.cpp" open="1" top="1" tabpos="1">
+		<Cursor position="35509" topLine="1585" />
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="423" topLine="12" />
 	</File>
 </CodeBlocks_layout_file>

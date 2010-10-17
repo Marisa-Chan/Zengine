@@ -39,12 +39,15 @@
 		<Linker>
 			<Add option="-lSDL" />
 			<Add option="-lSDL_image" />
+			<Add option="-lSDL_mixer" />
 			<Add option="-lrt" />
 		</Linker>
 		<Unit filename="./Game.cpp" />
 		<Unit filename="./Game.h" />
 		<Unit filename="./Graph.cpp" />
 		<Unit filename="./Graph.h" />
+		<Unit filename="./Sound.cpp" />
+		<Unit filename="./Sound.h" />
 		<Unit filename="System.cpp" />
 		<Unit filename="System.h" />
 		<Unit filename="main.cpp" />

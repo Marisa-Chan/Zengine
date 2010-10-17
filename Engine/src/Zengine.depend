@@ -42,7 +42,7 @@
 	<inttypes.h>
 	<SDL/SDL.h>
 
-1286987950 source:/home/zidane/Projects/Zengine/Game.cpp
+1287255490 source:/home/zidane/Projects/Zengine/Game.cpp
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -52,18 +52,19 @@
 	"mylist.h"
 	"System.h"
 
-1286984104 /home/zidane/Projects/Zengine/Game.h
+1287110737 /home/zidane/Projects/Zengine/Game.h
 	<inttypes.h>
 	"mylist.h"
 	"Graph.h"
+	"Sound.h"
 
-1286943981 /home/zidane/Projects/Zengine/mylist.h
+1287109819 /home/zidane/Projects/Zengine/mylist.h
 
-1286941373 /home/zidane/Projects/Zengine/System.h
+1287109834 /home/zidane/Projects/Zengine/System.h
 	<inttypes.h>
 	<SDL/SDL.h>
 
-1286941370 source:/home/zidane/Projects/Zengine/System.cpp
+1287109830 source:/home/zidane/Projects/Zengine/System.cpp
 	<SDL/SDL.h>
 	<inttypes.h>
 	<time.h>
@@ -72,7 +73,7 @@
 	"System.h"
 	"mylist.h"
 
-1286941359 source:/home/zidane/Projects/Zengine/main.cpp
+1287254560 source:/home/zidane/Projects/Zengine/main.cpp
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -80,19 +81,20 @@
 	"Game.h"
 	"Graph.h"
 
-1286943927 source:/home/zidane/Projects/Zengine/mylist.cpp
+1287109814 source:/home/zidane/Projects/Zengine/mylist.cpp
 	<stdlib.h>
 	"mylist.h"
 
-1286946308 /home/zidane/Projects/Zengine/Graph.h
+1287109807 /home/zidane/Projects/Zengine/Graph.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_gfxPrimitives.h>
 	<SDL/SDL_rotozoom.h>
 
-1286946616 source:/home/zidane/Projects/Zengine/Graph.cpp
+1287110162 source:/home/zidane/Projects/Zengine/Graph.cpp
 	"Graph.h"
 	"System.h"
+	"Sound.h"
 
 1235304511 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlscreen.c
 	"SDL/SDL_error.h"
@@ -136,4 +138,13 @@
 	<malloc.h>
 
 1286690465 /home/zidane/Projects/Zengine/SDL_stretch/config.h
+
+1287126782 source:/home/zidane/Projects/Zengine/Sound.cpp
+	"System.h"
+	"Sound.h"
+
+1287126792 /home/zidane/Projects/Zengine/Sound.h
+	<SDL/SDL.h>
+	<SDL/SDL_audio.h>
+	<SDL/SDL_mixer.h>
 
