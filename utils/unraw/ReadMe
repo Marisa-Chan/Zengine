@@ -1,3 +1,15 @@
+Usage 
+  unraw srcfile dstfile packed samplerate stereo
+  
+  packed: 1 - packed; 0 - raw
+  samplerate: 22050, 44100, 11025.... etc
+  stereo: 0 - mono, 1 - stereo
+
+
+
+
+
+FORMATS of files.
 .data:0045DA28 dword_45DA28    dd 0                            //Raw -0;   Packed - 1
 .data:0045DA2C                 dd 2B11h                        //SampleRate
 .data:0045DA30                 dd 0                            //8/16 bit ??
