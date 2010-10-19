@@ -480,7 +480,7 @@ void action_universe_music(char *params)
     char vol[16];
     sscanf(params,"%d %s %s %s %s",&slot, unk1, file, loop, vol);
 
-    printf ("%s %d\n",file,GetIntVal(vol));
+    printf ("%s %d\n",file,SoundVol[GetIntVal(vol)]);
 
     if (SlotIsOwned(slot))
         return;
@@ -508,7 +508,7 @@ void action_universe_music(char *params)
 
     LockChan(nod->chn);
 
-    //Mix_Volume(nod->chn,GetIntVal(vol) * 1.28);
+    Mix_Volume(nod->chn,SoundVol[GetIntVal(vol)]);
 
 
     AddToMList(wavs,nod);
@@ -692,6 +692,39 @@ void action_inventory(char *params)
 
 }
 
+void action_crossfade(char *params)
+{
+#ifdef TRACE
+    printf("        action:crossfade(%s)\n",params);
+#endif
+
+    int item,item2;
+    char slot[16];
+    char slot2[16]; //unknown slot
+    char unk1[16];
+    char unk2[16];
+    char toVol[16];
+    char toVol2[16];
+    char unk4[16];
+    sscanf(params,"%s %s %s %s %s %s %s",slot,slot2,unk1,unk2,toVol,toVol2,unk4);
+    item = GetIntVal(slot);
+    item2 = GetIntVal(slot2);
+
+    StartMList(wavs);
+    while(!eofMList(wavs))
+    {
+        musicnode *nod = (musicnode *)DataMList(wavs);
+
+        if (nod->slot == item)
+            Mix_Volume(nod->chn , SoundVol[GetIntVal(toVol)]);
+
+        if (nod->slot == item2)
+            Mix_Volume(nod->chn , SoundVol[GetIntVal(toVol2)]);
+
+        NextMList(wavs);
+    }
+
+}
 
 
 void ParsePuzzle(char *instr, MList *lst)
@@ -933,6 +966,18 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_inventory;
+        }
+
+        if (strCMP(buf,"crossfade")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            params=GetParams(str+end_s);
+            nod->param=(char *)malloc(strlen(params)+1);
+            strcpy(nod->param,params);
+
+            nod->func=action_crossfade;
         }
 
     }
@@ -1986,11 +2031,13 @@ void GameLoop()
 
 
 
-
-    ProcessTriggers(uni);
-    ProcessTriggers(world);
-    ProcessTriggers(room);
     ProcessTriggers(view);
+    ProcessTriggers(room);
+    ProcessTriggers(world);
+    ProcessTriggers(uni);
+
+
+
 
 
 

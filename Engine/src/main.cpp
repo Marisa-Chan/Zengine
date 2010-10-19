@@ -25,6 +25,9 @@ int main(int argc, char **argv)
     sprintf(buf,"%s/%s",pa,"ZASSETS1/MONAST1");
     ListDir(buf);
 
+    sprintf(buf,"%s/%s",pa,"ZASSETS1/JAIL");
+    ListDir(buf);
+
     sprintf(buf,"%s/%s",pa,"ZGI_MX");
     ListDir(buf);
 
@@ -39,6 +42,7 @@ int main(int argc, char **argv)
 
     AddReplacer("TGA","PNG");
     AddReplacer("RAW","WAV");
+    AddReplacer("IFP","WAV");
 
 
 
