@@ -2,7 +2,7 @@
 
 @a=`find ./ | grep -i "tga"`;
 
-$prog="~/work/unlzss/bin/Release/unlzss";
+$prog="~/Projects/unlzss/bin/Release/unlzss";
 
 for ($i=0; $i<=$#a; $i++)
 {
