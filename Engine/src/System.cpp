@@ -184,6 +184,10 @@ void ListDir(char *dir)
 
 
     DIR *dr=opendir(buf);
+
+    if (dr == NULL)
+        return;
+
     dirent *de=readdir(dr);
     while (de)
     {

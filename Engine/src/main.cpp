@@ -12,33 +12,23 @@ int main(int argc, char **argv)
 {
     InitFileManage();
 
-    char buf[1024];
+    char buf[512];
+    char buf2[512];
     //char *pa="/media/1000/Temp/pack_FILES";
     char *pa=argv[1];
 
-    sprintf(buf,"%s/%s",pa,"ZASSETS1/GLOBAL");
-    ListDir(buf);
+    sprintf(buf,"%s/%s",pa,"Zork.dir");
+    FILE *dirs=fopen(buf,"rb");
 
-    sprintf(buf,"%s/%s",pa,"ZASSETS1/PORTFOOZ");
-    ListDir(buf);
+    while(!feof(dirs))
+    {
+        fgets(buf,128,dirs);
+        buf[strlen(buf)-1]=0;
+        sprintf(buf2,"%s/%s",pa,buf);
+        ListDir(buf2);
+    }
 
-    sprintf(buf,"%s/%s",pa,"ZASSETS1/MONAST1");
-    ListDir(buf);
-
-    sprintf(buf,"%s/%s",pa,"ZASSETS1/JAIL");
-    ListDir(buf);
-
-    sprintf(buf,"%s/%s",pa,"ZGI_MX");
-    ListDir(buf);
-
-    sprintf(buf,"%s/%s",pa,"CURSOR");
-    ListDir(buf);
-
-    sprintf(buf,"%s/%s",pa,"SCRIPTS");
-    ListDir(buf);
-
-    sprintf(buf,"%s/%s",pa,"ZASSETS2/UNDERG2");
-    ListDir(buf);
+    fclose(dirs);
 
     AddReplacer("TGA","PNG");
     AddReplacer("RAW","WAV");
