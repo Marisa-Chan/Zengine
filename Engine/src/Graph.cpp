@@ -47,7 +47,7 @@ void ConvertImage(SDL_Surface **tmp)
 
 SDL_Surface *CreateSurface(uint16_t w,uint16_t h)
 {
-    return SDL_CreateRGBSurface(SFTYPE,w,h,bpp,0,0,0,0);
+    return SDL_CreateRGBSurface(SFTYPE,w,h,bpp,0,0,0,0);;
 }
 
 

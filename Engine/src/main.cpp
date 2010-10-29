@@ -33,6 +33,7 @@ int main(int argc, char **argv)
     AddReplacer("TGA","PNG");
     AddReplacer("RAW","WAV");
     AddReplacer("IFP","WAV");
+    AddReplacer("AVI","MPG");
 
 
 
@@ -72,10 +73,8 @@ int main(int argc, char **argv)
 
                 // check for keyhit's (one per press)
             case SDL_KEYDOWN:
-            {
                 SetHit(event.key.keysym.sym);
                 break;
-            }
             }
         }
         //check for keydown (continous)

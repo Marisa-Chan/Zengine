@@ -4,6 +4,8 @@
 #define TRY_CHANNELS 16
 int CHANNELS=0;
 
+uint8_t chanvol[TRY_CHANNELS];
+
 bool ChanStatus[TRY_CHANNELS];
 
 int audio_rate = 44100;
@@ -11,7 +13,7 @@ uint16_t audio_format = MIX_DEFAULT_FORMAT; /* 16-bit stereo */
 int audio_channels = MIX_DEFAULT_CHANNELS;
 int audio_buffers = 1024;
 
-const int SoundVol[100] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
+const int SoundVol[101] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,\
                            2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 13, 14, 16,\
@@ -48,4 +50,23 @@ void LockChan(int i)
 void UnlockChan(int i)
 {
     ChanStatus[i]=false;
+}
+
+
+void SaveVol()
+{
+    for (int i=0; i < CHANNELS; i++)
+        chanvol[i] = Mix_Volume(i,-1);
+}
+
+void SilenceVol()
+{
+    for (int i=0; i < CHANNELS; i++)
+        Mix_Volume(i,0);
+}
+
+void RestoreVol()
+{
+    for (int i=0; i < CHANNELS; i++)
+        Mix_Volume(i,chanvol[i]);
 }

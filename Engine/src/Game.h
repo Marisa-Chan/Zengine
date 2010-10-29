@@ -117,10 +117,11 @@ struct animnode
     int   unk2;
     int   unk3;
     int   unk4;
-    anim_surf *anim;
     int  CurFr;
     uint32_t nexttick;
     int  loops;
+    void *anim;
+    bool   vid;
 };
 
 void ProcessAnims();

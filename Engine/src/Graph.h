@@ -5,7 +5,7 @@
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_gfxPrimitives.h>
 #include <SDL/SDL_rotozoom.h>
-
+#include <smpeg/smpeg.h>
 extern const int FiveBitToEightBitLookupTable [32];
 
 SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp);
@@ -28,6 +28,15 @@ struct anim_surf
 {
     SDL_Surface **img;
     Anim_info    info;
+};
+
+struct anim_avi
+{
+    SDL_Surface *img;
+    SMPEG       *mpg;
+    SMPEG_Info   inf;
+    bool         pld;
+    bool        loop;
 };
 
 anim_surf *LoadAnimImage(char *file,int mask);

@@ -387,6 +387,85 @@ void action_random(char *params)
     SetgVarInt(slot, rand() % (number+1) );
 }
 
+void action_streamvideo(char *params)
+{
+#ifdef TRACE
+    printf("        action:streamvideo(%s)\n",params);
+#endif
+    char file[255];
+    char x[16];
+    char y[16];
+    char w[16];
+    char h[16];
+    char u1[16];
+    char u2[16];
+
+    int xx,yy,ww,hh,tmp;
+
+    char *fil;
+
+    sscanf(params,"%s %s %s %s %s %s %s",file,x,y,w,h,u1,u2);
+
+    xx=GetIntVal(x);
+    yy=GetIntVal(y);
+    ww=GetIntVal(w) - xx +1;
+    hh=GetIntVal(h) - yy +1;
+
+    anim_avi *anm=new(anim_avi);
+    Mix_Chunk *aud=NULL;
+    anm->mpg=SMPEG_new(GetFilePath(file),&anm->inf,0);
+    anm->img = CreateSurface(ww,hh);
+
+
+    tmp=strlen(file);
+    file[tmp-1]='v';
+    file[tmp-2]='a';
+    file[tmp-3]='w';
+
+    fil=GetFilePath(file);
+
+    if (fil!=NULL)
+        {
+            aud = Mix_LoadWAV(fil);
+        }
+
+
+    SMPEG_setdisplay(anm->mpg,anm->img,0,0);
+    SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
+    SMPEG_renderFrame(anm->mpg,1);
+    SMPEG_play(anm->mpg);
+    if (aud!=NULL)
+        {
+            tmp=GetFreeChannel();
+            Mix_PlayChannel(tmp,aud,0);
+            if (u2 == 0)
+                {
+                    SaveVol();
+                    SilenceVol();
+                }
+            Mix_Volume(tmp,127);
+        }
+
+    while(SMPEG_status(anm->mpg) != SMPEG_STOPPED  &&  !KeyDown(SDLK_SPACE))
+        {
+            SDL_Event event;
+            SDL_PollEvent(&event);
+            UpdateKeyboard();
+            DrawImage(anm->img,xx,GAME_Y+yy);
+            SDL_Flip(screen);
+        }
+    if (aud!=NULL)
+        {
+            if (u2 == 0)
+                RestoreVol();
+            Mix_HaltChannel(tmp);
+            Mix_FreeChunk(aud);
+        }
+
+    SMPEG_stop(anm->mpg);
+    SMPEG_delete(anm->mpg);
+    delete anm;
+}
 
 void action_animplay(char *params)
 {
@@ -413,11 +492,7 @@ void action_animplay(char *params)
 
     SetgVarInt(slot, 1);
 
-    if (strcasestr(file,"avi")!=NULL)
-    {
-        SetgVarInt(slot,2);
-        return;
-    }
+
 
 
     animnode *nod = new (animnode);
@@ -425,24 +500,65 @@ void action_animplay(char *params)
 
 
 
-    int r=GetIntVal(mask),g,b;
-    b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
-    g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
-    r=FiveBitToEightBitLookupTable[(r & 0x1F)];
 
 
     nod->slot = slot;
     nod->CurFr= GetIntVal(st);
-    nod->anim = LoadAnimImage(file,r | g<<8 | b<<16);
+
     nod->nexttick = millisec();
     nod->x = GetIntVal(x);
     nod->y = GetIntVal(y);
-    nod->w = GetIntVal(w);
-    nod->h = GetIntVal(h);
+    nod->w = GetIntVal(w) - nod->x +1;
+    nod->h = GetIntVal(h) - nod->y +1;
     nod->loopcnt = GetIntVal(loop);
-    nod->start= GetIntVal(st);
-    nod->end= GetIntVal(en);
+
     nod->loops=0;
+
+    if (strcasestr(file,"avi")!=NULL)
+    {
+        anim_avi *anm=new(anim_avi);
+        nod->anim = (void *) anm;
+        anm->mpg=SMPEG_new(GetFilePath(file),&anm->inf,0);
+        anm->img = CreateSurface(nod->w,nod->h);
+        SMPEG_setdisplay(anm->mpg,anm->img,0,0);
+        SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
+        //if (nod->loopcnt == 0 )
+         //  {
+
+           //     SMPEG_play(anm->mpg);
+
+            //    anm->pld=true;
+            //    anm->loop=true;
+            //}
+        //if (anm->inf.width != nod->w)
+         //   SMPEG_scaleXY(anm->mpg,1,1);
+        nod->vid=true;
+    }
+    else
+    {
+
+
+        nod->vid=false;
+
+
+        int r=GetIntVal(mask),g,b;
+        b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
+        g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
+        r=FiveBitToEightBitLookupTable[(r & 0x1F)];
+
+        nod->anim = LoadAnimImage(file,r | g<<8 | b<<16);
+    }
+
+    if (nod->vid)
+        {
+            nod->start= GetIntVal(st) *2;
+            nod->end= GetIntVal(en) *2;
+        }
+    else
+        {
+            nod->start= GetIntVal(st);
+            nod->end= GetIntVal(en);
+        }
 
 }
 
@@ -469,9 +585,9 @@ void action_music(char *params)
 
 void action_universe_music(char *params)
 {
-#ifdef TRACE
+//#ifdef TRACE
     printf("        action:universe_music(%s)\n",params);
-#endif
+//#endif
 
     int slot;
     char unk1[16];
@@ -480,7 +596,7 @@ void action_universe_music(char *params)
     char vol[16];
     sscanf(params,"%d %s %s %s %s",&slot, unk1, file, loop, vol);
 
-    printf ("%s %d\n",file,SoundVol[GetIntVal(vol)]);
+    printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
     if (SlotIsOwned(slot))
         return;
@@ -528,17 +644,8 @@ void action_kill(char *params)
 
     if (strcasecmp(chars,"\"all\"")==0)
     {
-        StartMList(anims);
-        while(!eofMList(anims))
-        {
-            animnode *nod = (animnode *)DataMList(anims);
-            FreeAnimImage(nod->anim);
-            delete nod;
-            DeleteCurrent(anims);
-            SetgVarInt(slot, 2);
+        DeleteAnims(anims);
 
-            NextMList(anims);
-        }
         StartMList(wavs);
         while(!eofMList(wavs))
         {
@@ -562,7 +669,13 @@ void action_kill(char *params)
         animnode *nod = (animnode *)DataMList(anims);
         if (nod->slot == slot)
         {
-            FreeAnimImage(nod->anim);
+            if (nod->vid)
+            {
+                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+            }
+            else
+                FreeAnimImage((anim_surf *)nod->anim);
             delete nod;
             DeleteCurrent(anims);
             SetgVarInt(slot, 2);
@@ -978,6 +1091,18 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_crossfade;
+        }
+
+        if (strCMP(buf,"streamvideo")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            params=GetParams(str+end_s);
+            nod->param=(char *)malloc(strlen(params)+1);
+            strcpy(nod->param,params);
+
+            nod->func=action_streamvideo;
         }
 
     }
@@ -1513,18 +1638,18 @@ void ProcessTriggers(MList *pzllst)
 
 
 ///////////////////////////////////////////////
-        StartMList(nod->CritList);
-            while (!eofMList(nod->CritList))
-            {
+                StartMList(nod->CritList);
+                while (!eofMList(nod->CritList))
+                {
 #ifdef TRACE
-                printf("    Criteria:\n");
+                    printf("    Criteria:\n");
 #endif
-                MList *criteries=(MList *)DataMList(nod->CritList);
+                    MList *criteries=(MList *)DataMList(nod->CritList);
 
-                DO |= ProcessCriteries2(criteries);
+                    DO |= ProcessCriteries2(criteries);
 
-                NextMList(nod->CritList);
-            }
+                    NextMList(nod->CritList);
+                }
 ////////////////////////////////////////////////////////////
 
 
@@ -1835,6 +1960,7 @@ void PanaRender()
 }
 
 
+
 void RenderFunc()
 {
 
@@ -2069,7 +2195,24 @@ void ProcessAnims()
             if (nod->nexttick<millisec())
                 //if (GetTick())
             {
-                DrawAnimImageToSurf(nod->anim,nod->x,nod->y,nod->CurFr,scrbuf);
+                if (nod->vid)
+                {
+                    anim_avi *anm=(anim_avi *)nod->anim;
+                    //if (!anm->pld)
+                       // {
+                            SMPEG_renderFrame(anm->mpg,nod->CurFr+1);
+                      //  }
+
+                    /*if (anm->loop == true && SMPEG_status(anm->mpg) == SMPEG_STOPPED)
+                        {
+                            SMPEG_rewind(anm->mpg);
+                            SMPEG_play(anm->mpg);
+                        }*/
+
+                    DrawImageToSurf(anm->img,nod->x,nod->y,scrbuf);
+                }
+                else
+                    DrawAnimImageToSurf((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr,scrbuf);
                 nod->CurFr++;
 
                 if (nod->CurFr > nod->end)
@@ -2079,7 +2222,13 @@ void ProcessAnims()
                     if (nod->loops<nod->loopcnt || nod->loopcnt == 0)
                     {
                         nod->CurFr=nod->start;
-                        nod->nexttick=millisec()+nod->anim->info.time;
+                        if (nod->vid)
+                            {
+                                nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                                nod->nexttick=millisec() + (1.0/15.0) * 1000.0;
+                            }
+                        else
+                            nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
                     }
 
                     else
@@ -2088,14 +2237,26 @@ void ProcessAnims()
                         printf ("Animplay #%d End's\n",nod->slot);
 #endif
                         SetgVarInt(nod->slot,2);
-                        FreeAnimImage(nod->anim);
+                        if (nod->vid)
+                        {
+                            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+                            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+                            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+                        }
+                        else
+                            FreeAnimImage((anim_surf *)nod->anim);
                         delete nod;
                         DeleteCurrent(anims);
                     }
                 }
                 else
                 {
-                    nod->nexttick=millisec()+nod->anim->info.time;
+                    if (nod->vid)
+                            {
+                                nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                            }
+                        else
+                            nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
                 }
 
             }
@@ -2111,9 +2272,17 @@ void DeleteAnims(MList *lst)
     {
         animnode *nod=(animnode *)DataMList(lst);
 
+        if (nod->vid)
+        {
+            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+        }
+        else
+            FreeAnimImage((anim_surf *)nod->anim);
 
-        FreeAnimImage(nod->anim);
         delete nod;
+
 
         NextMList(lst);
     }
