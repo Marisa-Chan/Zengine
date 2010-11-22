@@ -83,7 +83,8 @@ anim_surf *LoadAnimImage(char *file, int mask)
     fread(&atmp->info,1,sizeof(atmp->info),ff);
     fclose(ff);
 
-    atmp->info.time&=0x7f;
+    //atmp->info.time&=0x7f;
+    atmp->info.time=66;
     atmp->img=new(SDL_Surface *[atmp->info.frames]);//frames * sizeof(SDL_Surface *));
 
     for (uint8_t i=0; i< atmp->info.frames; i++)
@@ -105,7 +106,10 @@ anim_surf *LoadAnimImage(char *file, int mask)
 
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame)
 {
-    if (frame > anim->info.frames)
+if (!anim)
+    return;
+
+    if (frame >= anim->info.frames)
     {
         printf("Error, required frame of animation is out of range\n");
         return;
@@ -116,7 +120,10 @@ void DrawAnimImage(anim_surf *anim, int x, int y, int frame)
 
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf)
 {
-    if (frame > anim->info.frames)
+if (!anim)
+    return;
+
+    if (frame >= anim->info.frames)
     {
         printf("Error, required frame of animation is out of range\n");
         return;
@@ -127,6 +134,9 @@ void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *s
 
 void FreeAnimImage(anim_surf *anim)
 {
+if (!anim)
+    return;
+
     if (anim)
     {
 
@@ -142,6 +152,9 @@ void FreeAnimImage(anim_surf *anim)
 
 void DrawImage(SDL_Surface *surf, int16_t x, int16_t y)
 {
+if (!surf)
+    return;
+
     SDL_Rect tmp;
     tmp.x=x;//ceil(x*sc_fac);
     tmp.y=y;//ceil(y*sc_fac);
@@ -152,6 +165,9 @@ void DrawImage(SDL_Surface *surf, int16_t x, int16_t y)
 
 void DrawImageToSurf(SDL_Surface *surf, int16_t x, int16_t y,SDL_Surface *dest)
 {
+if (!surf)
+    return;
+
     SDL_Rect tmp;
     tmp.x=x;//ceil(x*sc_fac);
     tmp.y=y;//ceil(y*sc_fac);

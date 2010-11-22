@@ -30,6 +30,8 @@ int main(int argc, char **argv)
 
     fclose(dirs);
 
+
+
     AddReplacer("TGA","PNG");
     AddReplacer("RAW","WAV");
     AddReplacer("IFP","WAV");

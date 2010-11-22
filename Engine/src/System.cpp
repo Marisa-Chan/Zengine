@@ -108,6 +108,12 @@ bool MouseUp(int btn)
         return false;
 }
 
+void FlushMouseBtn(int btn)
+{
+    Mstate &= ~SDL_BUTTON(btn);
+    LMstate &= ~SDL_BUTTON(btn);
+}
+
 
 uint64_t mtime=0;    //Game timer ticks [after ~23 milliards years will came overflow of this var, don't play so long]
 bool    btime=false; //Indicates new Tick

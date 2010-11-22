@@ -27,6 +27,14 @@
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
 
+struct Locate
+{
+    uint8_t World;
+    uint8_t Room;
+    uint16_t View;
+    int16_t X;
+};
+
 struct Rect
 {
     int x;
@@ -75,7 +83,8 @@ struct slotnode
     //int distance_id;
     Rect hotspot;
     //int do_skip;
-    char *eligible_objects;
+    int *eligible_objects;
+    int eligable_cnt;
     uint16_t cursor;
     SDL_Surface *srf;
 };
@@ -94,6 +103,8 @@ struct timernode
     uint32_t time;
 };
 
+void DeleteTimers(MList *lst);
+
 
 void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst);
 void ProcessTriggers(MList *lst);
@@ -101,7 +112,9 @@ void InitScriptsEngine();
 void ProcessControls(MList *ctrlst);
 void ProcessTimers();
 
-
+void DeletePuzzleList(MList *lst);
+void DeleteControlList(MList *lst);
+void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X);
 
 struct animnode
 {
@@ -126,6 +139,8 @@ struct animnode
 
 void ProcessAnims();
 void DeleteAnims(MList *lst);
+
+
 
 
 void InitGraphics();
@@ -160,5 +175,6 @@ struct musicnode
 };
 
 void ProcessWavs();
+void DeleteWavs(MList *lst);
 
 #endif // GAME_H_INCLUDED

@@ -11,15 +11,19 @@
 
 
 
-
+#define MAX_DO_ME_NOW 1024
+puzzlenode *DO_ME_NOW_LIST[MAX_DO_ME_NOW];
+int DO_ME_NOWS;
 
 MList *uni      =NULL;
 
-uint8_t     wo  =0;
+
+Locate  Location={0,0,0,0};
+//uint8_t     wo  =0;
 MList   *world  =NULL;
-uint8_t     ro  =0;
+//uint8_t     ro  =0;
 MList   *room   =NULL;
-uint16_t    vi  =0;
+//uint16_t    vi  =0;
 MList   *view   =NULL;
 
 MList    *ctrl  =NULL;
@@ -59,17 +63,9 @@ Cursor *cur;
 int current_obj_cur=0;
 Cursor *objcur[2];
 
-int GAME_X=0;
+//int GAME_X=0;
 int GAME_Y=68;
 
-
-struct Locate
-{
-    uint8_t World;
-    uint8_t Room;
-    uint16_t View;
-    int16_t X;
-};
 
 bool NeedToLoadScript=false;
 Locate Need_Locate = {0,0,0,0};
@@ -85,12 +81,9 @@ uint8_t PrevCount = 0;
 #define RENDER_PANA 1
 uint8_t     Renderer = RENDER_FLAT;
 
-
-
-
-
-
 void *gVars[0xFFFF];
+
+
 
 void SetgVarInt(int indx, int var)
 {
@@ -103,11 +96,156 @@ int GetgVarInt(int indx)
     return (int)gVars[indx];
 }
 
+
+
+void SetgVarInt(void **Vars, int indx, int var)
+{
+    Vars[indx]=NULL;
+    Vars[indx]=(void *)var;
+}
+
+int GetgVarInt(void **Vars, int indx)
+{
+    return (int)Vars[indx];
+}
+
+void SaveGame(char *file)
+{
+    void *tmpVars[0xFFFF];
+    memcpy(tmpVars,gVars,0xFFFF*sizeof(void *));
+
+    StartMList(timers);
+    while (!eofMList(timers))
+    {
+        timernode *nod=(timernode *)DataMList(timers);
+        SetgVarInt(tmpVars,nod->slot,2);
+        NextMList(timers);
+    }
+
+    StartMList(wavs);
+    while (!eofMList(wavs))
+    {
+        musicnode *nod=(musicnode *)DataMList(wavs);
+        SetgVarInt(tmpVars,nod->slot,2);
+        NextMList(wavs);
+    }
+
+    StartMList(anims);
+    while (!eofMList(anims))
+    {
+        animnode *nod=(animnode *)DataMList(anims);
+        SetgVarInt(tmpVars,nod->slot,2);
+        NextMList(anims);
+    }
+
+    StartMList(room);
+    while (!eofMList(room))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(room);
+        SetgVarInt(tmpVars,nod->slot,0);
+        NextMList(room);
+    }
+
+    StartMList(view);
+    while (!eofMList(view))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(view);
+        SetgVarInt(tmpVars,nod->slot,0);
+        NextMList(view);
+    }
+
+    StartMList(world);
+    while (!eofMList(world))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(world);
+        SetgVarInt(tmpVars,nod->slot,0);
+        NextMList(world);
+    }
+
+    StartMList(uni);
+    while (!eofMList(uni))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(uni);
+        SetgVarInt(tmpVars,nod->slot,0);
+        NextMList(uni);
+    }
+
+    FILE *fil=fopen(file, "wb");
+
+    fwrite(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
+    fwrite(&PrevCount,1,sizeof(PrevCount),fil);
+    fwrite(&Location,1,sizeof(Location),fil);
+    fwrite(&Current_Locate,1,sizeof(Locate),fil);
+
+
+    fwrite(tmpVars,0xFFFF,sizeof(void *),fil);
+
+    fclose(fil);
+}
+
+
+void LoadGame(char *file)
+{
+    Locate tmp;
+
+//    DeleteAnims(anims);
+    DeleteWavs(wavs);
+    DeleteTimers(timers);
+//    DeletePuzzleList(view);
+//    DeletePuzzleList(room);
+//    DeletePuzzleList(world);
+//    DeletePuzzleList(uni);
+//    DeleteControlList(ctrl);
+
+    timers=CreateMList();
+    wavs=CreateMList();
+
+    memset(&Current_Locate,0,sizeof(Locate));
+
+
+    FILE *fil=fopen(file, "rb");
+
+    fread(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
+    fread(&PrevCount,1,sizeof(PrevCount),fil);
+    fread(&tmp,1,sizeof(tmp),fil);
+
+    memset(&Location,0,sizeof(Location));
+
+
+
+    //memcpy(&Location,&tmp,sizeof(Location));
+
+    fread(&Current_Locate,1,sizeof(Locate),fil);
+
+
+
+    fread(gVars,0xFFFF,sizeof(void *),fil);
+
+    ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X);
+
+    fclose(fil);
+}
+
+
+
 void InitScriptsEngine()
 {
     memset(gVars,0x0,0xFFFF * sizeof(void *));
     timers=CreateMList();
     wavs=CreateMList();
+}
+
+bool Eligeblity(int obj, slotnode *slut)
+{
+    bool eli = false;
+
+    for (int i=0; i< slut->eligable_cnt; i++)
+        if (obj == slut->eligible_objects[i])
+        {
+            eli = true;
+            break;
+        }
+    return eli;
 }
 
 //Don't call it from loops for mylists!! it's cause error
@@ -228,15 +366,17 @@ void action_set_partial_screen(char *params)
         SDL_FreeSurface(tmp);
         tmp=tmp_1;
 
-
-        int r,g,b;
-        b=FiveBitToEightBitLookupTable[((tmp2 >> 10 ) & 0x1F)];
-        g=FiveBitToEightBitLookupTable[((tmp2 >> 5 ) & 0x1F)];
-        r=FiveBitToEightBitLookupTable[(tmp2 & 0x1F)];
+        if (tmp2 != -1)
+        {
+            int r,g,b;
+            b=FiveBitToEightBitLookupTable[((tmp2 >> 10 ) & 0x1F)];
+            g=FiveBitToEightBitLookupTable[((tmp2 >> 5 ) & 0x1F)];
+            r=FiveBitToEightBitLookupTable[(tmp2 & 0x1F)];
 #ifdef TRACE
-        printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
+            printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
 #endif
-        SDL_SetColorKey(tmp,SDL_SRCCOLORKEY ,SDL_MapRGB(tmp->format,r,g,b));
+            SDL_SetColorKey(tmp,SDL_SRCCOLORKEY ,SDL_MapRGB(tmp->format,r,g,b));
+        }
 
         //if (tmp1==0)
         DrawImageToSurf(tmp,x,y,scrbuf);
@@ -295,9 +435,9 @@ void action_change_location(char *params)
     sscanf(params,"%c, %c, %c%c, %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
 
     NeedToLoadScript=true;
-    Need_Locate.World=tmp[0];
-    Need_Locate.Room=tmp2[0];
-    Need_Locate.View=tmp3[1] | (tmp3[0] << 8);
+    Need_Locate.World=toupper(tmp[0]);
+    Need_Locate.Room=toupper(tmp2[0]);
+    Need_Locate.View=toupper(tmp3[1]) | (toupper(tmp3[0]) << 8);
     Need_Locate.X=GetIntVal(tmp4);
 }
 
@@ -307,10 +447,10 @@ void action_dissolve(char *params)
     printf("        action:dissolve()\n");
 #endif
 
-    Current_Locate.World = wo;
-    Current_Locate.Room  = ro;
-    Current_Locate.View  = vi;
-    Current_Locate.X = GAME_X + (Renderer == RENDER_PANA ? 320 : 0 );
+    Current_Locate.World = Location.World;
+    Current_Locate.Room  = Location.Room;
+    Current_Locate.View  = Location.View;
+    Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
 }
 
 void action_disable_control(char *params)
@@ -387,6 +527,8 @@ void action_random(char *params)
     SetgVarInt(slot, rand() % (number+1) );
 }
 
+
+
 void action_streamvideo(char *params)
 {
 #ifdef TRACE
@@ -425,9 +567,9 @@ void action_streamvideo(char *params)
     fil=GetFilePath(file);
 
     if (fil!=NULL)
-        {
-            aud = Mix_LoadWAV(fil);
-        }
+    {
+        aud = Mix_LoadWAV(fil);
+    }
 
 
     SMPEG_setdisplay(anm->mpg,anm->img,0,0);
@@ -435,32 +577,33 @@ void action_streamvideo(char *params)
     SMPEG_renderFrame(anm->mpg,1);
     SMPEG_play(anm->mpg);
     if (aud!=NULL)
+    {
+        tmp=GetFreeChannel();
+        Mix_PlayChannel(tmp,aud,0);
+        if (u2 == 0)
         {
-            tmp=GetFreeChannel();
-            Mix_PlayChannel(tmp,aud,0);
-            if (u2 == 0)
-                {
-                    SaveVol();
-                    SilenceVol();
-                }
-            Mix_Volume(tmp,127);
+            SaveVol();
+            SilenceVol();
         }
+        Mix_Volume(tmp,127);
+    }
 
     while(SMPEG_status(anm->mpg) != SMPEG_STOPPED  &&  !KeyDown(SDLK_SPACE))
-        {
-            SDL_Event event;
-            SDL_PollEvent(&event);
-            UpdateKeyboard();
-            DrawImage(anm->img,xx,GAME_Y+yy);
-            SDL_Flip(screen);
-        }
+    {
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        UpdateKeyboard();
+        DrawImage(anm->img,xx,GAME_Y+yy);
+        SDL_Flip(screen);
+        SDL_Delay(1000/anm->inf.current_fps);
+    }
     if (aud!=NULL)
-        {
-            if (u2 == 0)
-                RestoreVol();
-            Mix_HaltChannel(tmp);
-            Mix_FreeChunk(aud);
-        }
+    {
+        if (u2 == 0)
+            RestoreVol();
+        Mix_HaltChannel(tmp);
+        Mix_FreeChunk(aud);
+    }
 
     SMPEG_stop(anm->mpg);
     SMPEG_delete(anm->mpg);
@@ -496,6 +639,7 @@ void action_animplay(char *params)
 
 
     animnode *nod = new (animnode);
+    anim_avi *anm;
     AddToMList(anims,nod);
 
 
@@ -516,22 +660,23 @@ void action_animplay(char *params)
 
     if (strcasestr(file,"avi")!=NULL)
     {
-        anim_avi *anm=new(anim_avi);
+        anm=new(anim_avi);
         nod->anim = (void *) anm;
         anm->mpg=SMPEG_new(GetFilePath(file),&anm->inf,0);
         anm->img = CreateSurface(nod->w,nod->h);
         SMPEG_setdisplay(anm->mpg,anm->img,0,0);
         SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
+
         //if (nod->loopcnt == 0 )
-         //  {
+        //  {
 
-           //     SMPEG_play(anm->mpg);
+        //     SMPEG_play(anm->mpg);
 
-            //    anm->pld=true;
-            //    anm->loop=true;
-            //}
+        //    anm->pld=true;
+        //    anm->loop=true;
+        //}
         //if (anm->inf.width != nod->w)
-         //   SMPEG_scaleXY(anm->mpg,1,1);
+        //   SMPEG_scaleXY(anm->mpg,1,1);
         nod->vid=true;
     }
     else
@@ -550,15 +695,16 @@ void action_animplay(char *params)
     }
 
     if (nod->vid)
-        {
-            nod->start= GetIntVal(st) *2;
-            nod->end= GetIntVal(en) *2;
-        }
+    {
+        nod->start= GetIntVal(st) *2;
+        nod->end= GetIntVal(en) *2;
+        SMPEG_renderFrame(anm->mpg,nod->start+1);
+    }
     else
-        {
-            nod->start= GetIntVal(st);
-            nod->end= GetIntVal(en);
-        }
+    {
+        nod->start= GetIntVal(st);
+        nod->end= GetIntVal(en);
+    }
 
 }
 
@@ -585,9 +731,9 @@ void action_music(char *params)
 
 void action_universe_music(char *params)
 {
-//#ifdef TRACE
+#ifdef TRACE
     printf("        action:universe_music(%s)\n",params);
-//#endif
+#endif
 
     int slot;
     char unk1[16];
@@ -596,7 +742,7 @@ void action_universe_music(char *params)
     char vol[16];
     sscanf(params,"%d %s %s %s %s",&slot, unk1, file, loop, vol);
 
-    printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
+    //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
     if (SlotIsOwned(slot))
         return;
@@ -632,6 +778,31 @@ void action_universe_music(char *params)
     SetgVarInt(slot, 1);
 }
 
+
+void action_syncsound(char *params)
+{
+    printf("PlayPreload \n");
+}
+
+void action_animpreload(char *params)
+{
+    printf("AnimPreload \n");
+}
+
+void action_playpreload(char *params)
+{
+    char chars[16];
+    sscanf(params,"%s",chars);
+    SetgVarInt(GetIntVal(chars),2);
+}
+
+void action_ttytext(char *params)
+{
+    char chars[16];
+    sscanf(params,"%s",chars);
+    SetgVarInt(GetIntVal(chars),2);
+}
+
 void action_kill(char *params)
 {
 #ifdef TRACE
@@ -645,6 +816,7 @@ void action_kill(char *params)
     if (strcasecmp(chars,"\"all\"")==0)
     {
         DeleteAnims(anims);
+        anims = CreateMList();
 
         StartMList(wavs);
         while(!eofMList(wavs))
@@ -652,9 +824,10 @@ void action_kill(char *params)
             musicnode *nod = (musicnode *)DataMList(wavs);
             Mix_HaltChannel(nod->chn);
             UnlockChan(nod->chn);
+            SetgVarInt(nod->slot, 2);
             delete nod;
             DeleteCurrent(wavs);
-            SetgVarInt(slot, 2);
+
 
             NextMList(wavs);
         }
@@ -730,6 +903,47 @@ void action_stop(char *params)
         }
 
         NextMList(timers);
+    }
+
+    StartMList(anims);
+    while(!eofMList(anims))
+    {
+        animnode *nod = (animnode *)DataMList(anims);
+        if (nod->slot == slot)
+        {
+            if (nod->vid)
+        {
+            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+        }
+        else
+            FreeAnimImage((anim_surf *)nod->anim);
+
+        delete nod;
+            DeleteCurrent(anims);
+            SetgVarInt(slot, 2);
+            return;
+        }
+
+        NextMList(anims);
+    }
+
+    StartMList(wavs);
+    while(!eofMList(wavs))
+    {
+        musicnode *nod = (musicnode *)DataMList(wavs);
+        if (nod->slot == slot)
+        {
+            Mix_HaltChannel(nod->chn);
+            UnlockChan(nod->chn);
+            delete nod;
+            DeleteCurrent(wavs);
+            SetgVarInt(slot, 2);
+            return;
+        }
+
+        NextMList(wavs);
     }
 
     printf("Nothing to stop %d\n",slot);
@@ -877,6 +1091,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_set_screen;
+            return;
         }
 
         if (strCMP(buf,"assign")==0)
@@ -889,6 +1104,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_assign;
+            return;
         }
         if (strCMP(buf,"timer")==0)
         {
@@ -906,6 +1122,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,buff);
 
             nod->func=action_timer;
+            return;
         }
         if (strCMP(buf,"set_partial_screen")==0)
         {
@@ -917,6 +1134,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_set_partial_screen;
+            return;
         }
 
         if (strCMP(buf,"change_location")==0)
@@ -929,6 +1147,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_change_location;
+            return;
         }
 
         if (strCMP(buf,"dissolve")==0)
@@ -941,6 +1160,7 @@ void ParsePuzzle(char *instr, MList *lst)
             //strcpy(nod->param,params);
 
             nod->func=action_dissolve; //make save prev W R VI
+            return;
         }
 
         if (strCMP(buf,"disable_control")==0)
@@ -953,6 +1173,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_disable_control;
+            return;
         }
         if (strCMP(buf,"enable_control")==0)
         {
@@ -964,6 +1185,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_enable_control;
+            return;
         }
         if (strCMP(buf,"add")==0)
         {
@@ -975,6 +1197,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_add;
+            return;
         }
         if (strCMP(buf,"random")==0)
         {
@@ -992,6 +1215,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,buff);
 
             nod->func=action_random;
+            return;
         }
         if (strCMP(buf,"animplay")==0)
         {
@@ -1003,12 +1227,15 @@ void ParsePuzzle(char *instr, MList *lst)
 
             sscanf(str+end_s+1,"%d",&tmp1);
 
+            SetgVarInt(tmp1,0); //hack ?
+
             sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
 
             nod->param=(char *)malloc(strlen(buff)+1);
             strcpy(nod->param,buff);
 
             nod->func=action_animplay;
+            return;
         }
         if (strCMP(buf,"universe_music")==0)
         {
@@ -1026,6 +1253,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,buff);
 
             nod->func=action_universe_music;
+            return;
         }
         if (strCMP(buf,"music")==0)
         {
@@ -1043,6 +1271,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,buff);
 
             nod->func=action_universe_music;
+            return;
         }
 
         if (strCMP(buf,"kill")==0)
@@ -1055,6 +1284,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_kill;
+            return;
         }
 
         if (strCMP(buf,"stop")==0)
@@ -1067,6 +1297,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_stop;
+            return;
         }
 
         if (strCMP(buf,"inventory")==0)
@@ -1079,6 +1310,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_inventory;
+            return;
         }
 
         if (strCMP(buf,"crossfade")==0)
@@ -1091,6 +1323,7 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_crossfade;
+            return;
         }
 
         if (strCMP(buf,"streamvideo")==0)
@@ -1103,6 +1336,75 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_streamvideo;
+            return;
+        }
+
+        if (strCMP(buf,"animpreload")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            char buff[255];
+            int tmp1=0;
+
+            sscanf(str+end_s+1,"%d",&tmp1);
+
+            sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
+
+            nod->param=(char *)malloc(strlen(buff)+1);
+            strcpy(nod->param,buff);
+
+            nod->func=action_animpreload;
+            return;
+        }
+        if (strCMP(buf,"playpreload")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            char buff[255];
+            int tmp1=0;
+
+            sscanf(str+end_s+1,"%d",&tmp1);
+
+            sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
+
+            nod->param=(char *)malloc(strlen(buff)+1);
+            strcpy(nod->param,buff);
+
+            nod->func=action_playpreload;
+            return;
+        }
+        if (strCMP(buf,"syncsound")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            params=GetParams(str+end_s);
+            nod->param=(char *)malloc(strlen(params)+1);
+            strcpy(nod->param,params);
+
+            nod->func=action_syncsound;
+            return;
+        }
+
+        if (strCMP(buf,"ttytext")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            char buff[255];
+            int tmp1=0;
+
+            sscanf(str+end_s+1,"%d",&tmp1);
+
+            sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
+
+            nod->param=(char *)malloc(strlen(buff)+1);
+            strcpy(nod->param,buff);
+
+            nod->func=action_ttytext;
+            return;
         }
 
     }
@@ -1119,7 +1421,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
     if (!fl)
     {
         printf("Error opening file %s\n",filename);
-        //exit(1);
+        exit(1);
         return;
     }
 
@@ -1312,7 +1614,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
             else if (strCMP(ctrltp,"pana")==0)
             {
                 Renderer = RENDER_PANA;
-                GAME_X = GAME_X - 320;
+                Location.X -= 320;
 #ifdef FULLTRACE
                 printf("    Panorama Rendere\n");
 #endif
@@ -1409,8 +1711,34 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                     else if (strCMP(str2,"eligible_objects")==0)
                     {
                         str2=GetParams(str2);
-                        slut->eligible_objects = (char *)malloc (strlen(str2)+1);
-                        strcpy(slut->eligible_objects,str2);
+                        int tmpobj=0;
+                        int strl=strlen(str2);
+                        for (int i=0; i < strl; i++)
+                            if (str2[i] == ' ')
+                                tmpobj++;
+
+                        tmpobj++;
+
+                        slut->eligable_cnt = tmpobj;
+                        slut->eligible_objects = (int *)malloc (tmpobj * sizeof(int));
+                        int i=0;
+                        tmpobj=0;
+
+                        for (;;)
+                        {
+                            if (i>=strl)
+                                break;
+                            if (str2[i] != ' ')
+                            {
+                                slut->eligible_objects[tmpobj] = atoi(str2 + i);
+                                tmpobj++;
+
+                                while (i<strl && str2[i] != ' ')
+                                    i++;
+                            }
+                            i++;
+                        }
+
                     }
 
 
@@ -1597,7 +1925,9 @@ bool ProcessCriteries(MList *lst)
 
 void ProcessTriggers(MList *pzllst)
 {
-    StartMList(pzllst);
+    DO_ME_NOWS=0;
+
+    LastMList(pzllst);
 
     while (!eofMList(pzllst))
     {
@@ -1626,42 +1956,52 @@ void ProcessTriggers(MList *pzllst)
 
             if (DO)
             {
-                SetgVarInt(nod->slot,1);
+                if ((nod->flags & FLAG_DO_ME_NOW ))
+                {
+                    SetgVarInt(nod->slot,1);
 #ifdef FULLTRACE
-                printf("    Working:\n");
+                    printf("    Working:\n");
 #endif
+
+
+
+
+
+/*
+///////////////////////FOR DEBUGGING///////////////////////
+                    StartMList(nod->CritList);
+                    while (!eofMList(nod->CritList))
+                    {
 #ifdef TRACE
-                printf("Puzzle, slot:%d \n",nod->slot);
+                        printf("    Criteria:\n");
 #endif
+                        MList *criteries=(MList *)DataMList(nod->CritList);
 
+                        DO |= ProcessCriteries2(criteries);
 
+                        NextMList(nod->CritList);
+                    }
+////////////////////////////////////////////////////////////*/
 
-
-///////////////////////////////////////////////
-                StartMList(nod->CritList);
-                while (!eofMList(nod->CritList))
-                {
 #ifdef TRACE
-                    printf("    Criteria:\n");
+                    printf("Puzzle: %d \n",nod->slot);
 #endif
-                    MList *criteries=(MList *)DataMList(nod->CritList);
 
-                    DO |= ProcessCriteries2(criteries);
 
-                    NextMList(nod->CritList);
+                    StartMList(nod->ResList);
+                    while (!eofMList(nod->ResList))
+                    {
+                        func_node *fun=(func_node *)DataMList(nod->ResList);
+                        fun->func(fun->param);
+
+                        NextMList(nod->ResList);
+                    }
+
                 }
-////////////////////////////////////////////////////////////
-
-
-
-
-                StartMList(nod->ResList);
-                while (!eofMList(nod->ResList))
+                else
                 {
-                    func_node *fun=(func_node *)DataMList(nod->ResList);
-                    fun->func(fun->param);
-
-                    NextMList(nod->ResList);
+                    DO_ME_NOW_LIST[DO_ME_NOWS] = nod;
+                    DO_ME_NOWS++;
                 }
 
                 //  SetgVarInt(nod->slot,1);
@@ -1670,7 +2010,45 @@ void ProcessTriggers(MList *pzllst)
 
         }
 
-        NextMList(pzllst);
+        PrevMList(pzllst);
+    }
+
+    for (int i=0; i < DO_ME_NOWS; i++)
+    {
+
+        puzzlenode * nod = DO_ME_NOW_LIST[i];
+
+        #ifdef TRACE
+                printf("Puzzle_ do me now: %d \n",nod->slot);
+        #endif
+
+        bool DO=false;
+
+            StartMList(nod->CritList);
+            while (!eofMList(nod->CritList))
+            {
+#ifdef FULLTRACE
+                printf("    Criteria:\n");
+#endif
+                MList *criteries=(MList *)DataMList(nod->CritList);
+
+                DO |= ProcessCriteries(criteries);
+
+                NextMList(nod->CritList);
+            }
+
+        if (DO)
+        {
+        SetgVarInt(nod->slot,1);
+        StartMList(nod->ResList);
+        while (!eofMList(nod->ResList))
+        {
+            func_node *fun=(func_node *)DataMList(nod->ResList);
+            fun->func(fun->param);
+
+            NextMList(nod->ResList);
+        }
+        }
     }
 }
 
@@ -1683,7 +2061,7 @@ void ProcessControls(MList *ctrlst)
     slotnode *slut;
     bool mousein=false;
 
-    StartMList(ctrlst);
+    LastMList(ctrlst);
 
     while (!eofMList(ctrlst))
     {
@@ -1721,16 +2099,16 @@ void ProcessControls(MList *ctrlst)
                     if (MouseX()>=20 && MouseX()<=620)
                     {
 
-                        if (    (psh->x-GAME_X          <= MouseX())    &&\
-                                (psh->x-GAME_X+psh->w   >= MouseX())    &&\
+                        if (    (psh->x-Location.X          <= MouseX())    &&\
+                                (psh->x-Location.X+psh->w   >= MouseX())    &&\
                                 (psh->y+GAME_Y          <= MouseY())    &&\
                                 (psh->y+GAME_Y+psh->h   >= MouseY()))
                             mousein = true;
 
-                        if (GAME_X > scrbuf->w - screen->w)
+                        if (Location.X > scrbuf->w - screen->w)
                         {
-                            if (    (psh->x+scrbuf->w-GAME_X  <= MouseX())    &&\
-                                    (psh->x+scrbuf->w-GAME_X+psh->w   >= MouseX())    &&\
+                            if (    (psh->x+scrbuf->w-Location.X  <= MouseX())    &&\
+                                    (psh->x+scrbuf->w-Location.X+psh->w   >= MouseX())    &&\
                                     (psh->y+GAME_Y          <= MouseY())    &&\
                                     (psh->y+GAME_Y+psh->h   >= MouseY()))
                                 mousein = true;
@@ -1746,8 +2124,8 @@ void ProcessControls(MList *ctrlst)
 
                 if (mousein)
                 {
-
-                    cur=CurDefault[psh->cursor];
+                    if (cur == CurDefault[CURSOR_IDLE])
+                        cur=CurDefault[psh->cursor];
 
                     if (MouseUp(SDL_BUTTON_LEFT))
                     {
@@ -1756,6 +2134,8 @@ void ProcessControls(MList *ctrlst)
                         printf("Slot #%d to 1\n",nod->slot);
 #endif
                         SetgVarInt(nod->slot,1);
+
+                        FlushMouseBtn(SDL_BUTTON_LEFT);
 
                     }
 
@@ -1769,8 +2149,8 @@ void ProcessControls(MList *ctrlst)
                 mousein = false;
 
                 if (    (slut->hotspot.x          <= MouseX())    &&\
-                        (slut->hotspot.w   >= MouseX())    &&\
-                        (slut->hotspot.y+GAME_Y          <= MouseY())    &&\
+                        (slut->hotspot.w          >= MouseX())    &&\
+                        (slut->hotspot.y+GAME_Y   <= MouseY())    &&\
                         (GAME_Y+slut->hotspot.h   >= MouseY()))
                     mousein = true;
 
@@ -1778,7 +2158,8 @@ void ProcessControls(MList *ctrlst)
                 {
 
                     if (GetgVarInt(nod->slot)!=0)
-                        cur=CurDefault[slut->cursor];
+                        if (cur == CurDefault[CURSOR_IDLE])
+                            cur=CurDefault[slut->cursor];
 
                     if (MouseUp(SDL_BUTTON_LEFT))
                     {
@@ -1799,6 +2180,7 @@ void ProcessControls(MList *ctrlst)
 #ifdef TRACE
                         printf("Pushed\n");
                         printf("Slot #%d to 1\n",nod->slot);
+                        FlushMouseBtn(SDL_BUTTON_LEFT);
 #endif
 
                     }
@@ -1809,7 +2191,7 @@ void ProcessControls(MList *ctrlst)
                 break;
             }
 
-        NextMList(ctrlst);
+        PrevMList(ctrlst);
     }
 }
 
@@ -1829,31 +2211,7 @@ void DrawSlots()
 
             int tmp1 = GetgVarInt(nod->slot);
             //printf("%d %d\n",nod->slot,tmp1);
-            bool in = false;
-
-            int strl=strlen(slut->eligible_objects);
-            int i=0;
-
-            for (;;)
-            {
-
-                if (i>=strl)
-                    break;
-                if (slut->eligible_objects[i] != ' ')
-                {
-                    int tmp2 = atoi(slut->eligible_objects + i);
-
-                    while (i<strl && slut->eligible_objects[i] != ' ')
-                        i++;
-
-                    if (tmp2 == tmp1)
-                    {
-                        in = true;
-                        break;
-                    }
-                }
-                i++;
-            }
+            bool in = Eligeblity(tmp1,slut);
 
             if (in && tmp1!=GetgVarInt(9))
             {
@@ -1866,7 +2224,7 @@ void DrawSlots()
                     SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
                 }
 
-                DrawImage(slut->srf,    GAME_X +slut->rectangle.x  ,  GAME_Y + slut->rectangle.y);
+                DrawImage(slut->srf,    Location.X +slut->rectangle.x  ,  GAME_Y + slut->rectangle.y);
             }
             else
             {
@@ -1943,20 +2301,20 @@ void FlatRender()
 void PanaRender()
 {
     if (MouseX() > 620)
-        GAME_X +=30;
+        Location.X +=30;
 
     if (MouseX() < 20)
-        GAME_X -=30;
+        Location.X -=30;
 
-    if (GAME_X >= scrbuf->w)
-        GAME_X %= scrbuf->w;
-    if (GAME_X < 0)
-        GAME_X = scrbuf->w + GAME_X;
+    if (Location.X >= scrbuf->w)
+        Location.X %= scrbuf->w;
+    if (Location.X < 0)
+        Location.X = scrbuf->w + Location.X;
 
     SDL_FillRect(screen,0,0);
-    DrawImage(scrbuf,-GAME_X,GAME_Y);
-    if (GAME_X > scrbuf->w - screen->w)
-        DrawImage(scrbuf,scrbuf->w-GAME_X,GAME_Y);
+    DrawImage(scrbuf,-Location.X,GAME_Y);
+    if (Location.X > scrbuf->w - screen->w)
+        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);
 }
 
 
@@ -2039,7 +2397,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         memcpy(&temp,&Previos_Locate[PrevCount],sizeof(temp));
     }
     else
-    {
+    {   // If dissolve was called
         if (Current_Locate.World != 0 &&\
                 Current_Locate.Room  != 0 &&\
                 Current_Locate.View  != 0 )
@@ -2081,9 +2439,9 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     char buf[32];
     char tm[5];
 
-    GAME_X=temp.X;
+    Location.X=temp.X;
 
-    if (temp.View != vi || temp.Room != ro || temp.World != wo)
+    if (temp.View != Location.View || temp.Room != Location.Room || temp.World != Location.World)
     {
         if (view)
         {
@@ -2102,10 +2460,10 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         ctrl=CreateMList();
         anims=CreateMList();
         LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
-        vi=temp.View;
+        Location.View=temp.View;
     }
 
-    if (temp.Room != ro || temp.World != wo)
+    if (temp.Room != Location.Room || temp.World != Location.World)
     {
         if (room)
             DeletePuzzleList(room);
@@ -2116,10 +2474,10 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         sprintf(buf,"%s.scr",tm);
         room=CreateMList();
         LoadScriptFile(room,GetExactFilePath(buf),false,NULL);
-        ro=temp.Room;
+        Location.Room=temp.Room;
     }
 
-    if (temp.World != wo)
+    if (temp.World != Location.World)
     {
         if (world)
             DeletePuzzleList(world);
@@ -2128,7 +2486,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         sprintf(buf,"%s.scr",tm);
         world=CreateMList();
         LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
-        wo=temp.World;
+        Location.World=temp.World;
     }
 }
 
@@ -2142,6 +2500,9 @@ void InitGameLoop()
 
 void GameLoop()
 {
+
+    printf("%d,%d,%d,%d\n",GetgVarInt(14303),GetgVarInt(18280),GetgVarInt(1001),GetgVarInt(14279));
+
     cur=CurDefault[CURSOR_IDLE];
 
     SetgVarInt(18,0);
@@ -2155,18 +2516,10 @@ void GameLoop()
 
     ProcessControls(ctrl);
 
-
-
-    ProcessTriggers(view);
     ProcessTriggers(room);
+    ProcessTriggers(view);
     ProcessTriggers(world);
     ProcessTriggers(uni);
-
-
-
-
-
-
 
 
 
@@ -2178,6 +2531,11 @@ void GameLoop()
         NeedToLoadScript=false;
         ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.View,Need_Locate.X);
     }
+
+    if (KeyHit(SDLK_F5))
+        SaveGame("Save0.sav");
+    if (KeyHit(SDLK_F8))
+        LoadGame("Save0.sav");
 }
 
 
@@ -2192,74 +2550,75 @@ void ProcessAnims()
         animnode *nod=(animnode *)DataMList(anims);
 
         if (nod)
-            if (nod->nexttick<millisec())
-                //if (GetTick())
-            {
-                if (nod->vid)
-                {
-                    anim_avi *anm=(anim_avi *)nod->anim;
-                    //if (!anm->pld)
-                       // {
-                            SMPEG_renderFrame(anm->mpg,nod->CurFr+1);
-                      //  }
-
-                    /*if (anm->loop == true && SMPEG_status(anm->mpg) == SMPEG_STOPPED)
-                        {
-                            SMPEG_rewind(anm->mpg);
-                            SMPEG_play(anm->mpg);
-                        }*/
-
-                    DrawImageToSurf(anm->img,nod->x,nod->y,scrbuf);
-                }
-                else
-                    DrawAnimImageToSurf((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr,scrbuf);
-                nod->CurFr++;
-
-                if (nod->CurFr > nod->end)
-                {
-                    nod->loops++;
-
-                    if (nod->loops<nod->loopcnt || nod->loopcnt == 0)
-                    {
-                        nod->CurFr=nod->start;
-                        if (nod->vid)
-                            {
-                                nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                                nod->nexttick=millisec() + (1.0/15.0) * 1000.0;
-                            }
-                        else
-                            nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
-                    }
-
-                    else
-                    {
-#ifdef FULLTRACE
-                        printf ("Animplay #%d End's\n",nod->slot);
-#endif
-                        SetgVarInt(nod->slot,2);
-                        if (nod->vid)
-                        {
-                            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-                            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-                            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-                        }
-                        else
-                            FreeAnimImage((anim_surf *)nod->anim);
-                        delete nod;
-                        DeleteCurrent(anims);
-                    }
-                }
-                else
+            if (nod->anim)
+                if (nod->nexttick<millisec())
+                    //if (GetTick())
                 {
                     if (nod->vid)
+                    {
+                        anim_avi *anm=(anim_avi *)nod->anim;
+                        //if (!anm->pld)
+                        // {
+                        SMPEG_renderFrame(anm->mpg,nod->CurFr+1);
+                        //  }
+
+                        /*if (anm->loop == true && SMPEG_status(anm->mpg) == SMPEG_STOPPED)
+                            {
+                                SMPEG_rewind(anm->mpg);
+                                SMPEG_play(anm->mpg);
+                            }*/
+
+                        DrawImageToSurf(anm->img,nod->x,nod->y,scrbuf);
+                    }
+                    else
+                        DrawAnimImageToSurf((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr,scrbuf);
+                    nod->CurFr++;
+
+                    if (nod->CurFr > nod->end)
+                    {
+                        nod->loops++;
+
+                        if (nod->loops<nod->loopcnt || nod->loopcnt == 0)
+                        {
+                            nod->CurFr=nod->start;
+                            if (nod->vid)
                             {
                                 nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                                //nod->nexttick=millisec() + (1.0/15.0) * 1000.0;
                             }
+                            else
+                                nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
+                        }
+
+                        else
+                        {
+#ifdef FULLTRACE
+                            printf ("Animplay #%d End's\n",nod->slot);
+#endif
+                            SetgVarInt(nod->slot,2);
+                            if (nod->vid)
+                            {
+                                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+                                SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+                                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+                            }
+                            else
+                                FreeAnimImage((anim_surf *)nod->anim);
+                            delete nod;
+                            DeleteCurrent(anims);
+                        }
+                    }
+                    else
+                    {
+                        if (nod->vid)
+                        {
+                            nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                        }
                         else
                             nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
-                }
+                    }
 
-            }
+                }
 
         NextMList(anims);
     }
@@ -2281,8 +2640,45 @@ void DeleteAnims(MList *lst)
         else
             FreeAnimImage((anim_surf *)nod->anim);
 
+        //SetgVarInt(nod->slot,1);
+
         delete nod;
 
+
+        NextMList(lst);
+    }
+
+    DeleteMList(lst);
+}
+
+void DeleteWavs(MList *lst)
+{
+    Mix_HaltChannel(-1);
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        musicnode *nod=(musicnode *)DataMList(lst);
+        Mix_FreeChunk(nod->chunk);
+        UnlockChan(nod->chn);
+        delete nod;
+
+
+        NextMList(lst);
+    }
+
+    DeleteMList(lst);
+}
+
+
+void DeleteTimers(MList *lst)
+{
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        timernode *nod=(timernode *)DataMList(lst);
+        delete nod;
 
         NextMList(lst);
     }
