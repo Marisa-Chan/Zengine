@@ -1227,7 +1227,7 @@ void ParsePuzzle(char *instr, MList *lst)
 
             sscanf(str+end_s+1,"%d",&tmp1);
 
-            SetgVarInt(tmp1,0); //hack ?
+            //SetgVarInt(tmp1,0); //hack ?
 
             sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
 
@@ -1927,7 +1927,7 @@ void ProcessTriggers(MList *pzllst)
 {
     DO_ME_NOWS=0;
 
-    LastMList(pzllst);
+    StartMList(pzllst);
 
     while (!eofMList(pzllst))
     {
@@ -1956,7 +1956,7 @@ void ProcessTriggers(MList *pzllst)
 
             if (DO)
             {
-                if ((nod->flags & FLAG_DO_ME_NOW ))
+                if (!(nod->flags & FLAG_DO_ME_NOW ))
                 {
                     SetgVarInt(nod->slot,1);
 #ifdef FULLTRACE
@@ -2010,7 +2010,7 @@ void ProcessTriggers(MList *pzllst)
 
         }
 
-        PrevMList(pzllst);
+        NextMList(pzllst);
     }
 
     for (int i=0; i < DO_ME_NOWS; i++)
@@ -2019,7 +2019,7 @@ void ProcessTriggers(MList *pzllst)
         puzzlenode * nod = DO_ME_NOW_LIST[i];
 
         #ifdef TRACE
-                printf("Puzzle_ do me now: %d \n",nod->slot);
+                printf("Puzzle_ : %d \n",nod->slot);
         #endif
 
         bool DO=false;
@@ -2506,21 +2506,25 @@ void GameLoop()
     cur=CurDefault[CURSOR_IDLE];
 
     SetgVarInt(18,0);
+    SetgVarInt(10,0);
     if (MouseUp(SDL_BUTTON_RIGHT))
         SetgVarInt(18,1);
+    if (MouseHit(SDL_BUTTON_LEFT))
+        SetgVarInt(10,1);
 
 
     ProcessTimers();
     ProcessWavs();
     ProcessAnims();
 
-    ProcessControls(ctrl);
+
 
     ProcessTriggers(room);
     ProcessTriggers(view);
     ProcessTriggers(world);
     ProcessTriggers(uni);
 
+    ProcessControls(ctrl);
 
 
 
@@ -2640,7 +2644,7 @@ void DeleteAnims(MList *lst)
         else
             FreeAnimImage((anim_surf *)nod->anim);
 
-        //SetgVarInt(nod->slot,1);
+        SetgVarInt(nod->slot,2);
 
         delete nod;
 
