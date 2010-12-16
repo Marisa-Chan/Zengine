@@ -280,7 +280,7 @@ bool SlotIsOwned(int i)
 
 
 
-char * PrepareSting(char *buf)
+char * PrepareString(char *buf)
 {
     for (int i=strlen(buf)-1; i>-1; i--)
         if (buf[i]==0x0A || buf[i]==0x0D || buf[i]=='#')
@@ -416,7 +416,7 @@ void action_timer(char *params)
     timernode *nod = new (timernode);
     nod->slot = tmp1;
 
-    s=PrepareSting(tmp2);
+    s=PrepareString(tmp2);
 
     nod->time = GetTickCount() + GetIntVal(s);
     AddToMList(timers,nod);
@@ -1435,7 +1435,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
     {
         fgets(buf,0x400,fl);
 
-        str=PrepareSting(buf);
+        str=PrepareString(buf);
 
 
         if (strCMP(str,"puzzle")==0)
@@ -1462,7 +1462,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
             for (;;)
             {
                 fgets(buf,0x400,fl);
-                str2=PrepareSting(buf);
+                str2=PrepareString(buf);
 
                 if (str2[0] == '}')
                     break;
@@ -1478,7 +1478,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                     for (;;)
                     {
                         fgets(buf,0x400,fl);
-                        str3=PrepareSting(buf);
+                        str3=PrepareString(buf);
 
                         if (str3[0] == '}')
                             break;
@@ -1547,7 +1547,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                     for (;;)
                     {
                         fgets(buf,0x400,fl);
-                        str3=PrepareSting(buf);
+                        str3=PrepareString(buf);
 
                         if (str3[0] == '}')
                             break;
@@ -1563,7 +1563,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                     for (;;)
                     {
                         fgets(buf,0x400,fl);
-                        str3=PrepareSting(buf);
+                        str3=PrepareString(buf);
 
                         if (str3[0] == '}')
                             break;
@@ -1634,7 +1634,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                 ctnode->enable=true;
 
                 fgets(buf,0x400,fl);
-                str2=PrepareSting(buf);
+                str2=PrepareString(buf);
 
                 if (strCMP(str2,"warp_hotspot")==0)
                     psh->flat=false;
@@ -1650,7 +1650,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
 #endif
 
                 fgets(buf,0x400,fl);
-                str2=PrepareSting(buf);
+                str2=PrepareString(buf);
 
                 str2=GetParams(str2); //cursor
                 psh->cursor=CURSOR_IDLE;
@@ -1684,7 +1684,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                 for (;;)
                 {
                     fgets(buf,0x400,fl);
-                    str2=PrepareSting(buf);
+                    str2=PrepareString(buf);
 
                     if (strCMP(str2,"}")==0)
                         break;
@@ -1956,7 +1956,8 @@ void ProcessTriggers(MList *pzllst)
 
             if (DO)
             {
-                if (!(nod->flags & FLAG_DO_ME_NOW ))
+                //if (!(nod->flags & FLAG_DO_ME_NOW ))
+                if (true)
                 {
                     SetgVarInt(nod->slot,1);
 #ifdef FULLTRACE
@@ -2501,7 +2502,7 @@ void InitGameLoop()
 void GameLoop()
 {
 
-    printf("%d,%d,%d,%d\n",GetgVarInt(14303),GetgVarInt(18280),GetgVarInt(1001),GetgVarInt(14279));
+    //printf("%d,%d,%d,%d\n",GetgVarInt(14303),GetgVarInt(18280),GetgVarInt(1001),GetgVarInt(14279));
 
     cur=CurDefault[CURSOR_IDLE];
 
