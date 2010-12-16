@@ -11,9 +11,10 @@
 
 
 
-#define MAX_DO_ME_NOW 1024
-puzzlenode *DO_ME_NOW_LIST[MAX_DO_ME_NOW];
-int DO_ME_NOWS;
+//#define MAX_DO_ME_NOW 1024
+//puzzlenode *DO_ME_NOW_LIST[MAX_DO_ME_NOW];
+//int DO_ME_NOWS;
+
 
 MList *uni      =NULL;
 
@@ -81,7 +82,24 @@ uint8_t PrevCount = 0;
 #define RENDER_PANA 1
 uint8_t     Renderer = RENDER_FLAT;
 
-void *gVars[0xFFFF];
+
+#define VAR_SLOTS_MAX 0xFFFF
+void *gVars[VAR_SLOTS_MAX];
+
+
+
+#define STATEBOX_DO_IT_MAX 1024
+
+int32_t StateBoxSTACK[STATEBOX_DO_IT_MAX][2];
+
+uint32_t StateBoxDoIts = 0;
+
+#define STATEBOX_NONE     0
+#define STATEBOX_CONTROL  1
+#define STATEBOX_PUZZLE   2
+#define STATEBOX_DUMMY    3
+
+char StateBox[VAR_SLOTS_MAX];
 
 
 
@@ -111,8 +129,8 @@ int GetgVarInt(void **Vars, int indx)
 
 void SaveGame(char *file)
 {
-    void *tmpVars[0xFFFF];
-    memcpy(tmpVars,gVars,0xFFFF*sizeof(void *));
+    void *tmpVars[VAR_SLOTS_MAX];
+    memcpy(tmpVars,gVars,VAR_SLOTS_MAX*sizeof(void *));
 
     StartMList(timers);
     while (!eofMList(timers))
@@ -178,7 +196,7 @@ void SaveGame(char *file)
     fwrite(&Current_Locate,1,sizeof(Locate),fil);
 
 
-    fwrite(tmpVars,0xFFFF,sizeof(void *),fil);
+    fwrite(tmpVars,VAR_SLOTS_MAX,sizeof(void *),fil);
 
     fclose(fil);
 }
@@ -219,7 +237,7 @@ void LoadGame(char *file)
 
 
 
-    fread(gVars,0xFFFF,sizeof(void *),fil);
+    fread(gVars,VAR_SLOTS_MAX,sizeof(void *),fil);
 
     ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X);
 
@@ -230,7 +248,8 @@ void LoadGame(char *file)
 
 void InitScriptsEngine()
 {
-    memset(gVars,0x0,0xFFFF * sizeof(void *));
+    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
+    memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(char));
     timers=CreateMList();
     wavs=CreateMList();
 }
@@ -1878,6 +1897,9 @@ bool ProcessCriteries2(MList *lst)
             tmp &= (tmp1 != tmp2);
             break;
         }
+
+        if (!tmp) break;
+
         NextMList(lst);
     }
     return tmp;
@@ -1925,7 +1947,7 @@ bool ProcessCriteries(MList *lst)
 
 void ProcessTriggers(MList *pzllst)
 {
-    DO_ME_NOWS=0;
+//    DO_ME_NOWS=0;
 
     StartMList(pzllst);
 
@@ -2001,8 +2023,8 @@ void ProcessTriggers(MList *pzllst)
                 }
                 else
                 {
-                    DO_ME_NOW_LIST[DO_ME_NOWS] = nod;
-                    DO_ME_NOWS++;
+                    /*DO_ME_NOW_LIST[DO_ME_NOWS] = nod;
+                    DO_ME_NOWS++;*/
                 }
 
                 //  SetgVarInt(nod->slot,1);
@@ -2014,7 +2036,7 @@ void ProcessTriggers(MList *pzllst)
         NextMList(pzllst);
     }
 
-    for (int i=0; i < DO_ME_NOWS; i++)
+   /* for (int i=0; i < DO_ME_NOWS; i++)
     {
 
         puzzlenode * nod = DO_ME_NOW_LIST[i];
@@ -2035,6 +2057,8 @@ void ProcessTriggers(MList *pzllst)
 
                 DO |= ProcessCriteries(criteries);
 
+                if (DO) break;
+
                 NextMList(nod->CritList);
             }
 
@@ -2050,7 +2074,7 @@ void ProcessTriggers(MList *pzllst)
             NextMList(nod->ResList);
         }
         }
-    }
+    }*/
 }
 
 
@@ -2131,8 +2155,7 @@ void ProcessControls(MList *ctrlst)
                     if (MouseUp(SDL_BUTTON_LEFT))
                     {
 #ifdef TRACE
-                        printf("Pushed\n");
-                        printf("Slot #%d to 1\n",nod->slot);
+                        printf("Pushed #%d\n",nod->slot);
 #endif
                         SetgVarInt(nod->slot,1);
 
