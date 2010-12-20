@@ -177,4 +177,12 @@ struct musicnode
 void ProcessWavs();
 void DeleteWavs(MList *lst);
 
+
+#define MaxStateBoxEnts 0xFF
+
+struct StateBoxEnt{
+    puzzlenode * nod[MaxStateBoxEnts];
+    uint32_t     cnt;
+};
+
 #endif // GAME_H_INCLUDED

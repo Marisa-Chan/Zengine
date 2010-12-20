@@ -19,7 +19,7 @@
 MList *uni      =NULL;
 
 
-Locate  Location={0,0,0,0};
+Locate  Location= {0,0,0,0};
 //uint8_t     wo  =0;
 MList   *world  =NULL;
 //uint8_t     ro  =0;
@@ -88,18 +88,12 @@ void *gVars[VAR_SLOTS_MAX];
 
 
 
-#define STATEBOX_DO_IT_MAX 1024
+#define STATEBOX_STACK_MAX 1024
 
-int32_t StateBoxSTACK[STATEBOX_DO_IT_MAX][2];
+puzzlenode * StateBoxStk[STATEBOX_STACK_MAX];
+uint32_t     StateBoxStkSz = 0;
 
-uint32_t StateBoxDoIts = 0;
-
-#define STATEBOX_NONE     0
-#define STATEBOX_CONTROL  1
-#define STATEBOX_PUZZLE   2
-#define STATEBOX_DUMMY    3
-
-char StateBox[VAR_SLOTS_MAX];
+StateBoxEnt *StateBox[VAR_SLOTS_MAX];
 
 
 
@@ -107,6 +101,23 @@ void SetgVarInt(int indx, int var)
 {
     gVars[indx]=NULL;
     gVars[indx]=(void *)var;
+
+    if (StateBox[indx] != NULL)
+    {
+        for (int i=StateBox[indx]->cnt-1; i >= 0; i--)
+        {
+            if (StateBoxStkSz < STATEBOX_STACK_MAX)
+            {
+                StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
+                StateBoxStkSz++;
+            }
+            else
+            {
+                printf("StateBox Stack overflow!");
+            }
+
+        }
+    }
 }
 
 int GetgVarInt(int indx)
@@ -249,9 +260,11 @@ void LoadGame(char *file)
 void InitScriptsEngine()
 {
     memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
-    memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(char));
     timers=CreateMList();
     wavs=CreateMList();
+
+    memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
+    StateBoxStkSz = 0;
 }
 
 bool Eligeblity(int obj, slotnode *slut)
@@ -931,15 +944,15 @@ void action_stop(char *params)
         if (nod->slot == slot)
         {
             if (nod->vid)
-        {
-            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-        }
-        else
-            FreeAnimImage((anim_surf *)nod->anim);
+            {
+                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+                SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+            }
+            else
+                FreeAnimImage((anim_surf *)nod->anim);
 
-        delete nod;
+            delete nod;
             DeleteCurrent(anims);
             SetgVarInt(slot, 2);
             return;
@@ -1436,6 +1449,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
     printf("Loading script file %s\n",filename);
 #endif
 
+
     FILE *fl=fopen(filename,"rb");
     if (!fl)
     {
@@ -1802,9 +1816,6 @@ void DeletePuzzleList(MList *lst)
         DeleteMList(nod->CritList);
 
 
-
-
-
         StartMList(nod->ResList);
         while (!eofMList(nod->ResList))
         {
@@ -1978,74 +1989,67 @@ void ProcessTriggers(MList *pzllst)
 
             if (DO)
             {
-                //if (!(nod->flags & FLAG_DO_ME_NOW ))
-                if (true)
-                {
-                    SetgVarInt(nod->slot,1);
+
+                SetgVarInt(nod->slot,1);
 #ifdef FULLTRACE
-                    printf("    Working:\n");
+                printf("    Working:\n");
 #endif
 
+                /*
+                ///////////////////////FOR DEBUGGING///////////////////////
+                                    StartMList(nod->CritList);
+                                    while (!eofMList(nod->CritList))
+                                    {
+                #ifdef TRACE
+                                        printf("    Criteria:\n");
+                #endif
+                                        MList *criteries=(MList *)DataMList(nod->CritList);
 
+                                        DO |= ProcessCriteries2(criteries);
 
-
-
-/*
-///////////////////////FOR DEBUGGING///////////////////////
-                    StartMList(nod->CritList);
-                    while (!eofMList(nod->CritList))
-                    {
-#ifdef TRACE
-                        printf("    Criteria:\n");
-#endif
-                        MList *criteries=(MList *)DataMList(nod->CritList);
-
-                        DO |= ProcessCriteries2(criteries);
-
-                        NextMList(nod->CritList);
-                    }
-////////////////////////////////////////////////////////////*/
+                                        NextMList(nod->CritList);
+                                    }
+                ////////////////////////////////////////////////////////////*/
 
 #ifdef TRACE
-                    printf("Puzzle: %d \n",nod->slot);
+                printf("Puzzle: %d \n",nod->slot);
 #endif
 
 
-                    StartMList(nod->ResList);
-                    while (!eofMList(nod->ResList))
-                    {
-                        func_node *fun=(func_node *)DataMList(nod->ResList);
-                        fun->func(fun->param);
-
-                        NextMList(nod->ResList);
-                    }
-
-                }
-                else
+                StartMList(nod->ResList);
+                while (!eofMList(nod->ResList))
                 {
-                    /*DO_ME_NOW_LIST[DO_ME_NOWS] = nod;
-                    DO_ME_NOWS++;*/
+                    func_node *fun=(func_node *)DataMList(nod->ResList);
+                    fun->func(fun->param);
+
+                    NextMList(nod->ResList);
                 }
 
-                //  SetgVarInt(nod->slot,1);
             }
-
 
         }
 
         NextMList(pzllst);
     }
 
-   /* for (int i=0; i < DO_ME_NOWS; i++)
+}
+
+void ProcessStateBoxStack()
+{
+
+    int i=0;
+
+    while ( i < StateBoxStkSz)
     {
+        puzzlenode *nod= StateBoxStk[i];
 
-        puzzlenode * nod = DO_ME_NOW_LIST[i];
+#ifdef FULLTRACE
+        printf("State box Puzzle, slot:%d \n",nod->slot);
+#endif
+        if (GetgVarInt(nod->slot)==0 && ((nod->flags & FLAG_DISABLED) == 0) )
+        {
 
-        #ifdef TRACE
-                printf("Puzzle_ : %d \n",nod->slot);
-        #endif
-
-        bool DO=false;
+            bool DO=false;
 
             StartMList(nod->CritList);
             while (!eofMList(nod->CritList))
@@ -2057,26 +2061,40 @@ void ProcessTriggers(MList *pzllst)
 
                 DO |= ProcessCriteries(criteries);
 
-                if (DO) break;
-
                 NextMList(nod->CritList);
             }
 
-        if (DO)
-        {
-        SetgVarInt(nod->slot,1);
-        StartMList(nod->ResList);
-        while (!eofMList(nod->ResList))
-        {
-            func_node *fun=(func_node *)DataMList(nod->ResList);
-            fun->func(fun->param);
+            if (DO)
+            {
+                SetgVarInt(nod->slot,1);
+#ifdef FULLTRACE
+                printf("    Working:\n");
+#endif
 
-            NextMList(nod->ResList);
+
+
+#ifdef TRACE
+                printf("Puzzle: %d \n",nod->slot);
+#endif
+
+
+                StartMList(nod->ResList);
+                while (!eofMList(nod->ResList))
+                {
+                    func_node *fun=(func_node *)DataMList(nod->ResList);
+                    fun->func(fun->param);
+
+                    NextMList(nod->ResList);
+                }
+            }
         }
-        }
-    }*/
+
+        i++;
+    }
+
+    StateBoxStkSz = 0;
+
 }
-
 
 
 void ProcessControls(MList *ctrlst)
@@ -2409,7 +2427,45 @@ void DeleteCursor(Cursor *cur)
     delete cur;
 }
 
+void FillStateBoxFromList(MList *lst)
+{
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        puzzlenode *pzlnod=(puzzlenode *)DataMList(lst);
 
+        StartMList(pzlnod->CritList);
+        while (!eofMList(pzlnod->CritList))
+        {
+            MList *CriteriaLst= (MList *) DataMList(pzlnod->CritList);
+
+            StartMList(CriteriaLst);
+            while (!eofMList(CriteriaLst))
+            {
+                crit_node *crtnod = (crit_node *)DataMList(CriteriaLst);
+
+                StateBoxEnt *ent = StateBox[crtnod->slot1];
+
+                if (ent == NULL)
+                {
+                    StateBox[crtnod->slot1] = ent = new (StateBoxEnt);
+                    ent->cnt = 0;
+                }
+                if (ent->cnt < MaxStateBoxEnts)
+                {
+                    ent->nod[ent->cnt] = pzlnod;
+                    ent->cnt++;
+                }
+
+
+                NextMList(CriteriaLst);
+            }
+
+            NextMList(pzlnod->CritList);
+        }
+        NextMList(lst);
+    }
+}
 
 
 void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room / view
@@ -2421,7 +2477,8 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         memcpy(&temp,&Previos_Locate[PrevCount],sizeof(temp));
     }
     else
-    {   // If dissolve was called
+    {
+        // If dissolve was called
         if (Current_Locate.World != 0 &&\
                 Current_Locate.Room  != 0 &&\
                 Current_Locate.View  != 0 )
@@ -2457,6 +2514,17 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
             //Previos_Locate[i].==w &&\)
         }
     }
+
+    ////////State box routine////////////
+    for (int i=0; i<VAR_SLOTS_MAX; i++)
+    {
+        if (StateBox[i] != NULL)
+            delete StateBox[i];
+    }
+
+    memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
+    StateBoxStkSz=0;
+    ////////---State box routine---//////////////
 
     memset (&Current_Locate,0,sizeof(Current_Locate));
 
@@ -2512,6 +2580,9 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
         Location.World=temp.World;
     }
+
+    FillStateBoxFromList(view);
+
 }
 
 void InitGameLoop()
@@ -2542,6 +2613,7 @@ void GameLoop()
     ProcessAnims();
 
 
+    ProcessStateBoxStack();
 
     ProcessTriggers(room);
     ProcessTriggers(view);
