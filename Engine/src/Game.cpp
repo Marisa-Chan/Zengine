@@ -96,6 +96,9 @@ uint32_t     StateBoxStkSz = 0;
 StateBoxEnt *StateBox[VAR_SLOTS_MAX];
 
 
+uint8_t  Flags[VAR_SLOTS_MAX];
+
+
 
 void SetgVarInt(int indx, int var)
 {
@@ -208,6 +211,7 @@ void SaveGame(char *file)
 
 
     fwrite(tmpVars,VAR_SLOTS_MAX,sizeof(void *),fil);
+    fwrite(Flags,VAR_SLOTS_MAX,sizeof(uint8_t),fil);
 
     fclose(fil);
 }
@@ -249,10 +253,13 @@ void LoadGame(char *file)
 
 
     fread(gVars,VAR_SLOTS_MAX,sizeof(void *),fil);
+    fread(Flags,VAR_SLOTS_MAX,sizeof(uint8_t),fil);
+
+    fclose(fil);
 
     ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X);
 
-    fclose(fil);
+
 }
 
 
@@ -265,6 +272,8 @@ void InitScriptsEngine()
 
     memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz = 0;
+
+    memset(Flags,0x0,VAR_SLOTS_MAX * sizeof(uint8_t));
 }
 
 bool Eligeblity(int obj, slotnode *slut)
@@ -491,10 +500,14 @@ void action_disable_control(char *params)
     printf("        action:disable_control(%s)\n",params);
 #endif
 
+
+
     StartMList(ctrl);
 
     int slot = GetIntVal(params);
     //sscanf(params,"%d",&slot);
+
+    Flags[slot] = FLAG_DISABLED;
 
     while(!eofMList(ctrl))
     {
@@ -518,6 +531,8 @@ void action_enable_control(char *params)
 
     int slot = GetIntVal(params);
     //sscanf(params,"%d",&slot);
+
+    Flags[slot] = 0;
 
     while(!eofMList(ctrl))
     {
@@ -2115,7 +2130,7 @@ void ProcessControls(MList *ctrlst)
 #endif
 
 
-        if (nod->enable)
+        if (!(Flags[nod->slot] & FLAG_DISABLED))  //(nod->enable)
             switch (nod->type)
             {
             case CTRL_PUSH:
@@ -2596,7 +2611,7 @@ void InitGameLoop()
 void GameLoop()
 {
 
-    //printf("%d,%d,%d,%d\n",GetgVarInt(14303),GetgVarInt(18280),GetgVarInt(1001),GetgVarInt(14279));
+    printf("%d,%d,%d,%d\n",GetgVarInt(14318),GetgVarInt(14295),GetgVarInt(14303),GetgVarInt(14311));
 
     cur=CurDefault[CURSOR_IDLE];
 
