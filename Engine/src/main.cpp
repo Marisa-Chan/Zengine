@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     while (!done )
     {
 #ifdef TRACE
-            printf("\n\nLoop #%d\n\n",bl);
+        //    printf("\n\nLoop #%d\n\n",bl);
 #endif
   //      printf("\n\nLoop #%d\n\n",bl);
         //Update game timer

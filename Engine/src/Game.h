@@ -94,7 +94,6 @@ struct ctrlnode
     uint32_t slot;
     uint8_t  type;
     void    *node;
-    bool   enable;
 };
 
 struct timernode

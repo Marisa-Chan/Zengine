@@ -460,6 +460,9 @@ void action_timer(char *params)
     s=PrepareString(tmp2);
 
     nod->time = GetTickCount() + GetIntVal(s);
+#ifdef TRACE
+    printf(" %d\n",GetIntVal(s));
+#endif
     AddToMList(timers,nod);
 
 }
@@ -502,14 +505,14 @@ void action_disable_control(char *params)
 
 
 
-    StartMList(ctrl);
+    //StartMList(ctrl);
 
     int slot = GetIntVal(params);
     //sscanf(params,"%d",&slot);
 
     Flags[slot] = FLAG_DISABLED;
 
-    while(!eofMList(ctrl))
+    /*while(!eofMList(ctrl))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
         if (nod->slot == slot)
@@ -518,7 +521,7 @@ void action_disable_control(char *params)
             break;
         }
         NextMList(ctrl);
-    }
+    }*/
 }
 
 void action_enable_control(char *params)
@@ -527,14 +530,14 @@ void action_enable_control(char *params)
     printf("        action:enable_control(%s)\n",params);
 #endif
 
-    StartMList(ctrl);
+    //StartMList(ctrl);
 
     int slot = GetIntVal(params);
     //sscanf(params,"%d",&slot);
 
     Flags[slot] = 0;
 
-    while(!eofMList(ctrl))
+    /*while(!eofMList(ctrl))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
         if (nod->slot == slot)
@@ -543,7 +546,7 @@ void action_enable_control(char *params)
             break;
         }
         NextMList(ctrl);
-    }
+    }*/
 }
 
 void action_add(char *params)
@@ -1679,7 +1682,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                 ctnode->type = CTRL_PUSH;
                 ctnode->node = psh;
                 ctnode->slot = slot;
-                ctnode->enable=true;
+                //ctnode->enable=true;
 
                 fgets(buf,0x400,fl);
                 str2=PrepareString(buf);
@@ -1726,7 +1729,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
                 ctnode->type = CTRL_SLOT;
                 ctnode->node = slut;
                 ctnode->slot = slot;
-                ctnode->enable=true;
+                //ctnode->enable=true;
                 slut->srf = NULL;
 
                 for (;;)
@@ -1984,7 +1987,7 @@ void ProcessTriggers(MList *pzllst)
 #ifdef FULLTRACE
         printf("Puzzle, slot:%d \n",nod->slot);
 #endif
-        if (GetgVarInt(nod->slot)==0 && ((nod->flags & FLAG_DISABLED) == 0) )
+        if (GetgVarInt(nod->slot)==0 && ((nod->flags & FLAG_DISABLED) == 0))
         {
 
             bool DO=false;
@@ -2226,7 +2229,7 @@ void ProcessControls(MList *ctrlst)
                             SetgVarInt(nod->slot,0);
 
                         }
-                        else
+                        else if (Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut))
                         {
                             int te=GetgVarInt(nod->slot);
                             SetgVarInt(nod->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
@@ -2596,7 +2599,9 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         Location.World=temp.World;
     }
 
+  //  FillStateBoxFromList(room);
     FillStateBoxFromList(view);
+
 
 }
 
@@ -2611,7 +2616,7 @@ void InitGameLoop()
 void GameLoop()
 {
 
-    printf("%d,%d,%d,%d\n",GetgVarInt(14318),GetgVarInt(14295),GetgVarInt(14303),GetgVarInt(14311));
+    //printf("%d,%d,%d,%d\n",GetgVarInt(14318),GetgVarInt(14295),GetgVarInt(14303),GetgVarInt(14311));
 
     cur=CurDefault[CURSOR_IDLE];
 
@@ -2630,8 +2635,9 @@ void GameLoop()
 
     ProcessStateBoxStack();
 
-    ProcessTriggers(room);
+
     ProcessTriggers(view);
+    ProcessTriggers(room);
     ProcessTriggers(world);
     ProcessTriggers(uni);
 
