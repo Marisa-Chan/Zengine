@@ -111,12 +111,34 @@ void SetgVarInt(int indx, int var)
         {
             if (StateBoxStkSz < STATEBOX_STACK_MAX)
             {
-                StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
-                StateBoxStkSz++;
+                puzzlenode *nod = StateBox[indx]->nod[i];
+
+                bool DO=false;
+
+                pushMList(nod->CritList);
+
+                StartMList(nod->CritList);
+                while (!eofMList(nod->CritList))
+                {
+                    MList *criteries=(MList *)DataMList(nod->CritList);
+
+                    DO |= ProcessCriteries(criteries);
+
+                    NextMList(nod->CritList);
+                }
+
+                popMList(nod->CritList);
+
+                if (DO)
+                {
+                    StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
+                    StateBoxStkSz++;
+                }
+
             }
             else
             {
-                printf("StateBox Stack overflow!");
+                //printf("StateBox Stack overflow!");
             }
 
         }
@@ -450,7 +472,12 @@ void action_timer(char *params)
     sscanf(params,"%d %s",&tmp1,tmp2);
 
     if (SlotIsOwned(tmp1))
+    {
+        //SetgVarInt(tmp1,1);
+        printf("        owned %d\n",GetIntVal(tmp2));
         return;
+    }
+
 
     SetgVarInt(tmp1,1);
 
@@ -2055,9 +2082,9 @@ void ProcessTriggers(MList *pzllst)
 void ProcessStateBoxStack()
 {
 
-    int i=0;
+    int i=0,j=StateBoxStkSz;
 
-    while ( i < StateBoxStkSz)
+    while ( i < j)
     {
         puzzlenode *nod= StateBoxStk[i];
 
@@ -2092,7 +2119,7 @@ void ProcessStateBoxStack()
 
 
 #ifdef TRACE
-                printf("Puzzle: %d \n",nod->slot);
+                printf("State box Puzzle: %d \n",nod->slot);
 #endif
 
 
@@ -2110,8 +2137,13 @@ void ProcessStateBoxStack()
         i++;
     }
 
-    StateBoxStkSz = 0;
-
+    int z=0;
+    for (i=j; i<StateBoxStkSz; i++)
+    {
+        StateBoxStk[z]=StateBoxStk[i];
+        z++;
+    }
+    StateBoxStkSz=z;
 }
 
 
@@ -2599,8 +2631,9 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         Location.World=temp.World;
     }
 
-  //  FillStateBoxFromList(room);
+  //
     FillStateBoxFromList(view);
+    FillStateBoxFromList(room);
 
 
 }
@@ -2635,10 +2668,10 @@ void GameLoop()
 
     ProcessStateBoxStack();
 
-
-    ProcessTriggers(view);
-    ProcessTriggers(room);
     ProcessTriggers(world);
+    ProcessTriggers(room);
+    ProcessTriggers(view);
+
     ProcessTriggers(uni);
 
     ProcessControls(ctrl);

@@ -16,6 +16,7 @@ MList *CreateMList()
     tmp->Tail       = NULL;
     tmp->count      = 0;
     tmp->indx       = 0;
+    tmp->stkpos     = 0;
     return tmp;
 }
 
@@ -164,6 +165,7 @@ void DeleteCurrent(MList *lst)
 
     delete lst->CurNode;
 
+    lst->stkpos  = 0; //Clean Stack!
     lst->CurNode = nod;
     lst->count--;
 
@@ -173,6 +175,28 @@ void DeleteCurrent(MList *lst)
         lst->Head=NULL;
         lst->Tail=NULL;
         }
+}
+
+bool pushMList(MList *lst)
+{
+    if (lst->stkpos >= MLIST_STACK)
+        return false;
+
+    lst->Stack[lst->stkpos] = lst->CurNode;
+    lst->stkpos++;
+
+    return true;
+}
+
+bool popMList(MList *lst)
+{
+    if (lst->stkpos <= 0)
+        return false;
+
+    lst->stkpos--;
+    lst->CurNode = lst->Stack[lst->stkpos];
+
+    return true;
 }
 
 //Return true on EOF of list

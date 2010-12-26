@@ -111,6 +111,8 @@ void InitScriptsEngine();
 void ProcessControls(MList *ctrlst);
 void ProcessTimers();
 
+bool ProcessCriteries(MList *lst);
+
 void DeletePuzzleList(MList *lst);
 void DeleteControlList(MList *lst);
 void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X);
