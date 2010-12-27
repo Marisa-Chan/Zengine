@@ -77,11 +77,9 @@ Locate Current_Locate = {0,0,0,0};
 Locate Previos_Locate[PREV_STACK_MAX];
 uint8_t PrevCount = 0;
 
-
 #define RENDER_FLAT 0
 #define RENDER_PANA 1
 uint8_t     Renderer = RENDER_FLAT;
-
 
 #define VAR_SLOTS_MAX 0xFFFF
 void *gVars[VAR_SLOTS_MAX];

@@ -98,14 +98,12 @@ struct ctrlnode
         slotnode *slot;
         pushnode *push;
     } node;
-    //void    *node;
 };
 
 struct timernode
 {
     uint32_t slot;
     uint32_t time;
-    //uint32_t ownslot;
     MList  *owner;
 };
 
