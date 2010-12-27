@@ -387,7 +387,7 @@ int GetIntVal(char *chr)
 
 
 
-void action_set_screen(char *params)
+void action_set_screen(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
@@ -405,7 +405,7 @@ void action_set_screen(char *params)
     }
 }
 
-void action_set_partial_screen(char *params)
+void action_set_partial_screen(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:set_partial_screen(%s)\n",params);
@@ -450,7 +450,7 @@ void action_set_partial_screen(char *params)
     }
 }
 
-void action_assign(char *params)
+void action_assign(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:assign(%s)\n",params);
@@ -461,7 +461,7 @@ void action_assign(char *params)
     SetgVarInt(GetIntVal(tmp1),GetIntVal(tmp2));
 }
 
-void action_timer(char *params)
+void action_timer(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:timer(%s)\n",params);
@@ -474,15 +474,17 @@ void action_timer(char *params)
     if (SlotIsOwned(tmp1))
     {
         //SetgVarInt(tmp1,1);
+#ifdef TRACE
         printf("        owned %d\n",GetIntVal(tmp2));
+#endif
         return;
     }
 
 
-    SetgVarInt(tmp1,1);
-
     timernode *nod = new (timernode);
     nod->slot = tmp1;
+
+    nod->owner = owner;
 
     s=PrepareString(tmp2);
 
@@ -492,9 +494,11 @@ void action_timer(char *params)
 #endif
     AddToMList(timers,nod);
 
+    SetgVarInt(tmp1,1);
+
 }
 
-void action_change_location(char *params)
+void action_change_location(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:change_location(%s)\n",params);
@@ -512,7 +516,7 @@ void action_change_location(char *params)
     Need_Locate.X=GetIntVal(tmp4);
 }
 
-void action_dissolve(char *params)
+void action_dissolve(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:dissolve()\n");
@@ -524,7 +528,7 @@ void action_dissolve(char *params)
     Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
 }
 
-void action_disable_control(char *params)
+void action_disable_control(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:disable_control(%s)\n",params);
@@ -551,7 +555,7 @@ void action_disable_control(char *params)
     }*/
 }
 
-void action_enable_control(char *params)
+void action_enable_control(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:enable_control(%s)\n",params);
@@ -576,7 +580,7 @@ void action_enable_control(char *params)
     }*/
 }
 
-void action_add(char *params)
+void action_add(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:add(%s)\n",params);
@@ -590,7 +594,22 @@ void action_add(char *params)
     SetgVarInt(tmp, GetgVarInt(tmp) + GetIntVal(number));
 }
 
-void action_random(char *params)
+void action_debug(char *params, MList *owner)
+{
+
+
+    char txt[256],number[16];
+    int tmp;
+    sscanf(params,"%s %s",txt, number);
+
+    tmp = GetIntVal(number);
+
+#ifdef TRACE
+    printf("DEBUG :%s\t: %d \n",txt,tmp);
+#endif
+}
+
+void action_random(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:random(%s)\n",params);
@@ -606,7 +625,7 @@ void action_random(char *params)
 
 
 
-void action_streamvideo(char *params)
+void action_streamvideo(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:streamvideo(%s)\n",params);
@@ -687,7 +706,7 @@ void action_streamvideo(char *params)
     delete anm;
 }
 
-void action_animplay(char *params)
+void action_animplay(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:animplay(%s)\n",params);
@@ -785,7 +804,7 @@ void action_animplay(char *params)
 
 }
 
-void action_music(char *params)
+void action_music(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:music(%s)\n",params);
@@ -806,7 +825,7 @@ void action_music(char *params)
     SetgVarInt(slot, 1);
 }
 
-void action_universe_music(char *params)
+void action_universe_music(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:universe_music(%s)\n",params);
@@ -856,31 +875,31 @@ void action_universe_music(char *params)
 }
 
 
-void action_syncsound(char *params)
+void action_syncsound(char *params, MList *owner)
 {
     printf("PlayPreload \n");
 }
 
-void action_animpreload(char *params)
+void action_animpreload(char *params, MList *owner)
 {
     printf("AnimPreload \n");
 }
 
-void action_playpreload(char *params)
+void action_playpreload(char *params, MList *owner)
 {
     char chars[16];
     sscanf(params,"%s",chars);
     SetgVarInt(GetIntVal(chars),2);
 }
 
-void action_ttytext(char *params)
+void action_ttytext(char *params, MList *owner)
 {
     char chars[16];
     sscanf(params,"%s",chars);
     SetgVarInt(GetIntVal(chars),2);
 }
 
-void action_kill(char *params)
+void action_kill(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:kill(%s)\n",params);
@@ -952,11 +971,26 @@ void action_kill(char *params)
         NextMList(wavs);
     }
 
+    StartMList(timers);
+    while(!eofMList(timers))
+    {
+        musicnode *nod = (musicnode *)DataMList(timers);
+        if (nod->slot == slot)
+        {
+            delete nod;
+            DeleteCurrent(timers);
+            SetgVarInt(slot, 2);
+            return;
+        }
+
+        NextMList(timers);
+    }
+
     printf("Nothing to kill %d\n",slot);
 }
 
 
-void action_stop(char *params)
+void action_stop(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:stop(%s)\n",params);
@@ -1027,7 +1061,7 @@ void action_stop(char *params)
 }
 
 
-void action_inventory(char *params)
+void action_inventory(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:inventory(%s)\n",params);
@@ -1096,7 +1130,7 @@ void action_inventory(char *params)
 
 }
 
-void action_crossfade(char *params)
+void action_crossfade(char *params, MList *owner)
 {
 #ifdef TRACE
     printf("        action:crossfade(%s)\n",params);
@@ -1168,6 +1202,19 @@ void ParsePuzzle(char *instr, MList *lst)
             strcpy(nod->param,params);
 
             nod->func=action_set_screen;
+            return;
+        }
+
+        if (strCMP(buf,"debug")==0)
+        {
+            nod=new(func_node);
+            AddToMList(lst,nod);
+
+            params=GetParams(str+end_s);
+            nod->param=(char *)malloc(strlen(params)+1);
+            strcpy(nod->param,params);
+
+            nod->func=action_debug;
             return;
         }
 
@@ -1707,7 +1754,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
 
                 AddToMList(controlst,ctnode);
                 ctnode->type = CTRL_PUSH;
-                ctnode->node = psh;
+                ctnode->node.push = psh;
                 ctnode->slot = slot;
                 //ctnode->enable=true;
 
@@ -1754,7 +1801,7 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
 
                 AddToMList(controlst,ctnode);
                 ctnode->type = CTRL_SLOT;
-                ctnode->node = slut;
+                ctnode->node.slot = slut;
                 ctnode->slot = slot;
                 //ctnode->enable=true;
                 slut->srf = NULL;
@@ -1897,11 +1944,11 @@ void DeleteControlList(MList *lst)
         switch (nod->type)
         {
         case CTRL_PUSH:
-            psh=(pushnode *) nod->node;
+            psh=nod->node.push;
             delete psh;
             break;
         case CTRL_SLOT:
-            slt=(slotnode*) nod->node;
+            slt=nod->node.slot;
             if (slt->srf)
                 SDL_FreeSurface(slt->srf);
             delete slt;
@@ -2065,7 +2112,7 @@ void ProcessTriggers(MList *pzllst)
                 while (!eofMList(nod->ResList))
                 {
                     func_node *fun=(func_node *)DataMList(nod->ResList);
-                    fun->func(fun->param);
+                    fun->func(fun->param, pzllst);
 
                     NextMList(nod->ResList);
                 }
@@ -2127,7 +2174,7 @@ void ProcessStateBoxStack()
                 while (!eofMList(nod->ResList))
                 {
                     func_node *fun=(func_node *)DataMList(nod->ResList);
-                    fun->func(fun->param);
+                    fun->func(fun->param, NULL);
 
                     NextMList(nod->ResList);
                 }
@@ -2173,7 +2220,7 @@ void ProcessControls(MList *ctrlst)
                 printf("Push_toggle\n");
 #endif
 
-                psh = (pushnode *) nod->node;
+                psh = nod->node.push;
                 mousein = false;
 
                 if (Renderer == RENDER_FLAT)
@@ -2237,7 +2284,7 @@ void ProcessControls(MList *ctrlst)
                 break;
             case CTRL_SLOT:
 
-                slut = (slotnode *) nod->node;
+                slut = nod->node.slot;
                 mousein = false;
 
                 if (    (slut->hotspot.x          <= MouseX())    &&\
@@ -2296,7 +2343,7 @@ void DrawSlots()
         ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
         if (nod->type == CTRL_SLOT)
         {
-            slotnode *slut=(slotnode *)nod->node;
+            slotnode *slut = nod->node.slot;
 
             //rectangleRGBA(screen,slut->hotspot.x,slut->hotspot.y+GAME_Y,slut->hotspot.w,slut->hotspot.h+GAME_Y,255,0,0,255);
 
@@ -2587,6 +2634,10 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     {
         if (view)
         {
+            printf("SUUUUKA\n");
+            DeleteTimerByOwner(timers,view);
+            DeleteTimerByOwner(timers,NULL);
+
             DeletePuzzleList(view);
             DeleteControlList(ctrl);
             DeleteAnims(anims);
@@ -2633,7 +2684,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
 
   //
     FillStateBoxFromList(view);
-    FillStateBoxFromList(room);
+    //FillStateBoxFromList(room);
 
 
 }
@@ -2840,6 +2891,28 @@ void DeleteTimers(MList *lst)
     DeleteMList(lst);
 }
 
+void DeleteTimerByOwner(MList *lst,MList *owner)
+{
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        timernode *nod=(timernode *)DataMList(lst);
+        if (nod->owner == owner)
+        {
+            if (nod->slot != 0)
+            {
+                SetgVarInt(nod->slot, nod->time - GetTickCount());
+                //printf("deleted timer %d, ost %d",nod->slot,  nod->time - GetTickCount());
+            }
+            //printf("deleted timer %d, ost %d %d \n",nod->slot,  nod->time - GetTickCount(),nod->ownslot);
+            delete nod;
+
+        DeleteCurrent(lst);
+        }
+
+        NextMList(lst);
+    }
+}
 
 void ProcessCursor()
 {

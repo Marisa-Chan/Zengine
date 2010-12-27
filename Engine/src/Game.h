@@ -61,7 +61,7 @@ struct crit_node
 
 struct func_node
 {
-    void (*func)(char*);
+    void (*func)(char*, MList *);
     char         *param;
 };
 
@@ -93,16 +93,24 @@ struct ctrlnode
 {
     uint32_t slot;
     uint8_t  type;
-    void    *node;
+    union
+    {
+        slotnode *slot;
+        pushnode *push;
+    } node;
+    //void    *node;
 };
 
 struct timernode
 {
     uint32_t slot;
     uint32_t time;
+    //uint32_t ownslot;
+    MList  *owner;
 };
 
 void DeleteTimers(MList *lst);
+void DeleteTimerByOwner(MList *lst, MList *owner);
 
 
 void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst);
