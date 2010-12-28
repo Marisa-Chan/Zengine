@@ -102,6 +102,7 @@ uint8_t  Flags[VAR_SLOTS_MAX];
 
 
 int32_t RenderDelay = 0;
+int32_t View_start_Loops = 0;
 
 
 
@@ -951,7 +952,7 @@ void action_playpreload(char *params, MList *owner)
         return;
 
     sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",slot ,pre->fil,\
-                        x, y, w, h, start, end, loop, 0, 0, 0, 0);
+            x, y, w, h, start, end, loop, 0, 0, 0, 0);
 
     action_animplay(buff,owner);
     //SetgVarInt(GetIntVal(chars),2);
@@ -2688,6 +2689,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     Location.X=temp.X;
 
     RenderDelay = 2;
+    View_start_Loops = 2;
 
     if (temp.View != Location.View || temp.Room != Location.Room || temp.World != Location.World)
     {
@@ -2741,7 +2743,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         Location.World=temp.World;
     }
 
-  //
+    //
     FillStateBoxFromList(view);
     //FillStateBoxFromList(room);
 
@@ -2780,7 +2782,14 @@ void GameLoop()
 
     ProcessTriggers(world);
     ProcessTriggers(room);
-    ProcessTriggers(view);
+
+    if (View_start_Loops>0)
+    {
+        ProcessTriggers(view);
+        View_start_Loops--;
+    }
+
+
 
     ProcessTriggers(uni);
 
@@ -2968,7 +2977,7 @@ void DeleteTimerByOwner(MList *lst,MList *owner)
             //printf("deleted timer %d, ost %d %d \n",nod->slot,  nod->time - GetTickCount(),nod->ownslot);
             delete nod;
 
-        DeleteCurrent(lst);
+            DeleteCurrent(lst);
         }
 
         NextMList(lst);
