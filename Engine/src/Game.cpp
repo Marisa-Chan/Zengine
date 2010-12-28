@@ -35,6 +35,7 @@ MList    *wavs  =NULL;
 
 MList   *anims  =NULL;
 
+MList  *preload =NULL;
 
 
 //18 default cursors
@@ -77,9 +78,11 @@ Locate Current_Locate = {0,0,0,0};
 Locate Previos_Locate[PREV_STACK_MAX];
 uint8_t PrevCount = 0;
 
+
 #define RENDER_FLAT 0
 #define RENDER_PANA 1
 uint8_t     Renderer = RENDER_FLAT;
+
 
 #define VAR_SLOTS_MAX 0xFFFF
 void *gVars[VAR_SLOTS_MAX];
@@ -95,6 +98,10 @@ StateBoxEnt *StateBox[VAR_SLOTS_MAX];
 
 
 uint8_t  Flags[VAR_SLOTS_MAX];
+
+
+
+int32_t RenderDelay = 0;
 
 
 
@@ -400,6 +407,11 @@ void action_set_screen(char *params, MList *owner)
     else
     {
         ConvertImage(&scrbuf);
+
+        Current_Locate.World = Location.World;
+        Current_Locate.Room  = Location.Room;
+        Current_Locate.View  = Location.View;
+        Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
     }
 }
 
@@ -880,14 +892,69 @@ void action_syncsound(char *params, MList *owner)
 
 void action_animpreload(char *params, MList *owner)
 {
-    printf("AnimPreload \n");
+#ifdef TRACE
+    printf("        action:animpreload(%s)\n",params);
+#endif
+    if (preload == NULL)
+        preload = CreateMList();
+
+    int      slot;
+    char name[64];
+
+    struct_Preload *pre = new (struct_Preload);
+
+    sscanf(params,"%d %s", &slot, name);
+
+    pre->fil = new (char[255]);
+
+    strcpy(pre->fil,name);
+    pre->slot = slot;
+
+    AddToMList(preload,pre);
+
+    SetgVarInt(pre->slot,2);
+
+    //printf("AnimPreload \n");
 }
 
 void action_playpreload(char *params, MList *owner)
 {
-    char chars[16];
-    sscanf(params,"%s",chars);
-    SetgVarInt(GetIntVal(chars),2);
+    char sl[16];
+    int x,y,w,h,start,end,loop,slot;
+    sscanf(params,"%s %d %d %d %d %d %d %d",sl,&x,&y,&w,&h,&start,&end,&loop);
+
+#ifdef TRACE
+    printf("        action:playpreload(%s)\n",params);
+#endif
+
+    char buff[255];
+    bool found = false;
+
+    struct_Preload *pre;
+
+    slot = GetIntVal(sl);
+
+    StartMList(preload);
+    while (!eofMList(preload))
+    {
+        pre = (struct_Preload *)DataMList(preload);
+        if (pre->slot == slot)
+        {
+            found = true;
+            break;
+        }
+
+        NextMList(preload);
+    }
+
+    if (!found)
+        return;
+
+    sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",slot ,pre->fil,\
+                        x, y, w, h, start, end, loop, 0, 0, 0, 0);
+
+    action_animplay(buff,owner);
+    //SetgVarInt(GetIntVal(chars),2);
 }
 
 void action_ttytext(char *params, MList *owner)
@@ -1469,9 +1536,7 @@ void ParsePuzzle(char *instr, MList *lst)
             char buff[255];
             int tmp1=0;
 
-            sscanf(str+end_s+1,"%d",&tmp1);
-
-            sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
+            sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
 
             nod->param=(char *)malloc(strlen(buff)+1);
             strcpy(nod->param,buff);
@@ -1484,15 +1549,9 @@ void ParsePuzzle(char *instr, MList *lst)
             nod=new(func_node);
             AddToMList(lst,nod);
 
-            char buff[255];
-            int tmp1=0;
-
-            sscanf(str+end_s+1,"%d",&tmp1);
-
-            sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-            nod->param=(char *)malloc(strlen(buff)+1);
-            strcpy(nod->param,buff);
+            params=GetParams(str+end_s);
+            nod->param=(char *)malloc(strlen(params)+1);
+            strcpy(nod->param,params);
 
             nod->func=action_playpreload;
             return;
@@ -2628,6 +2687,8 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
 
     Location.X=temp.X;
 
+    RenderDelay = 2;
+
     if (temp.View != Location.View || temp.Room != Location.Room || temp.World != Location.World)
     {
         if (view)
@@ -2726,8 +2787,10 @@ void GameLoop()
     ProcessControls(ctrl);
 
 
-
-    RenderFunc();
+    if (RenderDelay<0)
+        RenderFunc();
+    else
+        RenderDelay--;
 
     if (NeedToLoadScript)
     {
@@ -2963,6 +3026,22 @@ void ProcessWavs()
 
         NextMList(wavs);
     }
+}
+
+void DeleteAllPreload()
+{
+    StartMList(preload);
+
+    while (!eofMList(preload))
+    {
+        struct_Preload *pre = (struct_Preload *) DataMList(preload);
+
+        delete pre->fil;
+        delete pre;
+
+        NextMList(preload);
+    }
+    DeleteMList(preload);
 }
 
 

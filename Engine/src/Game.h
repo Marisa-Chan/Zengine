@@ -98,12 +98,14 @@ struct ctrlnode
         slotnode *slot;
         pushnode *push;
     } node;
+    //void    *node;
 };
 
 struct timernode
 {
     uint32_t slot;
     uint32_t time;
+    //uint32_t ownslot;
     MList  *owner;
 };
 
@@ -191,5 +193,18 @@ struct StateBoxEnt{
     puzzlenode * nod[MaxStateBoxEnts];
     uint32_t     cnt;
 };
+
+
+struct struct_Preload{
+    int32_t slot;
+    char    *fil;
+    int32_t   u1;
+    int32_t   u2;
+    int32_t   u3;
+    int32_t   u4;
+};
+
+
+
 
 #endif // GAME_H_INCLUDED
