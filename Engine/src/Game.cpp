@@ -104,6 +104,8 @@ uint8_t  Flags[VAR_SLOTS_MAX];
 int32_t RenderDelay = 0;
 int32_t View_start_Loops = 0;
 
+int8_t  SaveSlot = 0;
+
 
 
 void SetgVarInt(int indx, int var)
@@ -921,8 +923,8 @@ void action_animpreload(char *params, MList *owner)
 void action_playpreload(char *params, MList *owner)
 {
     char sl[16];
-    int x,y,w,h,start,end,loop,slot;
-    sscanf(params,"%s %d %d %d %d %d %d %d",sl,&x,&y,&w,&h,&start,&end,&loop);
+    int x,y,w,h,start,end,loop,slot,sll;
+    sscanf(params,"%d %s %d %d %d %d %d %d %d",&sll,sl,&x,&y,&w,&h,&start,&end,&loop);
 
 #ifdef TRACE
     printf("        action:playpreload(%s)\n",params);
@@ -951,7 +953,7 @@ void action_playpreload(char *params, MList *owner)
     if (!found)
         return;
 
-    sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",slot ,pre->fil,\
+    sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",sll ,pre->fil,\
             x, y, w, h, start, end, loop, 0, 0, 0, 0);
 
     action_animplay(buff,owner);
@@ -1550,9 +1552,18 @@ void ParsePuzzle(char *instr, MList *lst)
             nod=new(func_node);
             AddToMList(lst,nod);
 
-            params=GetParams(str+end_s);
-            nod->param=(char *)malloc(strlen(params)+1);
-            strcpy(nod->param,params);
+            char buff[255];
+
+            if (strstr(buf,":") != NULL)
+                sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
+            else
+                sprintf(buff,"%d %s",0,GetParams(str+end_s));
+
+
+            //sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
+
+            nod->param=(char *)malloc(strlen(buff)+1);
+            strcpy(nod->param,buff);
 
             nod->func=action_playpreload;
             return;
@@ -2529,7 +2540,7 @@ void RenderFunc()
 
     ProcessCursor();
 
-    SDL_Flip(screen);
+    //SDL_Flip(screen);
 }
 
 
@@ -2747,7 +2758,6 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     FillStateBoxFromList(view);
     //FillStateBoxFromList(room);
 
-
 }
 
 void InitGameLoop()
@@ -2807,10 +2817,29 @@ void GameLoop()
         ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.View,Need_Locate.X);
     }
 
+
+    char savefile[16];
+
+    sprintf(savefile,"Save%d.sav",SaveSlot);
+
+    if (KeyHit(SDLK_F6))
+        SaveSlot--;
+    if (KeyHit(SDLK_F7))
+        SaveSlot++;
+
+    if (SaveSlot > 40)
+        SaveSlot = 0;
+    if (SaveSlot < 0)
+        SaveSlot = 40;
+
     if (KeyHit(SDLK_F5))
-        SaveGame("Save0.sav");
+        SaveGame(savefile);
     if (KeyHit(SDLK_F8))
-        LoadGame("Save0.sav");
+        LoadGame(savefile);
+
+    stringColor(screen,0,470,savefile,0xFFFFFFFF);
+
+    SDL_Flip(screen);
 }
 
 
@@ -2867,10 +2896,12 @@ void ProcessAnims()
 
                         else
                         {
-#ifdef FULLTRACE
+#ifdef TRACE
                             printf ("Animplay #%d End's\n",nod->slot);
 #endif
-                            SetgVarInt(nod->slot,2);
+                            if (nod->slot != 0)
+                                SetgVarInt(nod->slot,2);
+
                             if (nod->vid)
                             {
                                 SDL_FreeSurface(((anim_avi *)nod->anim)->img);
