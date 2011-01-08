@@ -49,6 +49,7 @@ struct puzzlenode
     MList  *CritList; //Criteria list of lists criteria
     MList   *ResList; //results list
     uint8_t    flags; //flags
+    MList     *owner;
 };
 
 struct crit_node
@@ -63,6 +64,7 @@ struct func_node
 {
     void (*func)(char*, MList *);
     char         *param;
+    puzzlenode   *owner;
 };
 
 struct pushnode
@@ -111,6 +113,8 @@ struct timernode
 
 void DeleteTimers(MList *lst);
 void DeleteTimerByOwner(MList *lst, MList *owner);
+
+
 
 
 void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst);
@@ -181,11 +185,13 @@ struct musicnode
     int         slot;
     Mix_Chunk *chunk;
     int         chn;
+    bool      looped;
+    MList     *owner;
 };
 
 void ProcessWavs();
 void DeleteWavs(MList *lst);
-
+void DeleteLoopedWavsByOwner(MList *lst,MList *owner);
 
 #define MaxStateBoxEnts 0xFF
 

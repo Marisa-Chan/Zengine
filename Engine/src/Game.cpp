@@ -108,6 +108,22 @@ int8_t  SaveSlot = 0;
 
 
 
+
+char * ReturnListName(MList *lst)
+{
+    if (lst == world)
+        return "world";
+
+    if (lst == uni)
+        return "universe";
+
+    if (lst == room)
+        return "room";
+
+    if (lst == view)
+        return "view";
+}
+
 void SetgVarInt(int indx, int var)
 {
     gVars[indx]=NULL;
@@ -139,6 +155,10 @@ void SetgVarInt(int indx, int var)
 
                 if (DO)
                 {
+                   // if (StateBoxStkSz>0)
+                       // if (StateBoxStk[StateBoxStkSz-1] == StateBox[indx]->nod[i])
+                            // return;
+
                     StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
                     StateBoxStkSz++;
                 }
@@ -251,6 +271,11 @@ void LoadGame(char *file)
 {
     Locate tmp;
 
+
+    FILE *fil=fopen(file, "rb");
+    if (!fil)
+        return;
+
 //    DeleteAnims(anims);
     DeleteWavs(wavs);
     DeleteTimers(timers);
@@ -266,7 +291,7 @@ void LoadGame(char *file)
     memset(&Current_Locate,0,sizeof(Locate));
 
 
-    FILE *fil=fopen(file, "rb");
+
 
     fread(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
     fread(&PrevCount,1,sizeof(PrevCount),fil);
@@ -287,7 +312,7 @@ void LoadGame(char *file)
 
     fclose(fil);
 
-    ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X);
+    ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X+320);
 
 
 }
@@ -487,9 +512,9 @@ void action_timer(char *params, MList *owner)
     if (SlotIsOwned(tmp1))
     {
         //SetgVarInt(tmp1,1);
-#ifdef TRACE
-        printf("        owned %d\n",GetIntVal(tmp2));
-#endif
+//#ifdef TRACE
+//        printf("        owned %d\n",GetIntVal(tmp2));
+//#endif
         return;
     }
 
@@ -502,9 +527,9 @@ void action_timer(char *params, MList *owner)
     s=PrepareString(tmp2);
 
     nod->time = GetTickCount() + GetIntVal(s);
-#ifdef TRACE
-    printf(" %d\n",GetIntVal(s));
-#endif
+//#ifdef TRACE
+//    printf(" %d\n",GetIntVal(s));
+//#endif
     AddToMList(timers,nod);
 
     SetgVarInt(tmp1,1);
@@ -756,7 +781,6 @@ void action_animplay(char *params, MList *owner)
 
 
     nod->slot = slot;
-    nod->CurFr= GetIntVal(st);
 
     nod->nexttick = millisec();
     nod->x = GetIntVal(x);
@@ -807,6 +831,7 @@ void action_animplay(char *params, MList *owner)
     {
         nod->start= GetIntVal(st) *2;
         nod->end= GetIntVal(en) *2;
+
         SMPEG_renderFrame(anm->mpg,nod->start+1);
     }
     else
@@ -815,6 +840,7 @@ void action_animplay(char *params, MList *owner)
         nod->end= GetIntVal(en);
     }
 
+    nod->CurFr = nod->start;
 }
 
 void action_music(char *params, MList *owner)
@@ -841,7 +867,7 @@ void action_music(char *params, MList *owner)
 void action_universe_music(char *params, MList *owner)
 {
 #ifdef TRACE
-    printf("        action:universe_music(%s)\n",params);
+    printf("        action:universe_music(%s) (%s)\n",params,ReturnListName(owner));
 #endif
 
     int slot;
@@ -873,14 +899,23 @@ void action_universe_music(char *params, MList *owner)
     }
 
     if (GetIntVal(loop)==1)
-        Mix_PlayChannel(nod->chn,nod->chunk,-1);
+        {
+            Mix_PlayChannel(nod->chn,nod->chunk,-1);
+            nod->looped = true;
+        }
     else
-        Mix_PlayChannel(nod->chn,nod->chunk,0);
+        {
+            Mix_PlayChannel(nod->chn,nod->chunk,0);
+            nod->looped = false;
+        }
+
 
     LockChan(nod->chn);
 
     Mix_Volume(nod->chn,SoundVol[GetIntVal(vol)]);
+    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
 
+    nod->owner = owner;
 
     AddToMList(wavs,nod);
 
@@ -995,6 +1030,41 @@ void action_kill(char *params, MList *owner)
 
             NextMList(wavs);
         }
+
+        StartMList(timers);
+        while(!eofMList(timers))
+        {
+            musicnode *nod = (musicnode *)DataMList(timers);
+
+            delete nod;
+            DeleteCurrent(timers);
+            SetgVarInt(slot, 2);
+            NextMList(timers);
+        }
+
+        return;
+    }
+
+    if (strcasecmp(chars,"\"audio\"")==0)
+    {
+
+        StartMList(wavs);
+        while(!eofMList(wavs))
+        {
+            musicnode *nod = (musicnode *)DataMList(wavs);
+            if (nod->slot == slot)
+            {
+                Mix_HaltChannel(nod->chn);
+                UnlockChan(nod->chn);
+                delete nod;
+                DeleteCurrent(wavs);
+                SetgVarInt(slot, 2);
+                return;
+            }
+
+            NextMList(wavs);
+        }
+
         return;
     }
 
@@ -1237,6 +1307,7 @@ void ParsePuzzle(char *instr, MList *lst)
 {
     char *str;
     char buf[255];
+    bool HaveDts=false;
 
     func_node *nod;
     char *params;
@@ -1255,6 +1326,8 @@ void ParsePuzzle(char *instr, MList *lst)
                 buf[i]=_tolower(str[i]);
             else
             {
+                if (str[i]==':')
+                    HaveDts=true;
                 end_s=i;
                 break;
             }
@@ -1554,7 +1627,7 @@ void ParsePuzzle(char *instr, MList *lst)
 
             char buff[255];
 
-            if (strstr(buf,":") != NULL)
+            if (HaveDts)
                 sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
             else
                 sprintf(buff,"%d %s",0,GetParams(str+end_s));
@@ -1644,6 +1717,8 @@ void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst)
             //SetgVarInt(slot,0); /////////////////////////////////////
 
             puzzlenode *pzl=new(puzzlenode);
+
+            pzl->owner = lst;
 
             pzl->slot=slot;
             AddToMList(lst,pzl);
@@ -2173,7 +2248,7 @@ void ProcessTriggers(MList *pzllst)
                 ////////////////////////////////////////////////////////////*/
 
 #ifdef TRACE
-                printf("Puzzle: %d \n",nod->slot);
+                printf("Puzzle: %d (%s) \n",nod->slot,ReturnListName(nod->owner));
 #endif
 
 
@@ -2235,7 +2310,7 @@ void ProcessStateBoxStack()
 
 
 #ifdef TRACE
-                printf("State box Puzzle: %d \n",nod->slot);
+                printf("State box Puzzle: %d (%s) \n",nod->slot,ReturnListName(nod->owner));
 #endif
 
 
@@ -2243,7 +2318,8 @@ void ProcessStateBoxStack()
                 while (!eofMList(nod->ResList))
                 {
                     func_node *fun=(func_node *)DataMList(nod->ResList);
-                    fun->func(fun->param, NULL);
+
+                    fun->func(fun->param, nod->owner);
 
                     NextMList(nod->ResList);
                 }
@@ -2593,12 +2669,31 @@ void DeleteCursor(Cursor *cur)
     delete cur;
 }
 
+void AddPuzzleToStateBox(int slot, puzzlenode *pzlnd)
+{
+    StateBoxEnt *ent = StateBox[slot];
+
+    if (ent == NULL)
+    {
+        StateBox[slot] = ent = new (StateBoxEnt);
+        ent->cnt = 0;
+    }
+    if (ent->cnt < MaxStateBoxEnts)
+    {
+        ent->nod[ent->cnt] = pzlnd;
+        ent->cnt++;
+    }
+}
+
 void FillStateBoxFromList(MList *lst)
 {
     StartMList(lst);
     while (!eofMList(lst))
     {
         puzzlenode *pzlnod=(puzzlenode *)DataMList(lst);
+
+        if (pzlnod->flags & (FLAG_DO_ME_NOW | FLAG_ONCE_PER_I))
+            AddPuzzleToStateBox(pzlnod->slot,pzlnod);
 
         StartMList(pzlnod->CritList);
         while (!eofMList(pzlnod->CritList))
@@ -2610,19 +2705,7 @@ void FillStateBoxFromList(MList *lst)
             {
                 crit_node *crtnod = (crit_node *)DataMList(CriteriaLst);
 
-                StateBoxEnt *ent = StateBox[crtnod->slot1];
-
-                if (ent == NULL)
-                {
-                    StateBox[crtnod->slot1] = ent = new (StateBoxEnt);
-                    ent->cnt = 0;
-                }
-                if (ent->cnt < MaxStateBoxEnts)
-                {
-                    ent->nod[ent->cnt] = pzlnod;
-                    ent->cnt++;
-                }
-
+                AddPuzzleToStateBox(crtnod->slot1,pzlnod);
 
                 NextMList(CriteriaLst);
             }
@@ -2633,6 +2716,20 @@ void FillStateBoxFromList(MList *lst)
     }
 }
 
+//Function clears trigger status for once_per_inst triggers
+void ClearUsedOnOPIPuzz(MList *lst)
+{
+    if (!lst)
+        return;
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(lst);
+        if (nod->flags & FLAG_ONCE_PER_I)
+            SetgVarInt(nod->slot,0);
+        NextMList(lst);
+    }
+}
 
 void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room / view
 {
@@ -2700,15 +2797,19 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     Location.X=temp.X;
 
     RenderDelay = 2;
-    View_start_Loops = 2;
+    View_start_Loops = 1;
+
+
+    ClearUsedOnOPIPuzz(view); //Really needed??
+    ClearUsedOnOPIPuzz(room); //Really needed??
+    ClearUsedOnOPIPuzz(world); //Really needed??
 
     if (temp.View != Location.View || temp.Room != Location.Room || temp.World != Location.World)
     {
         if (view)
         {
-            printf("SUUUUKA\n");
             DeleteTimerByOwner(timers,view);
-            DeleteTimerByOwner(timers,NULL);
+            DeleteLoopedWavsByOwner(wavs,view);
 
             DeletePuzzleList(view);
             DeleteControlList(ctrl);
@@ -2726,12 +2827,19 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         anims=CreateMList();
         LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
         Location.View=temp.View;
+
+
     }
 
     if (temp.Room != Location.Room || temp.World != Location.World)
     {
         if (room)
+        {
+            DeleteLoopedWavsByOwner(wavs,room);
+
             DeletePuzzleList(room);
+        }
+
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
@@ -2745,7 +2853,11 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     if (temp.World != Location.World)
     {
         if (world)
+        {
+            DeleteLoopedWavsByOwner(wavs,world);
+
             DeletePuzzleList(world);
+        }
         tm[0]=temp.World;
         tm[1]=0;
         sprintf(buf,"%s.scr",tm);
@@ -2755,8 +2867,12 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     }
 
     //
+    FillStateBoxFromList(uni);
     FillStateBoxFromList(view);
-    //FillStateBoxFromList(room);
+
+    // FillStateBoxFromList(room);
+    //FillStateBoxFromList(world);
+    //FillStateBoxFromList(uni);
 
 }
 
@@ -2771,7 +2887,9 @@ void InitGameLoop()
 void GameLoop()
 {
 
-    //printf("%d,%d,%d,%d\n",GetgVarInt(14318),GetgVarInt(14295),GetgVarInt(14303),GetgVarInt(14311));
+    //SetgVarInt(067,1);
+
+    //printf("%d,%d,%d\n",GetgVarInt(14000),GetgVarInt(1001),GetgVarInt(5180));
 
     cur=CurDefault[CURSOR_IDLE];
 
@@ -2788,20 +2906,19 @@ void GameLoop()
     ProcessAnims();
 
 
-    ProcessStateBoxStack();
 
+    if (View_start_Loops>0)
+        ProcessTriggers(uni);
+
+    ProcessStateBoxStack();
     ProcessTriggers(world);
     ProcessTriggers(room);
-
     if (View_start_Loops>0)
     {
         ProcessTriggers(view);
         View_start_Loops--;
     }
 
-
-
-    ProcessTriggers(uni);
 
     ProcessControls(ctrl);
 
@@ -2976,6 +3093,25 @@ void DeleteWavs(MList *lst)
     DeleteMList(lst);
 }
 
+void DeleteLoopedWavsByOwner(MList *lst,MList *owner)
+{
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        musicnode *nod=(musicnode *)DataMList(lst);
+        if (nod->owner == owner && nod->looped)
+        {
+            Mix_HaltChannel(nod->chn);
+            Mix_FreeChunk(nod->chunk);
+            UnlockChan(nod->chn);
+            if (nod->slot != 0)
+                SetgVarInt(nod->slot,2);
+            delete nod;
+            DeleteCurrent(lst);
+        }
+        NextMList(lst);
+    }
+}
 
 void DeleteTimers(MList *lst)
 {
@@ -3037,10 +3173,13 @@ void ProcessCursor()
             sprintf(buf,"g0bbc%2.2x1.tga",current_obj_cur);
             LoadCursor(buf,objcur[1]);
         }
+        if (cur == CurDefault[CURSOR_ACTIVE] || cur == CurDefault[CURSOR_HANDPU] || cur == CurDefault[CURSOR_IDLE])
+        {
         if (cur == CurDefault[CURSOR_ACTIVE] || cur == CurDefault[CURSOR_HANDPU])
             cur=objcur[1];
         else
             cur=objcur[0];
+        }
     }
     DrawCursor(cur,MouseX(),MouseY());
 }
