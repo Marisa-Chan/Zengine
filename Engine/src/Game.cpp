@@ -155,10 +155,11 @@ void SetgVarInt(int indx, int var)
 
                 if (DO)
                 {
-                   // if (StateBoxStkSz>0)
-                       // if (StateBoxStk[StateBoxStkSz-1] == StateBox[indx]->nod[i])
-                            // return;
-
+                    /*
+                    if (StateBoxStkSz>0)
+                        if (StateBoxStk[StateBoxStkSz-1] == StateBox[indx]->nod[i])
+                             return;
+                    */
                     StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
                     StateBoxStkSz++;
                 }
@@ -987,6 +988,9 @@ void action_playpreload(char *params, MList *owner)
 
     if (!found)
         return;
+
+    if (sll == 0)
+        sll = slot;
 
     sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",sll ,pre->fil,\
             x, y, w, h, start, end, loop, 0, 0, 0, 0);
