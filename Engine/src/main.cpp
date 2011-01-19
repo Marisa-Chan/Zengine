@@ -14,17 +14,19 @@ int main(int argc, char **argv)
 
     char buf[512];
     char buf2[512];
-    //char *pa="/media/1000/Temp/pack_FILES";
-    char *pa=argv[1];
+    char *pa="/media/166/games/ZGI/pacs";
+    //char *pa=argv[1];
 
     sprintf(buf,"%s/%s",pa,"Zork.dir");
     FILE *dirs=fopen(buf,"rb");
 
     while(!feof(dirs))
     {
-        fgets(buf,128,dirs);
+        if (fgets(buf,128,dirs) == NULL)
+            break;
         buf[strlen(buf)-1]=0;
         sprintf(buf2,"%s/%s",pa,buf);
+
         ListDir(buf2);
     }
 
@@ -44,12 +46,17 @@ int main(int argc, char **argv)
     InitGraphics();
     InitScriptsEngine();
 
+
+
     InitGameLoop();
+
+
 
     int bl=0;
 
     InitMTime(15);
     bool done = false;
+
     while (!done )
     {
 #ifdef TRACE
@@ -85,6 +92,8 @@ int main(int argc, char **argv)
 
         if (KeyHit(SDLK_ESCAPE))
             done=true;
+
+
 
         GameLoop();
 

@@ -200,7 +200,7 @@ void ListDir(char *dir)
     while (de)
     {
         if (de->d_type==DT_REG)
-            if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0)
+            if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
             {
                 sprintf(buf2,"%s/%s",buf,de->d_name);
 

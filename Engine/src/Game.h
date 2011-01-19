@@ -27,6 +27,9 @@
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
 
+struct pzllst;
+
+
 struct Locate
 {
     uint8_t World;
@@ -43,13 +46,15 @@ struct Rect
     int h;
 };
 
+
+
 struct puzzlenode
 {
     uint16_t    slot; //puzzle slot
     MList  *CritList; //Criteria list of lists criteria
     MList   *ResList; //results list
     uint8_t    flags; //flags
-    MList     *owner;
+    pzllst     *owner;
 };
 
 struct crit_node
@@ -62,7 +67,7 @@ struct crit_node
 
 struct func_node
 {
-    void (*func)(char*, MList *);
+    void (*func)(char*, pzllst *);
     char         *param;
     puzzlenode   *owner;
 };
@@ -108,16 +113,16 @@ struct timernode
     uint32_t slot;
     uint32_t time;
     //uint32_t ownslot;
-    MList  *owner;
+    pzllst  *owner;
 };
 
 void DeleteTimers(MList *lst);
-void DeleteTimerByOwner(MList *lst, MList *owner);
+void DeleteTimerByOwner(MList *lst, pzllst *owner);
 
 
 
 
-void LoadScriptFile(MList *lst, char *filename, bool control, MList *controlst);
+void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst);
 void ProcessTriggers(MList *lst);
 void InitScriptsEngine();
 void ProcessControls(MList *ctrlst);
@@ -125,7 +130,7 @@ void ProcessTimers();
 
 bool ProcessCriteries(MList *lst);
 
-void DeletePuzzleList(MList *lst);
+void DeletePuzzleList(pzllst *lst);
 void DeleteControlList(MList *lst);
 void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X);
 
@@ -186,12 +191,12 @@ struct musicnode
     Mix_Chunk *chunk;
     int         chn;
     bool      looped;
-    MList     *owner;
+    pzllst     *owner;
 };
 
 void ProcessWavs();
 void DeleteWavs(MList *lst);
-void DeleteLoopedWavsByOwner(MList *lst,MList *owner);
+void DeleteLoopedWavsByOwner(MList *lst,pzllst *owner);
 
 #define MaxStateBoxEnts 0xFF
 
@@ -199,6 +204,8 @@ struct StateBoxEnt{
     puzzlenode * nod[MaxStateBoxEnts];
     uint32_t     cnt;
 };
+
+void ShakeStateBox(uint32_t indx);
 
 
 struct struct_Preload{
@@ -210,6 +217,14 @@ struct struct_Preload{
     int32_t   u4;
 };
 
+#define pzlSTACK 1024
+
+struct pzllst{
+    MList      *_list;
+    puzzlenode *stack[pzlSTACK];
+    int16_t     stksize;
+    uint8_t     exec_times;
+};
 
 
 

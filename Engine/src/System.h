@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <SDL/SDL.h>
+#include <errno.h>
 
 //System time functions
 //uint64_t millisec();
