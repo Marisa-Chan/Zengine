@@ -198,7 +198,7 @@ void ProcessWavs();
 void DeleteWavs(MList *lst);
 void DeleteLoopedWavsByOwner(MList *lst,pzllst *owner);
 
-#define MaxStateBoxEnts 0xFF
+#define MaxStateBoxEnts 0x400 //0xFF is very small
 
 struct StateBoxEnt{
     puzzlenode * nod[MaxStateBoxEnts];
@@ -217,7 +217,7 @@ struct struct_Preload{
     int32_t   u4;
 };
 
-#define pzlSTACK 1024
+#define pzlSTACK 0x800
 
 struct pzllst{
     MList      *_list;
@@ -225,6 +225,9 @@ struct pzllst{
     int16_t     stksize;
     uint8_t     exec_times;
 };
+
+
+bool examine_criterias(puzzlenode *nod);
 
 
 

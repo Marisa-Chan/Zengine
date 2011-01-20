@@ -878,7 +878,10 @@ void action_music(char *params, pzllst *owner)
     timernode *nod = new (timernode);
     nod->slot = slot;
 
-    nod->time = GetTickCount() + 24+rand()%100;
+    nod->owner = owner;
+
+
+    nod->time = GetTickCount() + 10;
     AddToMList(timers,nod);
 
     SetgVarInt(slot, 1);
@@ -933,7 +936,7 @@ void action_universe_music(char *params, pzllst *owner)
     LockChan(nod->chn);
 
     Mix_Volume(nod->chn,SoundVol[GetIntVal(vol)]);
-    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
+//    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
 
     nod->owner = owner;
 
@@ -1125,7 +1128,7 @@ void action_kill(char *params, pzllst *owner)
             UnlockChan(nod->chn);
             delete nod;
             DeleteCurrent(wavs);
-            SetgVarInt(slot, 2);
+         //   SetgVarInt(slot, 2);
             return;
         }
 
@@ -1147,7 +1150,9 @@ void action_kill(char *params, pzllst *owner)
         NextMList(timers);
     }
 
+#ifdef TRACE
     printf("Nothing to kill %d\n",slot);
+#endif
 }
 
 
@@ -2222,153 +2227,6 @@ bool ProcessCriteries(MList *lst)
 }
 
 
-void ProcessTriggers(pzllst *pzlst)
-{
-//    DO_ME_NOWS=0;
-
-    StartMList(pzlst->_list);
-
-    while (!eofMList(pzlst->_list))
-    {
-        puzzlenode *nod=(puzzlenode *)DataMList(pzlst->_list);
-
-#ifdef FULLTRACE
-        printf("Puzzle, slot:%d \n",nod->slot);
-#endif
-        if (GetgVarInt(nod->slot)==0 && ((nod->flags & FLAG_DISABLED) == 0))
-        {
-
-            bool DO=false;
-
-            StartMList(nod->CritList);
-            while (!eofMList(nod->CritList))
-            {
-#ifdef FULLTRACE
-                printf("    Criteria:\n");
-#endif
-                MList *criteries=(MList *)DataMList(nod->CritList);
-
-                DO |= ProcessCriteries(criteries);
-
-                NextMList(nod->CritList);
-            }
-
-            if (DO)
-            {
-
-                SetgVarInt(nod->slot,1);
-#ifdef FULLTRACE
-                printf("    Working:\n");
-#endif
-
-                /*
-                ///////////////////////FOR DEBUGGING///////////////////////
-                                    StartMList(nod->CritList);
-                                    while (!eofMList(nod->CritList))
-                                    {
-                #ifdef TRACE
-                                        printf("    Criteria:\n");
-                #endif
-                                        MList *criteries=(MList *)DataMList(nod->CritList);
-
-                                        DO |= ProcessCriteries2(criteries);
-
-                                        NextMList(nod->CritList);
-                                    }
-                ////////////////////////////////////////////////////////////*/
-
-#ifdef TRACE
-                printf("Puzzle: %d (%s) \n",nod->slot,ReturnListName(nod->owner));
-#endif
-
-
-                StartMList(nod->ResList);
-                while (!eofMList(nod->ResList))
-                {
-                    func_node *fun=(func_node *)DataMList(nod->ResList);
-                    fun->func(fun->param, pzlst);
-
-                    NextMList(nod->ResList);
-                }
-
-            }
-
-        }
-
-        NextMList(pzlst->_list);
-    }
-
-}
-
-void ProcessStateBoxStack()
-{
-
-    int i=0,j=StateBoxStkSz;
-
-    while ( i < j)
-    {
-        puzzlenode *nod= StateBoxStk[i];
-
-#ifdef FULLTRACE
-        printf("State box Puzzle, slot:%d \n",nod->slot);
-#endif
-        if (GetgVarInt(nod->slot)==0 && ((nod->flags & FLAG_DISABLED) == 0) )
-        {
-
-            bool DO=false;
-
-            StartMList(nod->CritList);
-            while (!eofMList(nod->CritList))
-            {
-#ifdef FULLTRACE
-                printf("    Criteria:\n");
-#endif
-                MList *criteries=(MList *)DataMList(nod->CritList);
-
-                DO |= ProcessCriteries(criteries);
-
-                NextMList(nod->CritList);
-            }
-
-            if (DO)
-            {
-                SetgVarInt(nod->slot,1);
-#ifdef FULLTRACE
-                printf("    Working:\n");
-#endif
-
-
-
-#ifdef TRACE
-                printf("State box Puzzle: %d (%s) \n",nod->slot,ReturnListName(nod->owner));
-#endif
-
-
-                StartMList(nod->ResList);
-                while (!eofMList(nod->ResList))
-                {
-                    func_node *fun=(func_node *)DataMList(nod->ResList);
-
-                    fun->func(fun->param, nod->owner);
-
-                    NextMList(nod->ResList);
-                }
-            }
-        }
-
-        i++;
-    }
-
-    int z=0;
-    for (i=j; i<StateBoxStkSz; i++)
-    {
-        StateBoxStk[z]=StateBoxStk[i];
-        z++;
-    }
-    StateBoxStkSz=z;
-}
-
-
 void ProcessControls(MList *ctrlst)
 {
 
@@ -2723,7 +2581,7 @@ void FillStateBoxFromList(pzllst *lst)
     {
         puzzlenode *pzlnod=(puzzlenode *)DataMList(lst->_list);
 
-        if (pzlnod->flags & (FLAG_DO_ME_NOW | FLAG_ONCE_PER_I))
+        if (pzlnod->flags & FLAG_ONCE_PER_I)
             AddPuzzleToStateBox(pzlnod->slot,pzlnod);
 
         StartMList(pzlnod->CritList);
@@ -2731,12 +2589,16 @@ void FillStateBoxFromList(pzllst *lst)
         {
             MList *CriteriaLst= (MList *) DataMList(pzlnod->CritList);
 
+            int prevslot=0;
             StartMList(CriteriaLst);
             while (!eofMList(CriteriaLst))
             {
                 crit_node *crtnod = (crit_node *)DataMList(CriteriaLst);
 
-                AddPuzzleToStateBox(crtnod->slot1,pzlnod);
+                if (prevslot != crtnod->slot1)
+                    AddPuzzleToStateBox(crtnod->slot1,pzlnod);
+
+                prevslot = crtnod->slot1;
 
                 NextMList(CriteriaLst);
             }
@@ -2922,16 +2784,18 @@ void AddStateBoxToStk(puzzlenode *pzl)
     pzllst *owner = pzl->owner;
     if (owner->stksize < pzlSTACK)
     {
-//        if (StateBoxStkSz>0)
-//            if (StateBoxStk[StateBoxStkSz-1] == StateBox[indx]->nod[i])
-//                return;
+        if (owner->stksize > 0)
+            if (owner->stack[owner->stksize - 1] == pzl)
+                return;
 
         owner->stack[owner->stksize] = pzl;
         owner->stksize++;
     }
     else
     {
-        //printf("pzl Stack overflow!");
+#ifdef TRACE
+        printf("Can't add pzl# %d to Stack\n",pzl->slot);
+#endif
     }
 }
 
@@ -2941,7 +2805,8 @@ void ShakeStateBox(uint32_t indx)
     {
         for (int i=StateBox[indx]->cnt-1; i >= 0; i--)
         {
-            AddStateBoxToStk(StateBox[indx]->nod[i]);
+            //if (examine_criterias(StateBox[indx]->nod[i])) //may cause bug's
+                AddStateBoxToStk(StateBox[indx]->nod[i]);
         }
     }
 }

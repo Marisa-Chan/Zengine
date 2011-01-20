@@ -14,8 +14,8 @@ int main(int argc, char **argv)
 
     char buf[512];
     char buf2[512];
-    char *pa="/media/166/games/ZGI/pacs";
-    //char *pa=argv[1];
+    //char *pa="/media/166/games/ZGI/pacs";
+    char *pa=argv[1];
 
     sprintf(buf,"%s/%s",pa,"Zork.dir");
     FILE *dirs=fopen(buf,"rb");
