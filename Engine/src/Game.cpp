@@ -785,6 +785,21 @@ void action_animplay(char *params, pzllst *owner)
     char un4[16];
     sscanf(params,"%d %s %s %s %s %s %s %s %s %s %s %s %s",&slot,file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
 
+    StartMList(anims);
+    while (!eofMList(anims))
+    {
+
+        animnode *nd = (animnode *)DataMList(anims);
+
+        if (nd->slot == slot)
+            {
+                DeleteAnimNod(nd);
+                DeleteCurrent(anims);
+            }
+
+        NextMList(anims);
+    }
+
 
 
     SetgVarInt(slot, 1);
@@ -3023,8 +3038,8 @@ void ProcessAnims()
                             nod->CurFr=nod->start;
                             if (nod->vid)
                             {
-                                nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                                //nod->nexttick=millisec() + (1.0/15.0) * 1000.0;
+                                //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                                nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
                             }
                             else
                                 nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
@@ -3054,7 +3069,8 @@ void ProcessAnims()
                     {
                         if (nod->vid)
                         {
-                            nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                            //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                            nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
                         }
                         else
                             nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
@@ -3066,6 +3082,22 @@ void ProcessAnims()
     }
 }
 
+void DeleteAnimNod(animnode *nod)
+{
+    if (nod->vid)
+    {
+        SDL_FreeSurface(((anim_avi *)nod->anim)->img);
+        SMPEG_stop(((anim_avi *)nod->anim)->mpg);
+        SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+    }
+    else
+        FreeAnimImage((anim_surf *)nod->anim);
+
+    SetgVarInt(nod->slot,2);
+
+    delete nod;
+}
+
 void DeleteAnims(MList *lst)
 {
     StartMList(lst);
@@ -3073,19 +3105,7 @@ void DeleteAnims(MList *lst)
     {
         animnode *nod=(animnode *)DataMList(lst);
 
-        if (nod->vid)
-        {
-            SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-            SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-            SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-        }
-        else
-            FreeAnimImage((anim_surf *)nod->anim);
-
-        SetgVarInt(nod->slot,2);
-
-        delete nod;
-
+        DeleteAnimNod(nod);
 
         NextMList(lst);
     }
