@@ -139,7 +139,6 @@ void DeleteMList(MList *lst)
         }
     }
     delete lst;
-    lst=NULL;
 }
 
 void DeleteCurrent(MList *lst)

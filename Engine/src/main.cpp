@@ -36,12 +36,14 @@ int main(int argc, char **argv)
 
     AddReplacer("TGA","PNG");
     AddReplacer("RAW","WAV");
+    AddReplacer("SRC","WAV");
     AddReplacer("IFP","WAV");
     AddReplacer("AVI","MPG");
 
 
 
 
+    InitVkKeys();
 
     InitGraphics();
     InitScriptsEngine();

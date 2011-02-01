@@ -7,6 +7,8 @@
 #include "System.h"
 #include "mylist.h"
 
+#include "VkKeys.h"
+
 
 //Returns count of millisecs(1/1000 of second) from system start
 /*uint64_t millisec()
@@ -20,9 +22,15 @@
 
 
 
+
+
+
+uint8_t VkKeys[512];  //windows map vk keys
+
 uint8_t KeyHits[512]; //Array with hitted keys (once per press)
 bool AnyHit=false;    //it's indicate what any key was pressed
 uint8_t *Keys;        //Array with pressed keys (while pressed)
+SDLKey lastkey;
 
 int Mx, My;
 uint8_t LMstate,Mstate;
@@ -33,6 +41,7 @@ void FlushHits()
 {
     AnyHit=false;
     memset(KeyHits,0,512);
+    lastkey=SDLK_FIRST;
 }
 
 //Sets hit state for key
@@ -40,6 +49,12 @@ void SetHit(SDLKey key)
 {
     AnyHit=true;
     KeyHits[key]=1;
+    lastkey=key;
+}
+
+SDLKey GetLastKey()
+{
+    return lastkey;
 }
 
 //Returns hit state of the key
@@ -72,6 +87,68 @@ bool KeyDown(SDLKey key)
         return true;
     else
         return false;
+}
+
+void InitVkKeys()
+{
+    memset(VkKeys,0,512*sizeof(uint8_t));
+    VkKeys[SDLK_BACKSPACE]   = VK_BACK;
+    VkKeys[SDLK_TAB]         = VK_TAB;
+    VkKeys[SDLK_CLEAR]       = VK_CLEAR;
+    VkKeys[SDLK_RETURN]      = VK_RETURN;
+    VkKeys[SDLK_MENU]        = VK_MENU;
+    VkKeys[SDLK_CAPSLOCK]    = VK_CAPITAL;
+    VkKeys[SDLK_ESCAPE]      = VK_ESCAPE;
+    VkKeys[SDLK_SPACE]       = VK_SPACE;
+    VkKeys[SDLK_PAGEUP]      = VK_PRIOR;
+    VkKeys[SDLK_PAGEDOWN]    = VK_NEXT;
+    VkKeys[SDLK_END]         = VK_END;
+    VkKeys[SDLK_HOME]        = VK_HOME;
+    VkKeys[SDLK_LEFT]        = VK_LEFT;
+    VkKeys[SDLK_UP]          = VK_UP;
+    VkKeys[SDLK_RIGHT]       = VK_RIGHT;
+    VkKeys[SDLK_DOWN]        = VK_DOWN;
+    VkKeys[SDLK_PRINT]       = VK_PRINT;
+    VkKeys[SDLK_INSERT]      = VK_INSERT;
+    VkKeys[SDLK_DELETE]      = VK_DELETE;
+    VkKeys[SDLK_HELP]        = VK_HELP;
+
+    for (int i=0; i<= 9; i++)
+        VkKeys[SDLK_0 + i]   = VK_0 + i;
+    for (int i=0; i<= 25; i++)
+        VkKeys[SDLK_a + i]   = VK_A + i;
+
+    VkKeys[SDLK_KP0]         = VK_NUMPAD0;
+    VkKeys[SDLK_KP1]         = VK_NUMPAD1;
+    VkKeys[SDLK_KP2]         = VK_NUMPAD2;
+    VkKeys[SDLK_KP3]         = VK_NUMPAD3;
+    VkKeys[SDLK_KP4]         = VK_NUMPAD4;
+    VkKeys[SDLK_KP5]         = VK_NUMPAD5;
+    VkKeys[SDLK_KP6]         = VK_NUMPAD6;
+    VkKeys[SDLK_KP7]         = VK_NUMPAD7;
+    VkKeys[SDLK_KP8]         = VK_NUMPAD8;
+    VkKeys[SDLK_KP9]         = VK_NUMPAD9;
+    VkKeys[SDLK_KP_MULTIPLY] = VK_MULTIPLY;
+    VkKeys[SDLK_KP_PLUS]     = VK_ADD;
+    VkKeys[SDLK_KP_MINUS]    = VK_SUBTRACT;
+    VkKeys[SDLK_KP_PERIOD]   = VK_DECIMAL;
+    VkKeys[SDLK_KP_DIVIDE]   = VK_DIVIDE;
+
+    for (int i=0; i< 15; i++)
+        VkKeys[SDLK_F1 + i]  = VK_F1+i;
+
+    VkKeys[SDLK_NUMLOCK]     = VK_NUMLOCK;
+    VkKeys[SDLK_SCROLLOCK]   = VK_SCROLL;
+    VkKeys[SDLK_LSHIFT]      = VK_LSHIFT;
+    VkKeys[SDLK_RSHIFT]      = VK_RSHIFT;
+    VkKeys[SDLK_LCTRL]       = VK_LCONTROL;
+    VkKeys[SDLK_RCTRL]       = VK_RCONTROL;
+    VkKeys[SDLK_MENU]        = VK_RMENU;
+}
+
+uint8_t GetWinKey(SDLKey key)
+{
+    return VkKeys[key];
 }
 
 int MouseX()

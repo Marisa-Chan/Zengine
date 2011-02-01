@@ -456,10 +456,10 @@ void action_set_screen(char *params, pzllst *owner)
     {
         ConvertImage(&scrbuf);
 
-        Current_Locate.World = Location.World;
-        Current_Locate.Room  = Location.Room;
-        Current_Locate.View  = Location.View;
-        Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
+      //  Current_Locate.World = Location.World;
+      //  Current_Locate.Room  = Location.Room;
+      //  Current_Locate.View  = Location.View;
+      //  Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
     }
 }
 
@@ -971,7 +971,7 @@ void action_animpreload(char *params, pzllst *owner)
 #ifdef TRACE
     printf("        action:animpreload(%s)\n",params);
 #endif
-    if (preload == NULL)
+    if (!preload)
         preload = CreateMList();
 
     int      slot;
@@ -1002,6 +1002,9 @@ void action_playpreload(char *params, pzllst *owner)
 #ifdef TRACE
     printf("        action:playpreload(%s)\n",params);
 #endif
+
+    if (!preload)
+        return;
 
     char buff[255];
     bool found = false;
@@ -1040,7 +1043,17 @@ void action_ttytext(char *params, pzllst *owner)
 {
     char chars[16];
     sscanf(params,"%s",chars);
-    SetgVarInt(GetIntVal(chars),2);
+
+    timernode *nod = new (timernode);
+    nod->slot = GetIntVal(chars);
+
+    nod->owner = owner;
+
+
+    nod->time = GetTickCount() + 15;
+    AddToMList(timers,nod);
+
+    SetgVarInt(GetIntVal(chars), 1);
 }
 
 void action_kill(char *params, pzllst *owner)
@@ -1258,6 +1271,11 @@ void action_inventory(char *params, pzllst *owner)
     if (strcasecmp(cmd,"add")==0)
     {
         for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
+            if (GetgVarInt(i) == item)
+            {
+                SetgVarInt(i,0);
+            }
+        for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
             if (GetgVarInt(i)==0)
             {
                 if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
@@ -1293,14 +1311,21 @@ void action_inventory(char *params, pzllst *owner)
 
     if (strcasecmp(cmd,"drop")==0)
     {
+
+        if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
+         {
+            SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+         }
+        else
+        {
         for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
             if (GetgVarInt(i)==item)
             {
                 SetgVarInt(i,0);
                 break;
             }
-        if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
-            SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+        }
+
     }
 
     if (strcasecmp(cmd,"dropi")==0)
@@ -2649,7 +2674,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
     }
     else
     {
-        // If dissolve was called
+        // If setscreen was called
         if (Current_Locate.World != 0 &&\
                 Current_Locate.Room  != 0 &&\
                 Current_Locate.View  != 0 )
@@ -2722,6 +2747,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
             DeletePuzzleList(view);
             DeleteControlList(ctrl);
             DeleteAnims(anims);
+            DeleteAllPreload();
         }
 
         tm[0]=temp.World;
@@ -2917,12 +2943,20 @@ void GameLoop()
 
     //SetgVarInt(067,1);
 
-    //printf("%d,%d,%d\n",GetgVarInt(14000),GetgVarInt(1001),GetgVarInt(5180));
+    //printf("%d,%d,%d\n",GetgVarInt(5595),GetgVarInt(5764),GetgVarInt(5753));
+
+    //printf("%d %d\n",GetWinKey(GetLastKey()),GetLastKey());
+
+
 
     cur=CurDefault[CURSOR_IDLE];
 
     SetgVarInt(18,0);
     SetgVarInt(10,0);
+
+    SetgVarInt(8,GetWinKey(GetLastKey()));
+
+
     if (MouseUp(SDL_BUTTON_RIGHT))
         SetgVarInt(18,1);
     if (MouseHit(SDL_BUTTON_LEFT))
@@ -3248,6 +3282,9 @@ void ProcessWavs()
 
 void DeleteAllPreload()
 {
+    if (preload == NULL)
+        return;
+
     StartMList(preload);
 
     while (!eofMList(preload))
@@ -3260,6 +3297,7 @@ void DeleteAllPreload()
         NextMList(preload);
     }
     DeleteMList(preload);
+    preload = NULL;
 }
 
 

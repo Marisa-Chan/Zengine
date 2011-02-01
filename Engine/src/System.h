@@ -30,7 +30,9 @@ void SetHit(SDLKey key);
 bool KeyHit(SDLKey key);
 
 
-
+void InitVkKeys();
+uint8_t GetWinKey(SDLKey key);
+SDLKey GetLastKey();
 
 struct FManNode
 {

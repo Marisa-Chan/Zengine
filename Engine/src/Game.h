@@ -158,6 +158,7 @@ struct animnode
 void ProcessAnims();
 void DeleteAnims(MList *lst);
 void DeleteAnimNod(animnode *nod);
+void DeleteAllPreload();
 
 
 
