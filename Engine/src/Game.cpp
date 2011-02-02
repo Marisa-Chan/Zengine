@@ -2951,10 +2951,14 @@ void GameLoop()
 
     cur=CurDefault[CURSOR_IDLE];
 
-    SetgVarInt(18,0);
-    SetgVarInt(10,0);
+    //SetgVarInt(18,0);
+    //SetgVarInt(10,0);
 
-    SetgVarInt(8,GetWinKey(GetLastKey()));
+    if (KeyAnyHit())
+        if (GetLastKey() != SDLK_FIRST && GetLastKey() != SDLK_F5 &&\
+            GetLastKey() != SDLK_F6    && GetLastKey() != SDLK_F7 &&\
+            GetLastKey() != SDLK_F8)
+               SetgVarInt(8,GetWinKey(GetLastKey()));
 
 
     if (MouseUp(SDL_BUTTON_RIGHT))

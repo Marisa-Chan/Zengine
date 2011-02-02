@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <dirent.h>
-#include <asm/stat.h>
+//#include <asm/stat.h>
 
 #include "System.h"
 #include "mylist.h"
