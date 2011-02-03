@@ -109,6 +109,10 @@ int32_t View_start_Loops = 0;
 int8_t  SaveSlot = 0;
 
 
+#define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
+
+
+
 
 
 char * ReturnListName(pzllst *lst)
@@ -143,62 +147,10 @@ void SetgVarInt(int indx, int var)
     ShakeStateBox(indx);
 }
 
-//void SetgVarInt(int indx, int var)
-//{
-//    gVars[indx]=NULL;
-//    gVars[indx]=(void *)var;
-//
-//    if (StateBox[indx] != NULL)
-//    {
-//        for (int i=StateBox[indx]->cnt-1; i >= 0; i--)
-//        {
-//            if (StateBoxStkSz < STATEBOX_STACK_MAX)
-//            {
-//                puzzlenode *nod = StateBox[indx]->nod[i];
-//
-//                bool DO=false;
-//
-//                pushMList(nod->CritList);
-//
-//                StartMList(nod->CritList);
-//                while (!eofMList(nod->CritList))
-//                {
-//                    MList *criteries=(MList *)DataMList(nod->CritList);
-//
-//                    DO |= ProcessCriteries(criteries);
-//
-//                    NextMList(nod->CritList);
-//                }
-//
-//                popMList(nod->CritList);
-//
-//                if (DO)
-//                {
-//                    /*
-//                    if (StateBoxStkSz>0)
-//                        if (StateBoxStk[StateBoxStkSz-1] == StateBox[indx]->nod[i])
-//                             return;
-//                    */
-//                    StateBoxStk[StateBoxStkSz] = StateBox[indx]->nod[i];
-//                    StateBoxStkSz++;
-//                }
-//
-//            }
-//            else
-//            {
-//                //printf("StateBox Stack overflow!");
-//            }
-//
-//        }
-//    }
-//}
-
 int GetgVarInt(int indx)
 {
     return (int)gVars[indx];
 }
-
-
 
 void SetgVarInt(void **Vars, int indx, int var)
 {
@@ -398,17 +350,28 @@ bool SlotIsOwned(int i)
 
 char * PrepareString(char *buf)
 {
-    for (int i=strlen(buf)-1; i>-1; i--)
-        if (buf[i]==0x0A || buf[i]==0x0D || buf[i]=='#')
+    int len = strlen(buf);
+
+    for (int i=len-1; i>-1; i--)
+        if (buf[i]==0x0A || buf[i]==0x0D || buf[i]=='#' )
             buf[i]=0x00;
 
     char *str=buf;
-    for (int i=0; i<strlen(buf); i++)
+    len = strlen(buf);
+
+    for (int i=0; i<len; i++)
         if (buf[i]!=0x20 && buf[i]!=0x09)
         {
             str=buf + i;
             break;
         }
+
+    len = strlen(str);
+
+    for (int i=0; i<len; i++)
+        str[i] = tolower(str[i]);
+
+    printf ("%s\n",str);
     return str;
 }
 
@@ -424,8 +387,6 @@ char * GetParams(char *str)
         }
     }
 }
-
-#define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
 
 int GetIntVal(char *chr)
 {
@@ -1371,7 +1332,7 @@ void action_crossfade(char *params, pzllst *owner)
 }
 
 
-void ParsePuzzle(char *instr, MList *lst)
+void ParseResults(char *instr, MList *lst)
 {
     char *str;
     char buf[255];
@@ -1387,11 +1348,12 @@ void ParsePuzzle(char *instr, MList *lst)
         memset(buf,0,255);
 
         int end_s=strlen(str);
+       // printf("%s\n",str);
 
-        for (int i=0; i<strlen(str); i++)
+        for (int i=0; i<end_s; i++)
         {
             if (str[i]!='(' && str[i]!=0x20 && str[i]!=0x09 && str[i]!='#' && str[i]!=0x00 && str[i]!=':')
-                buf[i]=_tolower(str[i]);
+                buf[i]=str[i];
             else
             {
                 if (str[i]==':')
@@ -1744,6 +1706,180 @@ void ParsePuzzle(char *instr, MList *lst)
     }
 }
 
+void ParseCriteria(puzzlenode *pzl,FILE *fl)
+{
+    int  good = 0;
+    char buf[FILE_LN_BUF];
+    char *str,*str3;
+
+    MList *crit_nodes_lst=CreateMList();
+
+    AddToMList(pzl->CritList,crit_nodes_lst);
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str=PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (str[0] == '[')
+        {
+            crit_node *nod=new(crit_node);
+            AddToMList(crit_nodes_lst,nod);
+
+            sscanf(&str[1],"%d",&nod->slot1);
+
+            int ij;
+            for (ij=0; ij<strlen(str); ij++)
+            {
+                if (str[ij]=='!')
+                {
+                    nod->oper=CRIT_OP_NOT;
+                    break;
+                }
+                else if (str[ij]=='>')
+                {
+                    nod->oper=CRIT_OP_GRE;
+                    break;
+                }
+                else if (str[ij]=='<')
+                {
+                    nod->oper=CRIT_OP_LEA;
+                    break;
+                }
+                else if (str[ij]=='=')
+                {
+                    nod->oper=CRIT_OP_EQU;
+                    break;
+                }
+            }
+
+
+            for (ij++; ij<strlen(str); ij++)
+            {
+                if (str[ij]=='[')
+                {
+                    sscanf(&str[ij+1],"%d",&nod->slot2);
+                    nod->var2=true;
+                    break;
+                }
+                else if (str[ij]!=0x20 && str[ij]!=0x09)
+                {
+                    sscanf(&str[ij],"%d",&nod->slot2);
+                    nod->var2=false;
+                    break;
+                }
+            }
+        }
+        else
+            printf("Warning!!! %s\n",str);
+    }
+}
+
+int ParseResults()
+{
+    int  good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+    for (;;)
+            {
+                fgets(buf,0x400,fl);
+                str3=PrepareString(buf);
+
+                if (str3[0] == '}')
+                    break;
+                else
+                    ParseResults(str3,pzl->ResList);
+            }
+}
+
+int ParsePuzzle(pzllst *lst,FILE *fl,uint32_t slot)
+{
+    int  good = 0;
+
+    char buf[FILE_LN_BUF];
+    char *str,*str3;
+
+#ifdef FULLTRACE
+    printf("puzzle:%d Creating object\n",slot);
+#endif
+
+    puzzlenode *pzl=new(puzzlenode);
+
+    pzl->owner    = lst;
+    pzl->slot     = slot;
+    pzl->CritList = CreateMList();
+    pzl->ResList  = CreateMList();
+    pzl->flags    = 0;
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str=PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"criteria")==0) //PARSE CRITERIA
+        {
+#ifdef FULLTRACE
+            printf("Creating criteria\n");
+#endif
+            ParseCriteria(pzl,fl);
+        }
+        else if (strCMP(str,"results")==0) //RESULTS
+        {
+#ifdef FULLTRACE
+            printf("Creating results\n");
+#endif
+
+        }
+        else if (strCMP(str,"flags")==0)  // FLAGS
+        {
+#ifdef FULLTRACE
+            printf("Reading flags\n");
+#endif
+            for (;;)
+            {
+                fgets(buf,0x400,fl);
+                str3=PrepareString(buf);
+
+                if (str3[0] == '}')
+                    break;
+                else if (strCMP(str3,"once_per_inst")==0)
+                {
+                    pzl->flags |= FLAG_ONCE_PER_I;
+                }
+                else if (strCMP(str3,"do_me_now")==0)
+                {
+                    pzl->flags |= FLAG_DO_ME_NOW;
+                }
+                else if (strCMP(str3,"disabled")==0)
+                {
+                    pzl->flags |= FLAG_DISABLED;
+                }
+            }
+        }
+
+    }
+
+    if ((pzl->flags & FLAG_ONCE_PER_I ))// || (pzl->flags & FLAG_DO_ME_NOW ))
+        SetgVarInt(slot,0); /////////////////////////////////////
+
+    if (good == 1)  //All ok? then, adds this puzzle to list
+        AddToMList(lst->_list,pzl);
+
+    return good;
+}
+
+
 
 void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
 {
@@ -1761,174 +1897,23 @@ void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
     }
 
 
-    char buf[0x400];
-    char *str,*str2,*str3;
+    char buf[FILE_LN_BUF];
+    char *str2,*str3;
 
 
 
     while(!feof(fl))
     {
-        fgets(buf,0x400,fl);
+        fgets(buf,FILE_LN_BUF,fl);
 
-        str=PrepareString(buf);
+        char *str=PrepareString(buf);
 
 
         if (strCMP(str,"puzzle")==0)
         {
             uint32_t    slot;
             sscanf(str,"puzzle:%d",&slot); //read slot number;
-
-#ifdef FULLTRACE
-            printf("puzzle:%d Creating object\n",slot);
-#endif
-
-            //SetgVarInt(slot,0); /////////////////////////////////////
-
-            puzzlenode *pzl=new(puzzlenode);
-
-            pzl->owner = lst;
-
-            pzl->slot=slot;
-
-            AddToMList(lst->_list,pzl);
-
-            pzl->CritList = CreateMList();
-            pzl->ResList = CreateMList();
-
-
-
-            pzl->flags = 0;
-
-            for (;;)
-            {
-                fgets(buf,0x400,fl);
-                str2=PrepareString(buf);
-
-                if (str2[0] == '}')
-                    break;
-                else if (strCMP(str2,"criteria")==0) //PARSE CRITERIA
-                {
-#ifdef FULLTRACE
-                    printf("Creating criteria\n");
-#endif
-                    MList *crit_nodes_lst=CreateMList();
-
-                    AddToMList(pzl->CritList,crit_nodes_lst);
-
-                    for (;;)
-                    {
-                        fgets(buf,0x400,fl);
-                        str3=PrepareString(buf);
-
-                        if (str3[0] == '}')
-                            break;
-                        else if (str3[0] == '[')
-                        {
-                            crit_node *nod=new(crit_node);
-                            AddToMList(crit_nodes_lst,nod);
-
-                            sscanf(&str3[1],"%d",&nod->slot1);
-
-                            int ij;
-                            for (ij=0; ij<strlen(str3); ij++)
-                            {
-                                if (str3[ij]=='!')
-                                {
-                                    nod->oper=CRIT_OP_NOT;
-                                    break;
-                                }
-                                else if (str3[ij]=='>')
-                                {
-                                    nod->oper=CRIT_OP_GRE;
-                                    break;
-                                }
-                                else if (str3[ij]=='<')
-                                {
-                                    nod->oper=CRIT_OP_LEA;
-                                    break;
-                                }
-                                else if (str3[ij]=='=')
-                                {
-                                    nod->oper=CRIT_OP_EQU;
-                                    break;
-                                }
-                            }
-
-
-                            for (ij++; ij<strlen(str3); ij++)
-                            {
-                                if (str3[ij]=='[')
-                                {
-                                    sscanf(&str3[ij+1],"%d",&nod->slot2);
-                                    nod->var2=true;
-                                    break;
-                                }
-                                else if (str3[ij]!=0x20 && str3[ij]!=0x09)
-                                {
-                                    sscanf(&str3[ij],"%d",&nod->slot2);
-                                    nod->var2=false;
-                                    break;
-                                }
-                            }
-
-
-                        }
-                        else
-                        {
-                            printf("Warning!!! %s\n",str3);
-                        }
-                    }
-                }
-                else if (strCMP(str2,"results")==0) //RESULTS
-                {
-#ifdef FULLTRACE
-                    printf("Creating results\n");
-#endif
-                    for (;;)
-                    {
-                        fgets(buf,0x400,fl);
-                        str3=PrepareString(buf);
-
-                        if (str3[0] == '}')
-                            break;
-                        else
-                            ParsePuzzle(str3,pzl->ResList);
-                    }
-                }
-                else if (strCMP(str2,"flags")==0)  // FLAGS
-                {
-#ifdef FULLTRACE
-                    printf("Reading flags\n");
-#endif
-                    for (;;)
-                    {
-                        fgets(buf,0x400,fl);
-                        str3=PrepareString(buf);
-
-                        if (str3[0] == '}')
-                            break;
-                        else if (strCMP(str3,"once_per_inst")==0)
-                        {
-                            pzl->flags |= FLAG_ONCE_PER_I;
-                        }
-                        else if (strCMP(str3,"do_me_now")==0)
-                        {
-                            pzl->flags |= FLAG_DO_ME_NOW;
-                        }
-                        else if (strCMP(str3,"disabled")==0)
-                        {
-                            pzl->flags |= FLAG_DISABLED;
-                        }
-                    }
-                }
-
-
-            }
-
-            if ((pzl->flags & FLAG_ONCE_PER_I ))// || (pzl->flags & FLAG_DO_ME_NOW ))
-                SetgVarInt(slot,0); /////////////////////////////////////
-
-
+            ParsePuzzle(lst,fl,slot);
         }
         else if (strCMP(str,"control")==0 && control )
         {
@@ -2088,6 +2073,7 @@ void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
             }
         }
     }
+
     fclose(fl);
 }
 

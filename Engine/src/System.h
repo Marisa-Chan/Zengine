@@ -54,4 +54,6 @@ void AddReplacer(char *ext, char *ext2);
 
 bool FileExist(char * fil);
 
+#define FILE_LN_BUF 0x400
+
 #endif // SYSTEM_H_INCLUDED
