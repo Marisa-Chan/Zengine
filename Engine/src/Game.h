@@ -189,10 +189,10 @@ void InitGameLoop();
 
 struct musicnode
 {
-    int         slot;
-    Mix_Chunk *chunk;
+    uint32_t    slot;
+    Mix_Chunk  *chunk;
     int         chn;
-    bool      looped;
+    bool        looped;
     pzllst     *owner;
 };
 
@@ -211,7 +211,7 @@ void ShakeStateBox(uint32_t indx);
 
 
 struct struct_Preload{
-    int32_t slot;
+    uint32_t  slot;
     char    *fil;
     int32_t   u1;
     int32_t   u2;
