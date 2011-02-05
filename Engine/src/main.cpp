@@ -14,11 +14,25 @@ int main(int argc, char **argv)
 
     char buf[512];
     char buf2[512];
-    //char *pa="/media/166/games/ZGI/pacs";
-    char *pa=argv[1];
+    bool fullscreen = false;
+    char *pa="./";
+    for (int i=1; i<argc; i++)
+        {
+            if (strcasecmp(argv[i],"-f")==0)
+            {
+                fullscreen = true;
+            }
+            else
+            {
+                pa=argv[i];
+            }
+        }
 
     sprintf(buf,"%s/%s",pa,"Zork.dir");
     FILE *dirs=fopen(buf,"rb");
+
+    if (!dirs)
+        exit(1);
 
     while(!feof(dirs))
     {
@@ -45,7 +59,7 @@ int main(int argc, char **argv)
 
     InitVkKeys();
 
-    InitGraphics();
+    InitGraphics(fullscreen);
     InitScriptsEngine();
 
 
@@ -108,6 +122,7 @@ int main(int argc, char **argv)
         bl++;
     }
 
+    SDL_Quit();
 
 
     return 0;

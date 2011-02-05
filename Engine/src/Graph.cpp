@@ -17,7 +17,7 @@ bpp;
 
 #define SFTYPE  SDL_SWSURFACE
 
-SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b)
+SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful)
 {
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
     {
@@ -29,7 +29,10 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b)
     height=he;
     bpp=b;
 
-    screen=SDL_SetVideoMode(wi, he, b, SFTYPE);
+    if (ful)
+        screen=SDL_SetVideoMode(wi, he, b, SFTYPE | SDL_FULLSCREEN);
+    else
+        screen=SDL_SetVideoMode(wi, he, b, SFTYPE);
 
     InitMusic();
 

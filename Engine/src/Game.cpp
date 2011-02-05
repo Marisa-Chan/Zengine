@@ -1932,11 +1932,11 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
     slotnode *slut = new (slotnode);
 
     AddToMList(controlst,ctnode);
-    ctnode->type = CTRL_SLOT;
+    ctnode->type      = CTRL_SLOT;
     ctnode->node.slot = slut;
-    ctnode->slot = slot;
+    ctnode->slot      = slot;
     //ctnode->enable=true;
-    slut->srf = NULL;
+    slut->srf         = NULL;
 
     while (!feof(fl))
     {
@@ -2109,7 +2109,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     }
     else if (strCMP(ctrltp,"slot")==0)
     {
-
+        Parse_Control_Slot(controlst,fl,slot);
     }
 
     return good;
@@ -2545,9 +2545,9 @@ void ProcessTimers()
 
 
 
-void InitGraphics()
+void InitGraphics(bool fullscreen)
 {
-    screen=InitGraphicAndSound(640,480,32);
+    screen=InitGraphicAndSound(640,480,32,fullscreen);
 
     for (int i=0; i<18; i++)
     {

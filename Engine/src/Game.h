@@ -163,7 +163,7 @@ void DeleteAllPreload();
 
 
 
-void InitGraphics();
+void InitGraphics(bool fullscreen);
 void RenderFunc();
 
 

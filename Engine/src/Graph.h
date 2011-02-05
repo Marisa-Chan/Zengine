@@ -8,7 +8,7 @@
 #include <smpeg/smpeg.h>
 extern const int FiveBitToEightBitLookupTable [32];
 
-SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp);
+SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp,bool ful);
 void ConvertImage(SDL_Surface **tmp);
 SDL_Surface *CreateSurface(uint16_t w,uint16_t h);
 
