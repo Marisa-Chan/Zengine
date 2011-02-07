@@ -62,6 +62,10 @@ Cursor *CurDefault[NUM_CURSORS];
 
 SDL_Surface *screen;
 SDL_Surface *scrbuf=NULL;
+SDL_Surface *fish, *tempbuf;
+
+int fishtable[640][480-68*2];
+
 Cursor *cur;
 
 int current_obj_cur=0;
@@ -1905,6 +1909,120 @@ int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr)
 }
 
 
+void control_slot(ctrlnode *ct)
+{
+    slotnode *slut = ct->node.slot;
+    bool mousein = false;
+
+    if (    (slut->hotspot.x          <= MouseX())    &&\
+            (slut->hotspot.w          >= MouseX())    &&\
+            (slut->hotspot.y+GAME_Y   <= MouseY())    &&\
+            (GAME_Y+slut->hotspot.h   >= MouseY()))
+        mousein = true;
+
+    if (mousein)
+    {
+
+        if (GetgVarInt(ct->slot)!=0)
+            if (cur == CurDefault[CURSOR_IDLE])
+                cur=CurDefault[slut->cursor];
+
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
+            {
+                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(ct->slot));
+                SetgVarInt(ct->slot,0);
+
+            }
+            else if (Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut))
+            {
+                int te=GetgVarInt(ct->slot);
+                SetgVarInt(ct->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
+                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
+                SDL_FreeSurface(slut->srf);
+                slut->srf=NULL;
+            }
+#ifdef TRACE
+            printf("Pushed\n");
+            printf("Slot #%d to 1\n",ct->slot);
+            FlushMouseBtn(SDL_BUTTON_LEFT);
+#endif
+
+        }
+
+    }
+}
+
+void control_push(ctrlnode *ct)
+{
+    bool mousein=false;
+
+#ifdef FULLTRACE
+    printf("Push_toggle\n");
+#endif
+
+    pushnode *psh = ct->node.push;
+
+    if (Renderer == RENDER_FLAT)
+    {
+
+
+        if (    (psh->x                 <= MouseX())    &&\
+                (psh->x+psh->w          >= MouseX())    &&\
+                (psh->y+GAME_Y          <= MouseY())    &&\
+                (psh->y+GAME_Y+psh->h   >= MouseY()))
+            mousein = true;
+
+    }
+    else if (Renderer == RENDER_PANA)
+    {
+        if (MouseX()>=20 && MouseX()<=620)
+        {
+
+            if (    (psh->x-Location.X          <= MouseX())    &&\
+                    (psh->x-Location.X+psh->w   >= MouseX())    &&\
+                    (psh->y+GAME_Y              <= MouseY())    &&\
+                    (psh->y+GAME_Y+psh->h       >= MouseY()))
+                mousein = true;
+
+            if (Location.X > scrbuf->w - screen->w)
+            {
+                if (    (psh->x+scrbuf->w-Location.X  <= MouseX())    &&\
+                        (psh->x+scrbuf->w-Location.X+psh->w   >= MouseX())    &&\
+                        (psh->y+GAME_Y          <= MouseY())    &&\
+                        (psh->y+GAME_Y+psh->h   >= MouseY()))
+                    mousein = true;
+            }
+
+        }
+        else if (MouseX()<20)
+            cur=CurDefault[CURSOR_LEFT];
+        else if (MouseX()>620)
+            cur=CurDefault[CURSOR_RIGH];
+    }
+
+
+    if (mousein)
+    {
+        if (cur == CurDefault[CURSOR_IDLE])
+            cur=CurDefault[psh->cursor];
+
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+#ifdef TRACE
+            printf("Pushed #%d\n",ct->slot);
+#endif
+            SetgVarInt(ct->slot,1);
+
+            FlushMouseBtn(SDL_BUTTON_LEFT);
+
+        }
+
+    }
+}
+
+
 
 int Parse_Control_Flat()
 {
@@ -1913,7 +2031,23 @@ int Parse_Control_Flat()
 
 int Parse_Control_Panorama()
 {
+    memset(fishtable,0,sizeof(int)*640*(480-68*2));
 
+    int yy=480-68*2;
+    int ww=640;
+    double dStrength=-0.5;
+    for(int y = 0; y < yy; y ++)
+    for(int x = 0; x < ww; x ++){
+        // Calculate new position of the pixel
+        double trueX = (double)x / (double)ww - 0.5;
+        double trueY = (double)y / (double)yy - 0.5;
+        double radius = sqrt(trueX * trueX + trueY * trueY);
+        double k = dStrength * sqrt(1 - radius * radius / 0.25);
+        int newX = (trueX + 0.5 + dStrength * trueX * (1 - radius / 0.5)) * ww;
+        int newY = (trueY + 0.5 + dStrength * trueY * (1 - radius / 0.5)) * yy;
+        if (newX>=0 && newX<ww && newY>=0 && newY<yy)
+            fishtable[newX][newY] = x+y*ww;
+    }
 }
 
 int Parse_Control_Input()
@@ -1935,7 +2069,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
     ctnode->type      = CTRL_SLOT;
     ctnode->node.slot = slut;
     ctnode->slot      = slot;
-    //ctnode->enable=true;
+    ctnode->func      = control_slot;
     slut->srf         = NULL;
 
     while (!feof(fl))
@@ -1951,12 +2085,20 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"rectangle")==0)
         {
             str=GetParams(str);
-            sscanf(str,"%d %d %d %d",&slut->rectangle.x,&slut->rectangle.y,&slut->rectangle.w,&slut->rectangle.h);
+            sscanf(str,"%d %d %d %d",\
+                   &slut->rectangle.x,\
+                   &slut->rectangle.y,\
+                   &slut->rectangle.w,\
+                   &slut->rectangle.h);
         }
         else if (strCMP(str,"hotspot")==0)
         {
             str=GetParams(str);
-            sscanf(str,"%d %d %d %d",&slut->hotspot.x,&slut->hotspot.y,&slut->hotspot.w,&slut->hotspot.h);
+            sscanf(str,"%d %d %d %d",\
+                   &slut->hotspot.x,\
+                   &slut->hotspot.y,\
+                   &slut->hotspot.w,\
+                   &slut->hotspot.h);
         }
         else if (strCMP(str,"cursor")==0)
         {
@@ -2016,6 +2158,8 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
     ctnode->type      = CTRL_PUSH;
     ctnode->node.push = psh;
     ctnode->slot      = slot;
+    ctnode->func      = control_push;
+
     psh->cursor       = CURSOR_IDLE;
 
     while (!feof(fl))
@@ -2093,6 +2237,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     }
     else if (strCMP(ctrltp,"pana")==0)
     {
+        Parse_Control_Panorama();
         Renderer = RENDER_PANA;
         Location.X -= 320;
 #ifdef FULLTRACE
@@ -2329,12 +2474,13 @@ bool ProcessCriteries(MList *lst)
 }
 
 
+
+
 void ProcessControls(MList *ctrlst)
 {
 
     pushnode *psh;//=(pushnode *) nod->node;
     slotnode *slut;
-    bool mousein=false;
 
     LastMList(ctrlst);
 
@@ -2346,124 +2492,9 @@ void ProcessControls(MList *ctrlst)
         printf("Control, slot:%d \n",nod->slot);
 #endif
 
-
         if (!(Flags[nod->slot] & FLAG_DISABLED))  //(nod->enable)
-            switch (nod->type)
-            {
-            case CTRL_PUSH:
-#ifdef FULLTRACE
-                printf("Push_toggle\n");
-#endif
-
-                psh = nod->node.push;
-                mousein = false;
-
-                if (Renderer == RENDER_FLAT)
-                {
-
-
-                    if (    (psh->x         <= MouseX())    &&\
-                            (psh->x+psh->w   >= MouseX())    &&\
-                            (psh->y+GAME_Y          <= MouseY())    &&\
-                            (psh->y+GAME_Y+psh->h   >= MouseY()))
-                        mousein = true;
-
-                }
-                else if (Renderer == RENDER_PANA)
-                {
-                    if (MouseX()>=20 && MouseX()<=620)
-                    {
-
-                        if (    (psh->x-Location.X          <= MouseX())    &&\
-                                (psh->x-Location.X+psh->w   >= MouseX())    &&\
-                                (psh->y+GAME_Y          <= MouseY())    &&\
-                                (psh->y+GAME_Y+psh->h   >= MouseY()))
-                            mousein = true;
-
-                        if (Location.X > scrbuf->w - screen->w)
-                        {
-                            if (    (psh->x+scrbuf->w-Location.X  <= MouseX())    &&\
-                                    (psh->x+scrbuf->w-Location.X+psh->w   >= MouseX())    &&\
-                                    (psh->y+GAME_Y          <= MouseY())    &&\
-                                    (psh->y+GAME_Y+psh->h   >= MouseY()))
-                                mousein = true;
-                        }
-
-                    }
-                    else if (MouseX()<20)
-                        cur=CurDefault[CURSOR_LEFT];
-                    else if (MouseX()>620)
-                        cur=CurDefault[CURSOR_RIGH];
-                }
-
-
-                if (mousein)
-                {
-                    if (cur == CurDefault[CURSOR_IDLE])
-                        cur=CurDefault[psh->cursor];
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                    {
-#ifdef TRACE
-                        printf("Pushed #%d\n",nod->slot);
-#endif
-                        SetgVarInt(nod->slot,1);
-
-                        FlushMouseBtn(SDL_BUTTON_LEFT);
-
-                    }
-
-                }
-
-
-                break;
-            case CTRL_SLOT:
-
-                slut = nod->node.slot;
-                mousein = false;
-
-                if (    (slut->hotspot.x          <= MouseX())    &&\
-                        (slut->hotspot.w          >= MouseX())    &&\
-                        (slut->hotspot.y+GAME_Y   <= MouseY())    &&\
-                        (GAME_Y+slut->hotspot.h   >= MouseY()))
-                    mousein = true;
-
-                if (mousein)
-                {
-
-                    if (GetgVarInt(nod->slot)!=0)
-                        if (cur == CurDefault[CURSOR_IDLE])
-                            cur=CurDefault[slut->cursor];
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                    {
-                        if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
-                        {
-                            SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(nod->slot));
-                            SetgVarInt(nod->slot,0);
-
-                        }
-                        else if (Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut))
-                        {
-                            int te=GetgVarInt(nod->slot);
-                            SetgVarInt(nod->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                            SetgVarInt(SLOT_INVENTORY_MOUSE,te);
-                            SDL_FreeSurface(slut->srf);
-                            slut->srf=NULL;
-                        }
-#ifdef TRACE
-                        printf("Pushed\n");
-                        printf("Slot #%d to 1\n",nod->slot);
-                        FlushMouseBtn(SDL_BUTTON_LEFT);
-#endif
-
-                    }
-
-                }
-
-
-                break;
-            }
+          if (nod->func != NULL)
+            nod->func(nod);
 
         PrevMList(ctrlst);
     }
@@ -2498,7 +2529,7 @@ void DrawSlots()
                     SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
                 }
 
-                DrawImage(slut->srf,    Location.X +slut->rectangle.x  ,  GAME_Y + slut->rectangle.y);
+                DrawImage(slut->srf,    Location.X +slut->rectangle.x,  GAME_Y + slut->rectangle.y);
             }
             else
             {
@@ -2509,9 +2540,6 @@ void DrawSlots()
                 }
 
             }
-
-
-
 
         }
         NextMList(ctrl);
@@ -2557,6 +2585,9 @@ void InitGraphics(bool fullscreen)
 
     cur=CurDefault[CURSOR_IDLE];
 
+    tempbuf=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
+    fish=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
+
     //cur=new(Cursor);//"g0gac011.zcr"));
     //LoadCursor("g0gac011.zcr",cur);
 
@@ -2573,6 +2604,21 @@ void FlatRender()
     DrawImage(scrbuf,0,GAME_Y);
 }
 
+void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength)
+{
+    SDL_LockSurface(srf);
+    SDL_LockSurface(nw);
+    for(int y = 0; y < srf->h; y ++)
+    for(int x = 0; x < srf->w; x ++){
+
+        int *nww=(int *)nw->pixels;
+        int *old=(int *)srf->pixels;
+        nww[x+y*nw->w] = old[fishtable[x][y]];
+    }
+    SDL_UnlockSurface(srf);
+    SDL_UnlockSurface(nw);
+}
+
 void PanaRender()
 {
     if (MouseX() > 620)
@@ -2587,9 +2633,12 @@ void PanaRender()
         Location.X = scrbuf->w + Location.X;
 
     SDL_FillRect(screen,0,0);
-    DrawImage(scrbuf,-Location.X,GAME_Y);
+    DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
     if (Location.X > scrbuf->w - screen->w)
-        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);
+        DrawImageToSurf(scrbuf,scrbuf->w-Location.X,0,tempbuf);
+
+    MakeImageEye(tempbuf,fish,-0.5);
+    DrawImage(fish,0,GAME_Y);
 }
 
 
@@ -2943,7 +2992,7 @@ void execute_puzzle_node(puzzlenode *nod)
     }
 }
 
-void puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
+void Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
 {
     if (pzlnod->flags & FLAG_DISABLED)
         return;
@@ -2974,7 +3023,7 @@ void exec_puzzle_list(pzllst *lst)
         StartMList(lst->_list);
         while (!eofMList(lst->_list))
         {
-            puzzle_try_exec( (puzzlenode *)DataMList(lst->_list) );// , lst);
+            Puzzle_try_exec( (puzzlenode *)DataMList(lst->_list) );// , lst);
             NextMList(lst->_list);
         }
         lst->exec_times++;
@@ -2985,7 +3034,7 @@ void exec_puzzle_list(pzllst *lst)
 
         while ( i < j)
         {
-            puzzle_try_exec( lst->stack[i] );
+            Puzzle_try_exec( lst->stack[i] );
             i++;
         }
 

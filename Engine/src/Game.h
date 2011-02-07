@@ -105,7 +105,7 @@ struct ctrlnode
         slotnode *slot;
         pushnode *push;
     } node;
-    //void    *node;
+    void   (*func)(ctrlnode *);
 };
 
 struct timernode
