@@ -2622,10 +2622,10 @@ void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength)
 void PanaRender()
 {
     if (MouseX() > 620)
-        Location.X +=30;
+        Location.X +=10;
 
     if (MouseX() < 20)
-        Location.X -=30;
+        Location.X -=10;
 
     if (Location.X >= scrbuf->w)
         Location.X %= scrbuf->w;
@@ -2633,12 +2633,17 @@ void PanaRender()
         Location.X = scrbuf->w + Location.X;
 
     SDL_FillRect(screen,0,0);
-    DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
+
+    DrawImage(scrbuf,-Location.X,GAME_Y);
+    if (Location.X > scrbuf->w - screen->w)
+        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);
+
+    /*DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
     if (Location.X > scrbuf->w - screen->w)
         DrawImageToSurf(scrbuf,scrbuf->w-Location.X,0,tempbuf);
 
     MakeImageEye(tempbuf,fish,-0.5);
-    DrawImage(fish,0,GAME_Y);
+    DrawImage(fish,0,GAME_Y);*/
 }
 
 
@@ -3063,8 +3068,11 @@ void GameLoop()
 
     cur=CurDefault[CURSOR_IDLE];
 
-    //SetgVarInt(18,0);
-    //SetgVarInt(10,0);
+    if (GetgVarInt(18) != 0)
+        SetgVarInt(18,0);
+
+    if (GetgVarInt(10) != 0)
+        SetgVarInt(10,0);
 
     if (KeyAnyHit())
         if (GetLastKey() != SDLK_FIRST && GetLastKey() != SDLK_F5 &&\
