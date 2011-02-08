@@ -6,6 +6,8 @@
 #include "Graph.h"
 #include "Sound.h"
 
+#include <math.h>
+
 
 
 #define FLAG_ONCE_PER_I 1

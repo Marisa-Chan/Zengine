@@ -2029,25 +2029,73 @@ int Parse_Control_Flat()
 
 }
 
-int Parse_Control_Panorama()
+void SetFishTable(double angl, double k)
 {
     memset(fishtable,0,sizeof(int)*640*(480-68*2));
 
     int yy=480-68*2;
     int ww=640;
-    double dStrength=-0.5;
+    double angle=(angl * 3.14159265 / 90.0 );
+
+    double half_w = (double)ww / 2.0;
+    double half_h = (double)yy / 2.0;
+
+    double mmx=angle/half_w;
+    double mmx2=angle/half_h;
+
+
     for(int y = 0; y < yy; y ++)
     for(int x = 0; x < ww; x ++){
         // Calculate new position of the pixel
-        double trueX = (double)x / (double)ww - 0.5;
-        double trueY = (double)y / (double)yy - 0.5;
-        double radius = sqrt(trueX * trueX + trueY * trueY);
-        double k = dStrength * sqrt(1 - radius * radius / 0.25);
-        int newX = (trueX + 0.5 + dStrength * trueX * (1 - radius / 0.5)) * ww;
-        int newY = (trueY + 0.5 + dStrength * trueY * (1 - radius / 0.5)) * yy;
+        int newX = sin( ((double)x - half_w) *  mmx)*half_w * k + half_w;
+        int newY = cos( ((double)x - half_w)* k *mmx)*((double)y - half_h)+half_h ;
+        //else
+        //    newY = (1.0+sin( ((double)x - half_w) *  mmx))*((double)y - half_h)+half_h ;
+
         if (newX>=0 && newX<ww && newY>=0 && newY<yy)
-            fishtable[newX][newY] = x+y*ww;
+            fishtable[x][y] = newX+newY*ww;
+            //fishtable[newX][newY] = x+y*ww;
     }
+}
+
+int Parse_Control_Panorama(FILE *fl)
+{
+    char  buf[FILE_LN_BUF];
+    char *str;
+    int  good = 0;
+
+    double angle = 27.0;
+    double     k = 0.85;
+
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"angle")==0)
+        {
+            str   = GetParams(str);
+            angle = atof(str);
+        }
+        else if (strCMP(str,"linscale")==0)
+        {
+            str   = GetParams(str);
+            k = atof(str);
+        }
+
+    }
+
+    printf("%f\n",angle);
+    printf("%f\n",k);
+
+    SetFishTable(angle,k);
+
 }
 
 int Parse_Control_Input()
@@ -2237,12 +2285,12 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     }
     else if (strCMP(ctrltp,"pana")==0)
     {
-        Parse_Control_Panorama();
-        Renderer = RENDER_PANA;
-        Location.X -= 320;
 #ifdef FULLTRACE
         printf("    Panorama Rendere\n");
 #endif
+        Parse_Control_Panorama(fl);
+        Renderer = RENDER_PANA;
+        Location.X -= 320;
     }
     else if (strCMP(ctrltp,"push_toggle")==0)
     {
@@ -2634,16 +2682,16 @@ void PanaRender()
 
     SDL_FillRect(screen,0,0);
 
-    DrawImage(scrbuf,-Location.X,GAME_Y);
+    /*DrawImage(scrbuf,-Location.X,GAME_Y);
     if (Location.X > scrbuf->w - screen->w)
-        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);
+        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);*/
 
-    /*DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
+    DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
     if (Location.X > scrbuf->w - screen->w)
         DrawImageToSurf(scrbuf,scrbuf->w-Location.X,0,tempbuf);
 
     MakeImageEye(tempbuf,fish,-0.5);
-    DrawImage(fish,0,GAME_Y);*/
+    DrawImage(fish,0,GAME_Y);
 }
 
 
