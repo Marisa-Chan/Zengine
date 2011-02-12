@@ -419,10 +419,10 @@ void action_set_screen(char *params, pzllst *owner)
     {
         ConvertImage(&scrbuf);
 
-        //  Current_Locate.World = Location.World;
-        //  Current_Locate.Room  = Location.Room;
-        //  Current_Locate.View  = Location.View;
-        //  Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
+          Current_Locate.World = Location.World;
+          Current_Locate.Room  = Location.Room;
+          Current_Locate.View  = Location.View;
+          Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
     }
 }
 
@@ -2035,12 +2035,37 @@ void SetFishTable(double angl, double k)
 
     int yy=480-68*2;
     int ww=640;
-    double angle=(angl * 3.14159265 / 90.0 );
 
     double half_w = (double)ww / 2.0;
     double half_h = (double)yy / 2.0;
 
-    double mmx=angle/half_w;
+    double angle  = (angl * 3.14159265 / 180.0 );
+    double hhdtan = half_h / tan(angle);
+    double tandhh = tan(angle)/half_h;
+
+    for (int x=0; x<ww; x++)
+    {
+        double poX = (double)x - half_w;
+
+        double nX  = k * hhdtan * atan(poX*tandhh);
+        double nn  = cos(atan(poX*tandhh));
+        double nhw = half_h * nn * hhdtan * tandhh*2.0;
+
+        int relx   = floor(nX + half_w);
+        double yk  = nhw / (double)yy;
+
+        for (int y=0; y<yy; y++)
+        {
+            double et1=(double)y*yk;
+            double et2=((double)yy-nhw)/2.0 + et1;
+
+            fishtable[x][y] = relx + floor(et2) * ww;
+        }
+    }
+
+
+
+    /*double mmx=angle/half_w;
     double mmx2=angle/half_h;
 
 
@@ -2055,7 +2080,9 @@ void SetFishTable(double angl, double k)
         if (newX>=0 && newX<ww && newY>=0 && newY<yy)
             fishtable[x][y] = newX+newY*ww;
             //fishtable[newX][newY] = x+y*ww;
-    }
+    }*/
+
+
 }
 
 int Parse_Control_Panorama(FILE *fl)
@@ -2065,7 +2092,7 @@ int Parse_Control_Panorama(FILE *fl)
     int  good = 0;
 
     double angle = 27.0;
-    double     k = 0.85;
+    double     k = 0.55;
 
 
     while (!feof(fl))
