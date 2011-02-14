@@ -91,7 +91,7 @@ uint8_t     Renderer = RENDER_FLAT;
 
 
 #define VAR_SLOTS_MAX 0xFFFF
-void *gVars[VAR_SLOTS_MAX];
+int gVars[VAR_SLOTS_MAX];
 
 
 
@@ -146,7 +146,7 @@ pzllst *CreatePzlLst()
 void SetgVarInt(int indx, int var)
 {
     gVars[indx]=NULL;
-    gVars[indx]=(void *)var;
+    gVars[indx]=var;
 
     ShakeStateBox(indx);
 }
@@ -288,7 +288,7 @@ void LoadGame(char *file)
 
     fclose(fil);
 
-    ChangeLocation(tmp.World,tmp.Room,tmp.View,tmp.X+320);
+    ChangeLocation(tmp.World,tmp.Room,tmp.View1,tmp.View2,tmp.X+320);
 
 
 }
@@ -421,7 +421,8 @@ void action_set_screen(char *params, pzllst *owner)
 
           Current_Locate.World = Location.World;
           Current_Locate.Room  = Location.Room;
-          Current_Locate.View  = Location.View;
+          Current_Locate.View1  = Location.View1;
+          Current_Locate.View2  = Location.View2;
           Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
     }
 }
@@ -521,6 +522,9 @@ void action_timer(char *params, pzllst *owner)
 
 void action_change_location(char *params, pzllst *owner)
 {
+
+    //need reverse from 0x00409891
+
 #ifdef TRACE
     printf("        action:change_location(%s)\n",params);
 #endif
@@ -533,7 +537,8 @@ void action_change_location(char *params, pzllst *owner)
     NeedToLoadScript=true;
     Need_Locate.World=toupper(tmp[0]);
     Need_Locate.Room=toupper(tmp2[0]);
-    Need_Locate.View=toupper(tmp3[1]) | (toupper(tmp3[0]) << 8);
+    Need_Locate.View1=toupper(tmp3[0]);
+    Need_Locate.View2=toupper(tmp3[1]);
     Need_Locate.X=GetIntVal(tmp4);
 }
 
@@ -545,7 +550,8 @@ void action_dissolve(char *params, pzllst *owner)
 
     Current_Locate.World = Location.World;
     Current_Locate.Room  = Location.Room;
-    Current_Locate.View  = Location.View;
+    Current_Locate.View1  = Location.View1;
+    Current_Locate.View2  = Location.View2;
     Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
 }
 
@@ -2856,10 +2862,13 @@ void ClearUsedOnOPIPuzz(MList *lst)
     }
 }
 
-void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room / view
+void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
 {
+    //Needed reverse from 0x004246C7
+
+
     Locate temp;
-    if (w=='0' && r=='0' && v=='00')
+    if (w=='0' && r=='0' && v1=='0' && v2=='0')
     {
         PrevCount--;
         memcpy(&temp,&Previos_Locate[PrevCount],sizeof(temp));
@@ -2869,7 +2878,8 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         // If setscreen was called
         if (Current_Locate.World != 0 &&\
                 Current_Locate.Room  != 0 &&\
-                Current_Locate.View  != 0 )
+                Current_Locate.View1 != 0 &&\
+                Current_Locate.View2 != 0 )
         {
             if (PrevCount<PREV_STACK_MAX)
             {
@@ -2887,14 +2897,16 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
         }
         temp.World =w;
         temp.Room  =r;
-        temp.View  =v;
+        temp.View1 =v1;
+        temp.View2 =v2;
         temp.X     =X;
         for (int i=PrevCount-1; i>=0; i--)
         {
-            if (Previos_Locate[i].World==w &&\
-                    Previos_Locate[i].Room ==r &&\
-                    Previos_Locate[i].View ==v /*&&\
-                    Previos_Locate[i].X    ==X */ )
+            if (Previos_Locate[i].World     == w  &&\
+                    Previos_Locate[i].Room  == r  &&\
+                    Previos_Locate[i].View1 == v1 &&\
+                    Previos_Locate[i].View2 == v2 /*&&\
+                    /*Previos_Locate[i].X    ==X */ )
             {
                 PrevCount=i;
                 break;
@@ -2929,7 +2941,7 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
 //    ClearUsedOnOPIPuzz(room); //Really needed??
 //    ClearUsedOnOPIPuzz(world); //Really needed??
 
-    if (temp.View != Location.View || temp.Room != Location.Room || temp.World != Location.World)
+    if (temp.View1 != Location.View1 || temp.View2 != Location.View2 || temp.Room != Location.Room || temp.World != Location.World)
     {
         if (view)
         {
@@ -2944,15 +2956,16 @@ void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X) // world / room
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
-        tm[2]=(temp.View >> 8) & 0xFF;
-        tm[3]=temp.View & 0xFF;
+        tm[2]=temp.View1;
+        tm[3]=temp.View2;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
         view=CreatePzlLst();
         ctrl=CreateMList();
         anims=CreateMList();
         LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
-        Location.View=temp.View;
+        Location.View1=temp.View1;
+        Location.View2=temp.View2;
 
 
     }
@@ -3009,7 +3022,7 @@ void InitGameLoop()
     uni = CreatePzlLst();
     LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
 
-    ChangeLocation('g','a','ry',0);
+    ChangeLocation('g','a','r','y',0);
 }
 
 void AddStateBoxToStk(puzzlenode *pzl)
@@ -3198,7 +3211,7 @@ void GameLoop()
     if (NeedToLoadScript)
     {
         NeedToLoadScript=false;
-        ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.View,Need_Locate.X);
+        ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.View1,Need_Locate.View2,Need_Locate.X);
     }
 
 

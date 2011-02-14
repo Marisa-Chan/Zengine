@@ -25,6 +25,11 @@
 #define CTRL_PANA     3
 #define CTRL_FLAT     4
 
+#define SLOT_LOCATION_CUR_WO    3
+#define SLOT_LOCATION_CUR_RO    4
+#define SLOT_LOCATION_CUR_V1    5
+#define SLOT_LOCATION_CUR_V2    6
+#define SLOT_LOCATION_CUR_X     7
 #define SLOT_INVENTORY_MOUSE    9
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
@@ -36,7 +41,8 @@ struct Locate
 {
     uint8_t World;
     uint8_t Room;
-    uint16_t View;
+    uint8_t View1;
+    uint8_t View2;
     int16_t X;
 };
 
@@ -134,7 +140,7 @@ bool ProcessCriteries(MList *lst);
 
 void DeletePuzzleList(pzllst *lst);
 void DeleteControlList(MList *lst);
-void ChangeLocation(uint8_t w, uint8_t r, uint16_t v, int32_t X);
+void ChangeLocation(uint8_t w, uint8_t r, uint8_t v1, uint8_t v2, int32_t X);
 
 struct animnode
 {
