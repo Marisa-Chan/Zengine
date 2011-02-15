@@ -1,12 +1,54 @@
 # depslib dependency file v1.0
-1286354579 source:/home/marisa/work/Zengine/main.cpp
+1297750058 source:/home/marisa/work/Zengine/main.cpp
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
 	"System.h"
 	"Game.h"
+	"Graph.h"
 
-1286358134 source:/home/marisa/work/Zengine/Game.cpp
+1297761561 source:/home/marisa/work/Zengine/Game.cpp
+	"System.h"
+
+1293420014 /home/marisa/work/Zengine/mylist.h
+
+1296536332 source:/home/marisa/work/Zengine/mylist.cpp
+	<stdlib.h>
+	"mylist.h"
+
+1297760445 /home/marisa/work/Zengine/Game.h
+	<inttypes.h>
+	"mylist.h"
+	"Graph.h"
+	"Sound.h"
+	<math.h>
+
+1297757822 source:/home/marisa/work/Zengine/System.cpp
+	<SDL/SDL.h>
+	<inttypes.h>
+	<time.h>
+	<dirent.h>
+	"System.h"
+	"mylist.h"
+	"VkKeys.h"
+
+1297761498 /home/marisa/work/Zengine/System.h
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<ctype.h>
+	<inttypes.h>
+	<SDL/SDL.h>
+	<errno.h>
+	"mylist.h"
+	"Graph.h"
+	"Manage.h"
+	"Puzzle.h"
+	"Control.h"
+	"ScriptSystem.h"
+	"Game.h"
+
+1286297250 source:/home/zidane/Projects/Zengine/Game.cpp
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
@@ -19,132 +61,76 @@
 	"mylist.h"
 	"System.h"
 
-1286267213 /home/marisa/work/Zengine/mylist.h
-
-1286356437 source:/home/marisa/work/Zengine/mylist.cpp
-	<stdlib.h>
-	"mylist.h"
-
-1286354554 /home/marisa/work/Zengine/Game.h
+1286294145 /home/zidane/Projects/Zengine/Game.h
 	<inttypes.h>
 	"mylist.h"
 
-1286359035 source:/home/marisa/work/Zengine/System.cpp
+1286267213 /home/zidane/Projects/Zengine/mylist.h
+
+1286294890 /home/zidane/Projects/Zengine/System.h
+	<inttypes.h>
+	<SDL/SDL.h>
+
+1286295988 source:/home/zidane/Projects/Zengine/System.cpp
 	<SDL/SDL.h>
 	<inttypes.h>
 	<time.h>
 	<dirent.h>
-	<asm/stat.h>
 	"System.h"
 	"mylist.h"
 
-1286352260 /home/marisa/work/Zengine/System.h
-	<inttypes.h>
-	<SDL/SDL.h>
-
-1287255490 source:/home/zidane/Projects/Zengine/Game.cpp
-	<stdlib.h>
-	<stdio.h>
-	<string.h>
-	<ctype.h>
-	"Graph.h"
-	"Game.h"
-	"mylist.h"
-	"System.h"
-
-1287110737 /home/zidane/Projects/Zengine/Game.h
-	<inttypes.h>
-	"mylist.h"
-	"Graph.h"
-	"Sound.h"
-
-1287109819 /home/zidane/Projects/Zengine/mylist.h
-
-1287109834 /home/zidane/Projects/Zengine/System.h
-	<inttypes.h>
-	<SDL/SDL.h>
-
-1287109830 source:/home/zidane/Projects/Zengine/System.cpp
-	<SDL/SDL.h>
-	<inttypes.h>
-	<time.h>
-	<dirent.h>
-	<asm/stat.h>
-	"System.h"
-	"mylist.h"
-
-1287254560 source:/home/zidane/Projects/Zengine/main.cpp
+1286296054 source:/home/zidane/Projects/Zengine/main.cpp
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
 	"System.h"
 	"Game.h"
-	"Graph.h"
 
-1287109814 source:/home/zidane/Projects/Zengine/mylist.cpp
+1286267276 source:/home/zidane/Projects/Zengine/mylist.cpp
 	<stdlib.h>
 	"mylist.h"
 
-1287109807 /home/zidane/Projects/Zengine/Graph.h
+1297050582 /home/marisa/work/Zengine/Graph.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_gfxPrimitives.h>
 	<SDL/SDL_rotozoom.h>
+	<smpeg/smpeg.h>
 
-1287110162 source:/home/zidane/Projects/Zengine/Graph.cpp
+1297050582 source:/home/marisa/work/Zengine/Graph.cpp
 	"Graph.h"
 	"System.h"
 	"Sound.h"
 
-1235304511 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlscreen.c
-	"SDL/SDL_error.h"
-	"SDL/SDL_video.h"
-	"SDL_stretch.h"
-	"SDL_stretchcode.h"
-	"SDL_stretchasm.h"
-	"SDL_stretchtest.hh"
-
-1286690999 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretch.h
-	<SDL/SDL_video.h>
-
-1242911970 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchcode.h
-
-1235304336 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchasm.h
-
-1286691003 /home/zidane/Projects/Zengine/SDL_stretch/SDL_stretchtest.hh
-	<SDL/SDL_video.h>
-
-1235303046 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretch.c
-	"SDL/SDL_error.h"
-	"SDL/SDL_video.h"
-	"SDL_stretch.h"
-	"SDL_stretchcode.h"
-	"SDL_stretchasm.h"
-
-1235245039 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretch23.c
-	"SDL/SDL_error.h"
-	"SDL/SDL_video.h"
-	"SDL_stretch.h"
-	"SDL_stretchasm.h"
-
-1235304174 source:/home/zidane/Projects/Zengine/SDL_stretch/sdlstretchcode.c
-	"config.h"
-	"SDL/SDL_error.h"
-	"SDL/SDL_video.h"
-	"SDL_stretchcode.h"
-	"SDL_stretchasm.h"
-	<unistd.h>
-	<sys/mman.h>
-	<malloc.h>
-
-1286690465 /home/zidane/Projects/Zengine/SDL_stretch/config.h
-
-1287126782 source:/home/zidane/Projects/Zengine/Sound.cpp
-	"System.h"
-	"Sound.h"
-
-1287126792 /home/zidane/Projects/Zengine/Sound.h
+1293076122 /home/marisa/work/Zengine/Sound.h
 	<SDL/SDL.h>
 	<SDL/SDL_audio.h>
 	<SDL/SDL_mixer.h>
+
+1293076122 source:/home/marisa/work/Zengine/Sound.cpp
+	"System.h"
+	"Sound.h"
+
+1296553851 /home/marisa/work/Zengine/VkKeys.h
+
+1297761848 /home/marisa/work/Zengine/ScriptSystem.h
+	"Puzzle.h"
+
+1297761825 source:/home/marisa/work/Zengine/ScriptSystem.cpp
+	"System.h"
+
+1297758429 source:/home/marisa/work/Zengine/Puzzle.cpp
+	"System.h"
+
+1297761410 /home/marisa/work/Zengine/Puzzle.h
+
+1297759983 /home/marisa/work/Zengine/Manage.h
+	"Puzzle.h"
+
+1297759969 source:/home/marisa/work/Zengine/Manage.cpp
+	"System.h"
+
+1297761470 /home/marisa/work/Zengine/Control.h
+
+1297761446 source:/home/marisa/work/Zengine/Control.cpp
 

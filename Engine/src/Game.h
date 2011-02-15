@@ -10,14 +10,9 @@
 
 
 
-#define FLAG_ONCE_PER_I 1
-#define FLAG_DISABLED   2
-#define FLAG_DO_ME_NOW  4
 
-#define CRIT_OP_EQU   0  //=
-#define CRIT_OP_LEA   1  //<
-#define CRIT_OP_GRE   2  //>
-#define CRIT_OP_NOT   3  //!
+
+
 
 #define CTRL_PUSH     0
 #define CTRL_INPUT    1
@@ -25,16 +20,9 @@
 #define CTRL_PANA     3
 #define CTRL_FLAT     4
 
-#define SLOT_LOCATION_CUR_WO    3
-#define SLOT_LOCATION_CUR_RO    4
-#define SLOT_LOCATION_CUR_V1    5
-#define SLOT_LOCATION_CUR_V2    6
-#define SLOT_LOCATION_CUR_X     7
-#define SLOT_INVENTORY_MOUSE    9
-#define SLOT_START_SLOT       151
-#define SLOT_END_SLOT         170
 
-struct pzllst;
+
+
 
 
 struct Locate
@@ -44,7 +32,7 @@ struct Locate
     uint8_t View1;
     uint8_t View2;
     int16_t X;
-};
+} __attribute__((__packed__)) ;
 
 struct Rect
 {
@@ -56,14 +44,6 @@ struct Rect
 
 
 
-struct puzzlenode
-{
-    uint16_t    slot; //puzzle slot
-    MList  *CritList; //Criteria list of lists criteria
-    MList   *ResList; //results list
-    uint8_t    flags; //flags
-    pzllst     *owner;
-};
 
 struct crit_node
 {
@@ -73,12 +53,7 @@ struct crit_node
     bool        var2; //if true: slot2 is slot; false: slot2 - number
 };
 
-struct func_node
-{
-    void (*func)(char*, pzllst *);
-    char         *param;
-    puzzlenode   *owner;
-};
+
 
 struct pushnode
 {
@@ -130,7 +105,7 @@ void DeleteTimerByOwner(MList *lst, pzllst *owner);
 
 
 
-void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst);
+
 void ProcessTriggers(MList *lst);
 void InitScriptsEngine();
 void ProcessControls(MList *ctrlst);
@@ -227,14 +202,7 @@ struct struct_Preload{
     int32_t   u4;
 };
 
-#define pzlSTACK 0x800
 
-struct pzllst{
-    MList      *_list;
-    puzzlenode *stack[pzlSTACK];
-    int16_t     stksize;
-    uint8_t     exec_times;
-};
 
 
 bool examine_criterias(puzzlenode *nod);

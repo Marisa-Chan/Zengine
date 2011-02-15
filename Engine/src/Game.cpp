@@ -1,43 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
 
-#include "Graph.h"
 
-#include "Game.h"
-#include "mylist.h"
 #include "System.h"
 
 
 
-//#define MAX_DO_ME_NOW 1024
-//puzzlenode *DO_ME_NOW_LIST[MAX_DO_ME_NOW];
-//int DO_ME_NOWS;
 
-
-pzllst *uni      =NULL;
-
-//uint8_t     wo  =0;
-pzllst   *world  =NULL;
-//uint8_t     ro  =0;
-pzllst   *room   =NULL;
-//uint16_t    vi  =0;
-pzllst   *view   =NULL;
-
-Locate  Location= {0,0,0,0};
-
-
-
-MList    *ctrl  =NULL;
-
-MList  *timers  =NULL;
-
-MList    *wavs  =NULL;
-
-MList   *anims  =NULL;
-
-MList  *preload =NULL;
 
 
 //18 default cursors
@@ -90,20 +57,11 @@ uint8_t PrevCount = 0;
 uint8_t     Renderer = RENDER_FLAT;
 
 
-#define VAR_SLOTS_MAX 0xFFFF
-int gVars[VAR_SLOTS_MAX];
 
 
 
-#define STATEBOX_STACK_MAX 1024
-
-puzzlenode * StateBoxStk[STATEBOX_STACK_MAX];
-uint32_t     StateBoxStkSz = 0;
-
-StateBoxEnt *StateBox[VAR_SLOTS_MAX];
 
 
-uint8_t  Flags[VAR_SLOTS_MAX];
 
 
 
@@ -113,48 +71,20 @@ int32_t View_start_Loops = 0;
 int8_t  SaveSlot = 0;
 
 
-#define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
 
 
 
 
 
-char * ReturnListName(pzllst *lst)
-{
-    if (lst == world)
-        return "world";
 
-    if (lst == uni)
-        return "universe";
 
-    if (lst == room)
-        return "room";
 
-    if (lst == view)
-        return "view";
-}
 
-pzllst *CreatePzlLst()
-{
-    pzllst *tmp     = new (pzllst);
-    tmp->_list      = CreateMList();
-    tmp->stksize    = 0;
-    tmp->exec_times = 0;
-    return tmp;
-}
 
-void SetgVarInt(int indx, int var)
-{
-    gVars[indx]=NULL;
-    gVars[indx]=var;
 
-    ShakeStateBox(indx);
-}
 
-int GetgVarInt(int indx)
-{
-    return (int)gVars[indx];
-}
+
+
 
 void SetgVarInt(void **Vars, int indx, int var)
 {
@@ -170,8 +100,9 @@ int GetgVarInt(void **Vars, int indx)
 void SaveGame(char *file)
 {
     void *tmpVars[VAR_SLOTS_MAX];
-    memcpy(tmpVars,gVars,VAR_SLOTS_MAX*sizeof(void *));
+    memcpy(tmpVars,DGetGVars(),VAR_SLOTS_MAX*sizeof(void *));
 
+    MList *timers = *Gettimers();
     StartMList(timers);
     while (!eofMList(timers))
     {
@@ -180,6 +111,7 @@ void SaveGame(char *file)
         NextMList(timers);
     }
 
+    MList *wavs = *Getwavs();
     StartMList(wavs);
     while (!eofMList(wavs))
     {
@@ -188,6 +120,7 @@ void SaveGame(char *file)
         NextMList(wavs);
     }
 
+    MList *anims = *Getanims();
     StartMList(anims);
     while (!eofMList(anims))
     {
@@ -196,6 +129,7 @@ void SaveGame(char *file)
         NextMList(anims);
     }
 
+    pzllst *room = *Getroom();
     StartMList(room->_list);
     while (!eofMList(room->_list))
     {
@@ -204,6 +138,7 @@ void SaveGame(char *file)
         NextMList(room->_list);
     }
 
+    pzllst *view = *Getview();
     StartMList(view->_list);
     while (!eofMList(view->_list))
     {
@@ -212,6 +147,7 @@ void SaveGame(char *file)
         NextMList(view->_list);
     }
 
+    pzllst *world = *Getworld();
     StartMList(world->_list);
     while (!eofMList(world->_list))
     {
@@ -220,6 +156,7 @@ void SaveGame(char *file)
         NextMList(world->_list);
     }
 
+    pzllst *uni = *GetUni();
     StartMList(uni->_list);
     while (!eofMList(uni->_list))
     {
@@ -230,14 +167,14 @@ void SaveGame(char *file)
 
     FILE *fil=fopen(file, "wb");
 
-    fwrite(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
-    fwrite(&PrevCount,1,sizeof(PrevCount),fil);
-    fwrite(&Location,1,sizeof(Location),fil);
-    fwrite(&Current_Locate,1,sizeof(Locate),fil);
+//    fwrite(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
+//    fwrite(&PrevCount,1,sizeof(PrevCount),fil);
+//    fwrite(&Location,1,sizeof(Location),fil);
+//    fwrite(&Current_Locate,1,sizeof(Locate),fil);
 
 
     fwrite(tmpVars,VAR_SLOTS_MAX,sizeof(void *),fil);
-    fwrite(Flags,VAR_SLOTS_MAX,sizeof(uint8_t),fil);
+    fwrite(DGetFlags(),VAR_SLOTS_MAX,sizeof(uint8_t),fil);
 
     fclose(fil);
 }
@@ -253,6 +190,10 @@ void LoadGame(char *file)
         return;
 
 //    DeleteAnims(anims);
+MList *timers = *Gettimers();
+MList *wavs = *Getwavs();
+MList *anims = *Getanims();
+
     DeleteWavs(wavs);
     DeleteTimers(timers);
 //    DeletePuzzleList(view);
@@ -268,44 +209,31 @@ void LoadGame(char *file)
 
 
 
+//    fread(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
+    //fread(&PrevCount,1,1,fil);
+//    fread(&tmp,1,sizeof(tmp),fil);
 
-    fread(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
-    fread(&PrevCount,1,sizeof(PrevCount),fil);
-    fread(&tmp,1,sizeof(tmp),fil);
-
-    memset(&Location,0,sizeof(Location));
+//    memset(&Location,0,sizeof(Location));
 
 
 
     //memcpy(&Location,&tmp,sizeof(Location));
 
-    fread(&Current_Locate,1,sizeof(Locate),fil);
+//    fread(&Current_Locate,1,sizeof(Locate),fil);
 
 
 
-    fread(gVars,VAR_SLOTS_MAX,sizeof(void *),fil);
-    fread(Flags,VAR_SLOTS_MAX,sizeof(uint8_t),fil);
+    fread(DGetGVars(),VAR_SLOTS_MAX,sizeof(void *),fil);
+    fread(DGetFlags(),VAR_SLOTS_MAX,sizeof(uint8_t),fil);
 
     fclose(fil);
 
-    ChangeLocation(tmp.World,tmp.Room,tmp.View1,tmp.View2,tmp.X+320);
-
-
+    ChangeLocation(GetgVarInt(3),GetgVarInt(4),GetgVarInt(5),GetgVarInt(6),GetgVarInt(7));
 }
 
 
 
-void InitScriptsEngine()
-{
-    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
-    timers=CreateMList();
-    wavs=CreateMList();
 
-    memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
-    StateBoxStkSz = 0;
-
-    memset(Flags,0x0,VAR_SLOTS_MAX * sizeof(uint8_t));
-}
 
 bool Eligeblity(int obj, slotnode *slut)
 {
@@ -323,6 +251,7 @@ bool Eligeblity(int obj, slotnode *slut)
 //Don't call it from loops for mylists!! it's cause error
 bool SlotIsOwned(uint32_t i)
 {
+    MList *timers = *Gettimers();
     StartMList(timers);
     while (!eofMList(timers))
     {
@@ -334,6 +263,7 @@ bool SlotIsOwned(uint32_t i)
         NextMList(timers);
     }
 
+    MList *wavs = *Getwavs();
     StartMList(wavs);
     while (!eofMList(wavs))
     {
@@ -352,43 +282,9 @@ bool SlotIsOwned(uint32_t i)
 
 
 
-char * PrepareString(char *buf)
-{
-    int len = strlen(buf);
 
-    for (int i=len-1; i>-1; i--)
-        if (buf[i]==0x0A || buf[i]==0x0D || buf[i]=='#' )
-            buf[i]=0x00;
 
-    char *str=buf;
-    len = strlen(buf);
 
-    for (int i=0; i<len; i++)
-        if (buf[i]!=0x20 && buf[i]!=0x09)
-        {
-            str=buf + i;
-            break;
-        }
-
-    len = strlen(str);
-
-    for (int i=0; i<len; i++)
-        str[i] = tolower(str[i]);
-    return str;
-}
-
-char * GetParams(char *str)
-{
-    for (int i=strlen(str)-1; i>-1; i--)
-    {
-        if (str[i]==')')
-            str[i]=0x0;
-        else if (str[i]=='(')
-        {
-            return str+i+1;
-        }
-    }
-}
 
 int GetIntVal(char *chr)
 {
@@ -418,12 +314,6 @@ void action_set_screen(char *params, pzllst *owner)
     else
     {
         ConvertImage(&scrbuf);
-
-          Current_Locate.World = Location.World;
-          Current_Locate.Room  = Location.Room;
-          Current_Locate.View1  = Location.View1;
-          Current_Locate.View2  = Location.View2;
-          Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
     }
 }
 
@@ -514,6 +404,7 @@ void action_timer(char *params, pzllst *owner)
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
+    MList *timers = *Gettimers();
     AddToMList(timers,nod);
 
     SetgVarInt(tmp1,1);
@@ -540,6 +431,34 @@ void action_change_location(char *params, pzllst *owner)
     Need_Locate.View1=toupper(tmp3[0]);
     Need_Locate.View2=toupper(tmp3[1]);
     Need_Locate.X=GetIntVal(tmp4);
+
+
+    if (Need_Locate.World == '0')
+    {
+        if (GetgVarInt(3) == 'G' &&
+            GetgVarInt(4) == 'J')
+        {
+            Need_Locate.World = GetgVarInt(45);
+            Need_Locate.Room  = GetgVarInt(46);
+            Need_Locate.View1 = GetgVarInt(47);
+            Need_Locate.View2 = GetgVarInt(48);
+            Need_Locate.X     = GetgVarInt(49);
+        }
+        else
+        {
+            Need_Locate.World = GetgVarInt(40);
+            Need_Locate.Room  = GetgVarInt(41);
+            Need_Locate.View1 = GetgVarInt(42);
+            Need_Locate.View2 = GetgVarInt(43);
+            Need_Locate.X     = GetgVarInt(44);
+        }
+    }
+
+
+    //depricated
+    RenderDelay = 2;
+    View_start_Loops = 1;
+
 }
 
 void action_dissolve(char *params, pzllst *owner)
@@ -548,11 +467,6 @@ void action_dissolve(char *params, pzllst *owner)
     printf("        action:dissolve()\n");
 #endif
 
-    Current_Locate.World = Location.World;
-    Current_Locate.Room  = Location.Room;
-    Current_Locate.View1  = Location.View1;
-    Current_Locate.View2  = Location.View2;
-    Current_Locate.X = Location.X + (Renderer == RENDER_PANA ? 320 : 0 );
 }
 
 void action_disable_control(char *params, pzllst *owner)
@@ -561,25 +475,9 @@ void action_disable_control(char *params, pzllst *owner)
     printf("        action:disable_control(%s)\n",params);
 #endif
 
-
-
-    //StartMList(ctrl);
-
     int slot = GetIntVal(params);
-    //sscanf(params,"%d",&slot);
 
-    Flags[slot] = FLAG_DISABLED;
-
-    /*while(!eofMList(ctrl))
-    {
-        ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
-        if (nod->slot == slot)
-        {
-            nod->enable = false;
-            break;
-        }
-        NextMList(ctrl);
-    }*/
+    ScrSys_SetFlag(slot,FLAG_DISABLED);
 }
 
 void action_enable_control(char *params, pzllst *owner)
@@ -588,23 +486,9 @@ void action_enable_control(char *params, pzllst *owner)
     printf("        action:enable_control(%s)\n",params);
 #endif
 
-    //StartMList(ctrl);
-
     int slot = GetIntVal(params);
-    //sscanf(params,"%d",&slot);
 
-    Flags[slot] = 0;
-
-    /*while(!eofMList(ctrl))
-    {
-        ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
-        if (nod->slot == slot)
-        {
-            nod->enable = true;
-            break;
-        }
-        NextMList(ctrl);
-    }*/
+    ScrSys_SetFlag(slot, 0);
 }
 
 void action_add(char *params, pzllst *owner)
@@ -754,6 +638,7 @@ void action_animplay(char *params, pzllst *owner)
     char un4[16];
     sscanf(params,"%d %s %s %s %s %s %s %s %s %s %s %s %s",&slot,file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
 
+    MList *anims = *Getanims();
     StartMList(anims);
     while (!eofMList(anims))
     {
@@ -866,6 +751,8 @@ void action_music(char *params, pzllst *owner)
 
 
     nod->time = GetTickCount() + 10;
+
+    MList *timers = *Gettimers();
     AddToMList(timers,nod);
 
     SetgVarInt(slot, 1);
@@ -924,6 +811,7 @@ void action_universe_music(char *params, pzllst *owner)
 
     nod->owner = owner;
 
+    MList *wavs = *Getwavs();
     AddToMList(wavs,nod);
 
     SetgVarInt(slot, 1);
@@ -940,6 +828,7 @@ void action_animpreload(char *params, pzllst *owner)
 #ifdef TRACE
     printf("        action:animpreload(%s)\n",params);
 #endif
+    MList *preload = *Getpreload();
     if (!preload)
         preload = CreateMList();
 
@@ -973,6 +862,7 @@ void action_playpreload(char *params, pzllst *owner)
     printf("        action:playpreload(%s)\n",params);
 #endif
 
+    MList *preload = *Getpreload();
     if (!preload)
         return;
 
@@ -1021,6 +911,7 @@ void action_ttytext(char *params, pzllst *owner)
 
 
     nod->time = GetTickCount() + 15;
+    MList *timers = *Gettimers();
     AddToMList(timers,nod);
 
     SetgVarInt(GetIntVal(chars), 1);
@@ -1038,9 +929,11 @@ void action_kill(char *params, pzllst *owner)
 
     if (strcasecmp(chars,"\"all\"")==0)
     {
+        MList *anims = *Getanims();
         DeleteAnims(anims);
-        anims = CreateMList();
+        *Getanims() = CreateMList();
 
+        MList *wavs = *Getwavs();
         StartMList(wavs);
         while(!eofMList(wavs))
         {
@@ -1055,6 +948,7 @@ void action_kill(char *params, pzllst *owner)
             NextMList(wavs);
         }
 
+        MList *timers = *Gettimers();
         StartMList(timers);
         while(!eofMList(timers))
         {
@@ -1071,7 +965,7 @@ void action_kill(char *params, pzllst *owner)
 
     if (strcasecmp(chars,"\"audio\"")==0)
     {
-
+        MList *wavs = *Getwavs();
         StartMList(wavs);
         while(!eofMList(wavs))
         {
@@ -1094,6 +988,7 @@ void action_kill(char *params, pzllst *owner)
 
     slot = GetIntVal(chars);
 
+    MList *anims = *Getanims();
     StartMList(anims);
     while(!eofMList(anims))
     {
@@ -1116,6 +1011,7 @@ void action_kill(char *params, pzllst *owner)
         NextMList(anims);
     }
 
+    MList *wavs = *Getwavs();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -1133,6 +1029,7 @@ void action_kill(char *params, pzllst *owner)
         NextMList(wavs);
     }
 
+    MList *timers = *Gettimers();
     StartMList(timers);
     while(!eofMList(timers))
     {
@@ -1165,6 +1062,7 @@ void action_stop(char *params, pzllst *owner)
     sscanf(params,"%s",chars);
     slot = GetIntVal(chars);
 
+    MList *timers = *Gettimers();
     StartMList(timers);
     while(!eofMList(timers))
     {
@@ -1180,6 +1078,7 @@ void action_stop(char *params, pzllst *owner)
         NextMList(timers);
     }
 
+    MList *anims = *Getanims();
     StartMList(anims);
     while(!eofMList(anims))
     {
@@ -1204,6 +1103,7 @@ void action_stop(char *params, pzllst *owner)
         NextMList(anims);
     }
 
+    MList *wavs = *Getwavs();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -1324,6 +1224,7 @@ void action_crossfade(char *params, pzllst *owner)
     item = GetIntVal(slot);
     item2 = GetIntVal(slot2);
 
+    MList *wavs = *Getwavs();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -1986,16 +1887,16 @@ void control_push(ctrlnode *ct)
         if (MouseX()>=20 && MouseX()<=620)
         {
 
-            if (    (psh->x-Location.X          <= MouseX())    &&\
-                    (psh->x-Location.X+psh->w   >= MouseX())    &&\
+            if (    (psh->x-GetgVarInt(7)          <= MouseX())    &&\
+                    (psh->x-GetgVarInt(7)+psh->w   >= MouseX())    &&\
                     (psh->y+GAME_Y              <= MouseY())    &&\
                     (psh->y+GAME_Y+psh->h       >= MouseY()))
                 mousein = true;
 
-            if (Location.X > scrbuf->w - screen->w)
+            if (GetgVarInt(7) > scrbuf->w - screen->w)
             {
-                if (    (psh->x+scrbuf->w-Location.X  <= MouseX())    &&\
-                        (psh->x+scrbuf->w-Location.X+psh->w   >= MouseX())    &&\
+                if (    (psh->x+scrbuf->w-GetgVarInt(7)  <= MouseX())    &&\
+                        (psh->x+scrbuf->w-GetgVarInt(7)+psh->w   >= MouseX())    &&\
                         (psh->y+GAME_Y          <= MouseY())    &&\
                         (psh->y+GAME_Y+psh->h   >= MouseY()))
                     mousein = true;
@@ -2323,7 +2224,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 #endif
         Parse_Control_Panorama(fl);
         Renderer = RENDER_PANA;
-        Location.X -= 320;
+//        Location.X -= 320;
     }
     else if (strCMP(ctrltp,"push_toggle")==0)
     {
@@ -2342,42 +2243,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 }
 
 
-void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
-{
-#ifdef TRACE
-    printf("Loading script file %s\n",filename);
-#endif
 
-
-    FILE *fl=fopen(filename,"rb");
-    if (fl == NULL)
-    {
-        printf("Error opening file %s\n",filename);
-        exit(1);
-        return;
-    }
-
-    char buf[FILE_LN_BUF];
-
-    while(!feof(fl))
-    {
-        fgets(buf,FILE_LN_BUF,fl);
-
-        char *str=PrepareString(buf);
-
-
-        if (strCMP(str,"puzzle")==0)
-        {
-            Parse_Puzzle(lst,fl,str);
-        }
-        else if (strCMP(str,"control")==0 && control )
-        {
-            Parse_Control(controlst,fl,str);
-        }
-    }
-
-    fclose(fl);
-}
 
 void DeletePuzzleList(pzllst *lst)
 {
@@ -2573,9 +2439,9 @@ void ProcessControls(MList *ctrlst)
         printf("Control, slot:%d \n",nod->slot);
 #endif
 
-        if (!(Flags[nod->slot] & FLAG_DISABLED))  //(nod->enable)
+        if (!(ScrSys_GetFlag(nod->slot) & FLAG_DISABLED))  //(nod->enable)
           if (nod->func != NULL)
-            nod->func(nod);
+             nod->func(nod);
 
         PrevMList(ctrlst);
     }
@@ -2583,6 +2449,7 @@ void ProcessControls(MList *ctrlst)
 
 void DrawSlots()
 {
+    MList *ctrl = *Getctrl();
     StartMList(ctrl);
 
     while (!eofMList(ctrl))
@@ -2610,7 +2477,7 @@ void DrawSlots()
                     SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
                 }
 
-                DrawImage(slut->srf,    Location.X +slut->rectangle.x,  GAME_Y + slut->rectangle.y);
+                DrawImage(slut->srf,    slut->rectangle.x,  GAME_Y + slut->rectangle.y);
             }
             else
             {
@@ -2630,6 +2497,7 @@ void DrawSlots()
 
 void ProcessTimers()
 {
+    MList *timers = *Gettimers();
     StartMList(timers);
 
     while (!eofMList(timers))
@@ -2703,15 +2571,15 @@ void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength)
 void PanaRender()
 {
     if (MouseX() > 620)
-        Location.X +=10;
+        *getdirectvar(7) +=10;
 
     if (MouseX() < 20)
-        Location.X -=10;
+        *getdirectvar(7) -=10;
 
-    if (Location.X >= scrbuf->w)
-        Location.X %= scrbuf->w;
-    if (Location.X < 0)
-        Location.X = scrbuf->w + Location.X;
+    if (*getdirectvar(7) >= scrbuf->w)
+        *getdirectvar(7) %= scrbuf->w;
+    if (*getdirectvar(7) < 0)
+        *getdirectvar(7) = scrbuf->w + *getdirectvar(7);
 
     SDL_FillRect(screen,0,0);
 
@@ -2719,9 +2587,9 @@ void PanaRender()
     if (Location.X > scrbuf->w - screen->w)
         DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);*/
 
-    DrawImageToSurf(scrbuf,-Location.X,0,tempbuf);
-    if (Location.X > scrbuf->w - screen->w)
-        DrawImageToSurf(scrbuf,scrbuf->w-Location.X,0,tempbuf);
+    DrawImageToSurf(scrbuf,-*getdirectvar(7),0,tempbuf);
+    if (*getdirectvar(7) > scrbuf->w - screen->w)
+        DrawImageToSurf(scrbuf,scrbuf->w-*getdirectvar(7),0,tempbuf);
 
     MakeImageEye(tempbuf,fish,-0.5);
     DrawImage(fish,0,GAME_Y);
@@ -2796,266 +2664,22 @@ void DeleteCursor(Cursor *cur)
     delete cur;
 }
 
-void AddPuzzleToStateBox(int slot, puzzlenode *pzlnd)
-{
-    StateBoxEnt *ent = StateBox[slot];
-
-    if (ent == NULL)
-    {
-        StateBox[slot] = ent = new (StateBoxEnt);
-        ent->cnt = 0;
-    }
-    if (ent->cnt < MaxStateBoxEnts)
-    {
-        ent->nod[ent->cnt] = pzlnd;
-        ent->cnt++;
-    }
-}
-
-void FillStateBoxFromList(pzllst *lst)
-{
-    StartMList(lst->_list);
-    while (!eofMList(lst->_list))
-    {
-        puzzlenode *pzlnod=(puzzlenode *)DataMList(lst->_list);
-
-        if (pzlnod->flags & FLAG_ONCE_PER_I)
-            AddPuzzleToStateBox(pzlnod->slot,pzlnod);
-
-        StartMList(pzlnod->CritList);
-        while (!eofMList(pzlnod->CritList))
-        {
-            MList *CriteriaLst= (MList *) DataMList(pzlnod->CritList);
-
-            int prevslot=0;
-            StartMList(CriteriaLst);
-            while (!eofMList(CriteriaLst))
-            {
-                crit_node *crtnod = (crit_node *)DataMList(CriteriaLst);
-
-                if (prevslot != crtnod->slot1)
-                    AddPuzzleToStateBox(crtnod->slot1,pzlnod);
-
-                prevslot = crtnod->slot1;
-
-                NextMList(CriteriaLst);
-            }
-
-            NextMList(pzlnod->CritList);
-        }
-        NextMList(lst->_list);
-    }
-}
-
-//Function clears trigger status for once_per_inst triggers
-void ClearUsedOnOPIPuzz(MList *lst)
-{
-    if (!lst)
-        return;
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        puzzlenode *nod=(puzzlenode *)DataMList(lst);
-        if (nod->flags & FLAG_ONCE_PER_I)
-            SetgVarInt(nod->slot,0);
-        NextMList(lst);
-    }
-}
-
-void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
-{
-    //Needed reverse from 0x004246C7
 
 
-    Locate temp;
-    if (w=='0' && r=='0' && v1=='0' && v2=='0')
-    {
-        PrevCount--;
-        memcpy(&temp,&Previos_Locate[PrevCount],sizeof(temp));
-    }
-    else
-    {
-        // If setscreen was called
-        if (Current_Locate.World != 0 &&\
-                Current_Locate.Room  != 0 &&\
-                Current_Locate.View1 != 0 &&\
-                Current_Locate.View2 != 0 )
-        {
-            if (PrevCount<PREV_STACK_MAX)
-            {
-                memcpy(&Previos_Locate[PrevCount],&Current_Locate,sizeof(Current_Locate));
-                PrevCount++;
-            }
-            else
-            {
-                for (int i=0; i<PREV_STACK_MAX-1; i++)
-                    memcpy(&Previos_Locate[i],&Previos_Locate[i+1],sizeof(Previos_Locate[i]));
-
-                memcpy(&Previos_Locate[PrevCount-1],&Current_Locate,sizeof(Current_Locate));
-                //PrevCount++;
-            }
-        }
-        temp.World =w;
-        temp.Room  =r;
-        temp.View1 =v1;
-        temp.View2 =v2;
-        temp.X     =X;
-        for (int i=PrevCount-1; i>=0; i--)
-        {
-            if (Previos_Locate[i].World     == w  &&\
-                    Previos_Locate[i].Room  == r  &&\
-                    Previos_Locate[i].View1 == v1 &&\
-                    Previos_Locate[i].View2 == v2 /*&&\
-                    /*Previos_Locate[i].X    ==X */ )
-            {
-                PrevCount=i;
-                break;
-            }
-            //Previos_Locate[i].==w &&\)
-        }
-    }
-
-    ////////State box routine////////////
-    for (int i=0; i<VAR_SLOTS_MAX; i++)
-    {
-        if (StateBox[i] != NULL)
-            delete StateBox[i];
-    }
-
-    memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
-    StateBoxStkSz=0;
-    ////////---State box routine---//////////////
-
-    memset (&Current_Locate,0,sizeof(Current_Locate));
-
-    char buf[32];
-    char tm[5];
-
-    Location.X=temp.X;
-
-    RenderDelay = 2;
-    View_start_Loops = 1;
 
 
-//    ClearUsedOnOPIPuzz(view); //Really needed??
-//    ClearUsedOnOPIPuzz(room); //Really needed??
-//    ClearUsedOnOPIPuzz(world); //Really needed??
 
-    if (temp.View1 != Location.View1 || temp.View2 != Location.View2 || temp.Room != Location.Room || temp.World != Location.World)
-    {
-        if (view)
-        {
-            DeleteTimerByOwner(timers,view);
-            DeleteLoopedWavsByOwner(wavs,view);
-
-            DeletePuzzleList(view);
-            DeleteControlList(ctrl);
-            DeleteAnims(anims);
-            DeleteAllPreload();
-        }
-
-        tm[0]=temp.World;
-        tm[1]=temp.Room;
-        tm[2]=temp.View1;
-        tm[3]=temp.View2;
-        tm[4]=0;
-        sprintf(buf,"%s.scr",tm);
-        view=CreatePzlLst();
-        ctrl=CreateMList();
-        anims=CreateMList();
-        LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
-        Location.View1=temp.View1;
-        Location.View2=temp.View2;
-
-
-    }
-
-    if (temp.Room != Location.Room || temp.World != Location.World)
-    {
-        if (room)
-        {
-            DeleteLoopedWavsByOwner(wavs,room);
-
-            DeletePuzzleList(room);
-        }
-
-
-        tm[0]=temp.World;
-        tm[1]=temp.Room;
-        tm[2]=0;
-        sprintf(buf,"%s.scr",tm);
-        room=CreatePzlLst();
-        LoadScriptFile(room,GetExactFilePath(buf),false,NULL);
-        Location.Room=temp.Room;
-    }
-
-    if (temp.World != Location.World)
-    {
-        if (world)
-        {
-            DeleteLoopedWavsByOwner(wavs,world);
-
-            DeletePuzzleList(world);
-        }
-        tm[0]=temp.World;
-        tm[1]=0;
-        sprintf(buf,"%s.scr",tm);
-        world=CreatePzlLst();
-        LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
-        Location.World=temp.World;
-    }
-
-    //
-    FillStateBoxFromList(uni);
-    FillStateBoxFromList(view);
-    FillStateBoxFromList(room);
-    FillStateBoxFromList(world);
-
-    // FillStateBoxFromList(room);
-    //FillStateBoxFromList(world);
-    //FillStateBoxFromList(uni);
-
-}
 
 void InitGameLoop()
 {
-    uni = CreatePzlLst();
+    *GetUni() = CreatePzlLst();
+    pzllst *uni = *GetUni();
     LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
 
     ChangeLocation('g','a','r','y',0);
 }
 
-void AddStateBoxToStk(puzzlenode *pzl)
-{
-    pzllst *owner = pzl->owner;
-    if (owner->stksize < pzlSTACK)
-    {
-        if (owner->stksize > 0)
-            if (owner->stack[owner->stksize - 1] == pzl)
-                return;
 
-        owner->stack[owner->stksize] = pzl;
-        owner->stksize++;
-    }
-    else
-    {
-#ifdef TRACE
-        printf("Can't add pzl# %d to Stack\n",pzl->slot);
-#endif
-    }
-}
-
-void ShakeStateBox(uint32_t indx)
-{
-    if (StateBox[indx] != NULL)
-    {
-        for (int i=StateBox[indx]->cnt-1; i >= 0; i--)
-        {
-            //if (examine_criterias(StateBox[indx]->nod[i])) //may cause bug's
-            AddStateBoxToStk(StateBox[indx]->nod[i]);
-        }
-    }
-}
 
 bool examine_criterias(puzzlenode *nod)
 {
@@ -3193,12 +2817,18 @@ void GameLoop()
     //    View_start_Loops--;
     //}
 
+    pzllst *room = *Getroom();
+    pzllst *view = *Getview();
+    pzllst *world = *Getworld();
+    pzllst *uni = *GetUni();
+
     exec_puzzle_list(world);
     exec_puzzle_list(room);
     exec_puzzle_list(view);
     exec_puzzle_list(uni);
 
 
+    MList *ctrl = *Getctrl();
 
     ProcessControls(ctrl);
 
@@ -3244,6 +2874,7 @@ void GameLoop()
 
 void ProcessAnims()
 {
+    MList *anims = *Getanims();
     StartMList(anims);
 
     while (!eofMList(anims))
@@ -3473,6 +3104,7 @@ void ProcessCursor()
 
 void ProcessWavs()
 {
+    MList *wavs = *Getwavs();
     StartMList(wavs);
 
     while (!eofMList(wavs))
@@ -3494,6 +3126,8 @@ void ProcessWavs()
 
 void DeleteAllPreload()
 {
+    MList *preload = *Getpreload();
+
     if (preload == NULL)
         return;
 
@@ -3509,7 +3143,7 @@ void DeleteAllPreload()
         NextMList(preload);
     }
     DeleteMList(preload);
-    preload = NULL;
+    *Getpreload() = NULL;
 }
 
 

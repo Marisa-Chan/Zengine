@@ -362,3 +362,41 @@ bool FileExist(char * fil)
     return false;
 }
 
+
+char * PrepareString(char *buf)
+{
+    int len = strlen(buf);
+
+    for (int i=len-1; i>-1; i--)
+        if (buf[i]==0x0A || buf[i]==0x0D || buf[i]=='#' )
+            buf[i]=0x00;
+
+    char *str=buf;
+    len = strlen(buf);
+
+    for (int i=0; i<len; i++)
+        if (buf[i]!=0x20 && buf[i]!=0x09)
+        {
+            str=buf + i;
+            break;
+        }
+
+    len = strlen(str);
+
+    for (int i=0; i<len; i++)
+        str[i] = tolower(str[i]);
+    return str;
+}
+
+char * GetParams(char *str)
+{
+    for (int i=strlen(str)-1; i>-1; i--)
+    {
+        if (str[i]==')')
+            str[i]=0x0;
+        else if (str[i]=='(')
+        {
+            return str+i+1;
+        }
+    }
+}

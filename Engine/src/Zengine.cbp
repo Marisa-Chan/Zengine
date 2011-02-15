@@ -8,6 +8,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/Debug/Zengine" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="/media/166/packs" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -45,10 +46,18 @@
 			<Add option="-lsmpeg" />
 			<Add option="-lrt" />
 		</Linker>
+		<Unit filename="./Control.cpp" />
+		<Unit filename="./Control.h" />
 		<Unit filename="./Game.cpp" />
 		<Unit filename="./Game.h" />
 		<Unit filename="Graph.cpp" />
 		<Unit filename="Graph.h" />
+		<Unit filename="./Manage.cpp" />
+		<Unit filename="./Manage.h" />
+		<Unit filename="./Puzzle.cpp" />
+		<Unit filename="./Puzzle.h" />
+		<Unit filename="./ScriptSystem.cpp" />
+		<Unit filename="./ScriptSystem.h" />
 		<Unit filename="Sound.cpp" />
 		<Unit filename="Sound.h" />
 		<Unit filename="System.cpp" />
