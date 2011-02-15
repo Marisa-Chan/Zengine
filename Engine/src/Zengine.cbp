@@ -8,11 +8,10 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/Debug/Zengine" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="/media/166/packs" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/166/packs" />
+				<Option parameters="/media/1000/Temp/pack_FILES/" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DTRACE" />
@@ -23,7 +22,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/166/games/ZGI/pacs" />
+				<Option parameters="/media/1000/Temp/pack_FILES/" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -60,8 +59,12 @@
 		<Unit filename="./ScriptSystem.h" />
 		<Unit filename="Sound.cpp" />
 		<Unit filename="Sound.h" />
+		<Unit filename="./SoundFX.cpp" />
+		<Unit filename="./SoundFX.h" />
 		<Unit filename="System.cpp" />
 		<Unit filename="System.h" />
+		<Unit filename="./Timers.cpp" />
+		<Unit filename="./Timers.h" />
 		<Unit filename="./VkKeys.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="mylist.cpp" />

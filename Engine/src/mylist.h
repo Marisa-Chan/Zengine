@@ -35,6 +35,7 @@ void PrevMList(MList *lst);
 bool ToIndxMList(MList *lst, unsigned int indx);
 void *DataMList(MList *lst);
 void DeleteMList(MList *lst);
+void FlushMList(MList *lst);
 void DeleteCurrent(MList *lst);
 bool eofMList(MList *lst);
 

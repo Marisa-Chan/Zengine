@@ -13,8 +13,7 @@ pzllst **Getworld();
 pzllst **Getroom();
 pzllst **Getview();
 MList **Getctrl();
-MList **Gettimers();
-MList **Getwavs();
+
 MList **Getanims();
 MList **Getpreload();
 

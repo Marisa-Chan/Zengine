@@ -74,8 +74,10 @@ uint8_t ScrSys_GetSystemRoom()
 void InitScriptsEngine()
 {
     memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
-    *Gettimers()=CreateMList();
-    *Getwavs()=CreateMList();
+
+
+    snd_InitWavsList();
+    tmr_InitTimerList();
 
     memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz = 0;
@@ -184,8 +186,8 @@ void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // w
     {
         if (*Getview())
         {
-            DeleteTimerByOwner(*Gettimers(),*Getview());
-            DeleteLoopedWavsByOwner(*Getwavs(),*Getview());
+            tmr_DeleteTimerByOwner(*Getview());
+            snd_DeleteLoopedWavsByOwner(*Getview());
 
             DeletePuzzleList(*Getview());
             DeleteControlList(*Getctrl());
@@ -210,7 +212,7 @@ void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // w
     {
         if (*Getroom())
         {
-            DeleteLoopedWavsByOwner(*Getwavs(),*Getroom());
+            snd_DeleteLoopedWavsByOwner(*Getroom());
 
             DeletePuzzleList(*Getroom());
         }
@@ -228,7 +230,7 @@ void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // w
     {
         if (*Getworld())
         {
-            DeleteLoopedWavsByOwner(*Getwavs(),*Getworld());
+            snd_DeleteLoopedWavsByOwner(*Getworld());
 
             DeletePuzzleList(*Getworld());
         }

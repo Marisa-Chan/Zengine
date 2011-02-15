@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Release" />
-	<File name="./Game.cpp" open="1" top="1" tabpos="1">
-		<Cursor position="35509" topLine="1585" />
+	<ActiveTarget name="Debug" />
+	<File name="./Control.cpp" open="1" top="0" tabpos="4">
+		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="main.cpp" open="1" top="0" tabpos="2">
-		<Cursor position="423" topLine="12" />
+	<File name="./Game.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="48948" topLine="2248" />
+	</File>
+	<File name="./Game.h" open="1" top="1" tabpos="9">
+		<Cursor position="421" topLine="12" />
+	</File>
+	<File name="Graph.cpp" open="1" top="0" tabpos="15">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="./Manage.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="176" topLine="0" />
+	</File>
+	<File name="./Manage.h" open="1" top="0" tabpos="11">
+		<Cursor position="217" topLine="0" />
+	</File>
+	<File name="./ScriptSystem.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="1084" topLine="65" />
+	</File>
+	<File name="Sound.h" open="1" top="0" tabpos="16">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="System.h" open="1" top="0" tabpos="10">
+		<Cursor position="254" topLine="0" />
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="520" topLine="3" />
+	</File>
+	<File name="mylist.cpp" open="1" top="0" tabpos="2">
+		<Cursor position="2924" topLine="130" />
+	</File>
+	<File name="mylist.h" open="1" top="0" tabpos="3">
+		<Cursor position="1016" topLine="9" />
 	</File>
 </CodeBlocks_layout_file>

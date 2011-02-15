@@ -91,25 +91,12 @@ struct ctrlnode
     void   (*func)(ctrlnode *);
 };
 
-struct timernode
-{
-    uint32_t slot;
-    uint32_t time;
-    //uint32_t ownslot;
-    pzllst  *owner;
-};
-
-void DeleteTimers(MList *lst);
-void DeleteTimerByOwner(MList *lst, pzllst *owner);
-
-
 
 
 
 void ProcessTriggers(MList *lst);
 void InitScriptsEngine();
 void ProcessControls(MList *ctrlst);
-void ProcessTimers();
 
 bool ProcessCriteries(MList *lst);
 
@@ -170,18 +157,7 @@ void InitGameLoop();
 
 
 
-struct musicnode
-{
-    uint32_t    slot;
-    Mix_Chunk  *chunk;
-    int         chn;
-    bool        looped;
-    pzllst     *owner;
-};
 
-void ProcessWavs();
-void DeleteWavs(MList *lst);
-void DeleteLoopedWavsByOwner(MList *lst,pzllst *owner);
 
 #define MaxStateBoxEnts 0x400 //0xFF is very small
 

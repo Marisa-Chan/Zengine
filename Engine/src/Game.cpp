@@ -102,7 +102,7 @@ void SaveGame(char *file)
     void *tmpVars[VAR_SLOTS_MAX];
     memcpy(tmpVars,DGetGVars(),VAR_SLOTS_MAX*sizeof(void *));
 
-    MList *timers = *Gettimers();
+    MList *timers = tmr_GetTimerList();
     StartMList(timers);
     while (!eofMList(timers))
     {
@@ -111,7 +111,7 @@ void SaveGame(char *file)
         NextMList(timers);
     }
 
-    MList *wavs = *Getwavs();
+    MList *wavs = snd_GetWavsList();
     StartMList(wavs);
     while (!eofMList(wavs))
     {
@@ -190,20 +190,15 @@ void LoadGame(char *file)
         return;
 
 //    DeleteAnims(anims);
-MList *timers = *Gettimers();
-MList *wavs = *Getwavs();
 MList *anims = *Getanims();
 
-    DeleteWavs(wavs);
-    DeleteTimers(timers);
+    snd_DeleteWavs();
+    tmr_DeleteTimers();
 //    DeletePuzzleList(view);
 //    DeletePuzzleList(room);
 //    DeletePuzzleList(world);
 //    DeletePuzzleList(uni);
 //    DeleteControlList(ctrl);
-
-    timers=CreateMList();
-    wavs=CreateMList();
 
     memset(&Current_Locate,0,sizeof(Locate));
 
@@ -251,7 +246,7 @@ bool Eligeblity(int obj, slotnode *slut)
 //Don't call it from loops for mylists!! it's cause error
 bool SlotIsOwned(uint32_t i)
 {
-    MList *timers = *Gettimers();
+    MList *timers = tmr_GetTimerList();
     StartMList(timers);
     while (!eofMList(timers))
     {
@@ -263,7 +258,7 @@ bool SlotIsOwned(uint32_t i)
         NextMList(timers);
     }
 
-    MList *wavs = *Getwavs();
+    MList *wavs = snd_GetWavsList();
     StartMList(wavs);
     while (!eofMList(wavs))
     {
@@ -404,8 +399,8 @@ void action_timer(char *params, pzllst *owner)
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
-    MList *timers = *Gettimers();
-    AddToMList(timers,nod);
+
+    tmr_AddToTimerList(nod);
 
     SetgVarInt(tmp1,1);
 
@@ -752,8 +747,7 @@ void action_music(char *params, pzllst *owner)
 
     nod->time = GetTickCount() + 10;
 
-    MList *timers = *Gettimers();
-    AddToMList(timers,nod);
+    tmr_AddToTimerList(nod);
 
     SetgVarInt(slot, 1);
 }
@@ -811,8 +805,7 @@ void action_universe_music(char *params, pzllst *owner)
 
     nod->owner = owner;
 
-    MList *wavs = *Getwavs();
-    AddToMList(wavs,nod);
+    snd_AddToWavsList(nod);
 
     SetgVarInt(slot, 1);
 }
@@ -911,8 +904,8 @@ void action_ttytext(char *params, pzllst *owner)
 
 
     nod->time = GetTickCount() + 15;
-    MList *timers = *Gettimers();
-    AddToMList(timers,nod);
+
+    tmr_AddToTimerList(nod);
 
     SetgVarInt(GetIntVal(chars), 1);
 }
@@ -933,7 +926,7 @@ void action_kill(char *params, pzllst *owner)
         DeleteAnims(anims);
         *Getanims() = CreateMList();
 
-        MList *wavs = *Getwavs();
+        MList *wavs = snd_GetWavsList();
         StartMList(wavs);
         while(!eofMList(wavs))
         {
@@ -948,7 +941,7 @@ void action_kill(char *params, pzllst *owner)
             NextMList(wavs);
         }
 
-        MList *timers = *Gettimers();
+        MList *timers = tmr_GetTimerList();
         StartMList(timers);
         while(!eofMList(timers))
         {
@@ -965,7 +958,7 @@ void action_kill(char *params, pzllst *owner)
 
     if (strcasecmp(chars,"\"audio\"")==0)
     {
-        MList *wavs = *Getwavs();
+        MList *wavs = snd_GetWavsList();
         StartMList(wavs);
         while(!eofMList(wavs))
         {
@@ -1011,7 +1004,7 @@ void action_kill(char *params, pzllst *owner)
         NextMList(anims);
     }
 
-    MList *wavs = *Getwavs();
+    MList *wavs = snd_GetWavsList();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -1029,7 +1022,7 @@ void action_kill(char *params, pzllst *owner)
         NextMList(wavs);
     }
 
-    MList *timers = *Gettimers();
+    MList *timers = tmr_GetTimerList();
     StartMList(timers);
     while(!eofMList(timers))
     {
@@ -1062,7 +1055,7 @@ void action_stop(char *params, pzllst *owner)
     sscanf(params,"%s",chars);
     slot = GetIntVal(chars);
 
-    MList *timers = *Gettimers();
+    MList *timers = tmr_GetTimerList();
     StartMList(timers);
     while(!eofMList(timers))
     {
@@ -1103,7 +1096,7 @@ void action_stop(char *params, pzllst *owner)
         NextMList(anims);
     }
 
-    MList *wavs = *Getwavs();
+    MList *wavs = snd_GetWavsList();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -1224,7 +1217,7 @@ void action_crossfade(char *params, pzllst *owner)
     item = GetIntVal(slot);
     item2 = GetIntVal(slot2);
 
-    MList *wavs = *Getwavs();
+    MList *wavs = snd_GetWavsList();
     StartMList(wavs);
     while(!eofMList(wavs))
     {
@@ -2495,30 +2488,6 @@ void DrawSlots()
 }
 
 
-void ProcessTimers()
-{
-    MList *timers = *Gettimers();
-    StartMList(timers);
-
-    while (!eofMList(timers))
-    {
-        timernode *nod=(timernode *)DataMList(timers);
-
-        if (nod)
-            if (nod->time<GetTickCount())
-            {
-                SetgVarInt(nod->slot,2);
-#ifdef TRACE
-                printf ("Timer #%d End's\n",nod->slot);
-#endif
-                delete nod;
-                DeleteCurrent(timers);
-
-            }
-
-        NextMList(timers);
-    }
-}
 
 
 
@@ -2799,8 +2768,8 @@ void GameLoop()
         SetgVarInt(10,1);
 
 
-    ProcessTimers();
-    ProcessWavs();
+    tmr_ProcessTimers();
+    snd_ProcessWavs();
     ProcessAnims();
 
 
@@ -2987,85 +2956,12 @@ void DeleteAnims(MList *lst)
         NextMList(lst);
     }
 
-    DeleteMList(lst);
+    FlushMList(lst);
 }
 
-void DeleteWavs(MList *lst)
-{
-    Mix_HaltChannel(-1);
-
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        musicnode *nod=(musicnode *)DataMList(lst);
-        Mix_FreeChunk(nod->chunk);
-        UnlockChan(nod->chn);
-        delete nod;
 
 
-        NextMList(lst);
-    }
 
-    DeleteMList(lst);
-}
-
-void DeleteLoopedWavsByOwner(MList *lst,pzllst *owner)
-{
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        musicnode *nod=(musicnode *)DataMList(lst);
-        if (nod->owner == owner && nod->looped)
-        {
-            Mix_HaltChannel(nod->chn);
-            Mix_FreeChunk(nod->chunk);
-            UnlockChan(nod->chn);
-            if (nod->slot != 0)
-                SetgVarInt(nod->slot,2);
-            delete nod;
-            DeleteCurrent(lst);
-        }
-        NextMList(lst);
-    }
-}
-
-void DeleteTimers(MList *lst)
-{
-
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        timernode *nod=(timernode *)DataMList(lst);
-        delete nod;
-
-        NextMList(lst);
-    }
-
-    DeleteMList(lst);
-}
-
-void DeleteTimerByOwner(MList *lst,pzllst *owner)
-{
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        timernode *nod=(timernode *)DataMList(lst);
-        if (nod->owner == owner)
-        {
-            if (nod->slot != 0)
-            {
-                SetgVarInt(nod->slot, nod->time - GetTickCount());
-                //printf("deleted timer %d, ost %d",nod->slot,  nod->time - GetTickCount());
-            }
-            //printf("deleted timer %d, ost %d %d \n",nod->slot,  nod->time - GetTickCount(),nod->ownslot);
-            delete nod;
-
-            DeleteCurrent(lst);
-        }
-
-        NextMList(lst);
-    }
-}
 
 void ProcessCursor()
 {
@@ -3102,27 +2998,7 @@ void ProcessCursor()
 
 
 
-void ProcessWavs()
-{
-    MList *wavs = *Getwavs();
-    StartMList(wavs);
 
-    while (!eofMList(wavs))
-    {
-        musicnode *mnod = (musicnode *) DataMList(wavs);
-
-        if (!Mix_Playing(mnod->chn))
-        {
-            Mix_FreeChunk(mnod->chunk);
-            SetgVarInt(mnod->slot,2);
-            UnlockChan(mnod->chn);
-            delete mnod;
-            DeleteCurrent(wavs);
-        }
-
-        NextMList(wavs);
-    }
-}
 
 void DeleteAllPreload()
 {
@@ -3142,8 +3018,8 @@ void DeleteAllPreload()
 
         NextMList(preload);
     }
-    DeleteMList(preload);
-    *Getpreload() = NULL;
+    FlushMList(preload);
+    //*Getpreload() = NULL;
 }
 
 

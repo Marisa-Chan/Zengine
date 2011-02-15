@@ -141,6 +141,46 @@ void DeleteMList(MList *lst)
     delete lst;
 }
 
+void DeleteMList(MList **plst)
+{
+    MList *lst=*plst;
+    if (lst->count > 0)
+    {
+    MList_node *nxt = lst->Head->next;
+    lst->CurNode = lst->Head;
+    while (lst->CurNode)
+        {
+            nxt = lst->CurNode->next;
+            delete lst->CurNode;
+            lst->CurNode = nxt;
+        }
+    }
+    delete lst;
+    *plst=NULL;
+}
+
+void FlushMList(MList *lst)
+{
+    if (lst->count > 0)
+    {
+    MList_node *nxt = lst->Head->next;
+    lst->CurNode = lst->Head;
+    while (lst->CurNode)
+        {
+            nxt = lst->CurNode->next;
+            delete lst->CurNode;
+            lst->CurNode = nxt;
+        }
+    }
+
+    lst->CurNode    = NULL;
+    lst->Head       = NULL;
+    lst->Tail       = NULL;
+    lst->count      = 0;
+    lst->indx       = 0;
+    lst->stkpos     = 0;
+}
+
 void DeleteCurrent(MList *lst)
 {
     if (lst->CurNode->next)

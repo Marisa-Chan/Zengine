@@ -13,8 +13,11 @@
 #include "mylist.h"
 
 #include "Graph.h"
+#include "Sound.h"
 #include "Manage.h"
 #include "Puzzle.h"
+#include "SoundFX.h"
+#include "Timers.h"
 #include "Control.h"
 #include "ScriptSystem.h"
 #include "Game.h"

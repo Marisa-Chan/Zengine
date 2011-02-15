@@ -14,10 +14,6 @@ Locate  Location= {0,0,0,0};
 
 MList    *ctrl  =NULL;
 
-MList  *timers  =NULL;
-
-MList    *wavs  =NULL;
-
 MList   *anims  =NULL;
 
 MList  *preload =NULL;
@@ -65,16 +61,6 @@ pzllst **Getview()
 MList **Getctrl()
 {
     return &ctrl;
-}
-
-MList **Gettimers()
-{
-    return &timers;
-}
-
-MList **Getwavs()
-{
-    return &wavs;
 }
 
 MList **Getanims()
