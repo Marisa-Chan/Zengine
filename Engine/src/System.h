@@ -20,6 +20,7 @@
 #include "Timers.h"
 #include "Control.h"
 #include "ScriptSystem.h"
+#include "actions.h"
 #include "Game.h"
 
 
@@ -79,6 +80,7 @@ bool FileExist(char * fil);
 #define FILE_LN_BUF 0x400
 char * PrepareString(char *buf);
 char * GetParams(char *str);
+int GetIntVal(char *chr);
 
 #define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
 

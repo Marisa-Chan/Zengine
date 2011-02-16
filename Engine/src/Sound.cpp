@@ -19,7 +19,13 @@ const int SoundVol[101] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                            2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 13, 14, 16,\
                            18, 20, 23, 26, 29, 32, 36, 41, 46, 51, 57, 64, 72, 81, 91, 102, 114, 127};
 
-
+int GetLogVol(uint8_t linear)
+{
+    if (linear < 101)
+        return SoundVol[linear];
+    else
+        return 0;
+}
 
 void InitMusic()
 {

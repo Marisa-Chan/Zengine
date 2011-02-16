@@ -34,6 +34,7 @@ uint8_t ScrSys_GetSystemRoom();
 uint8_t ScrSys_GetFlag(uint32_t indx);
 void    ScrSys_SetFlag(uint32_t indx, uint8_t newval);
 
+bool ScrSys_SlotIsOwned(uint32_t i);
 
 void SetgVarInt(uint32_t indx, int var);
 int  GetgVarInt(uint32_t indx);

@@ -69,6 +69,42 @@ uint8_t ScrSys_GetSystemRoom()
     return SystemRoom;
 }
 
+//Don't call it from loops for mylists!! it's cause error
+bool ScrSys_SlotIsOwned(uint32_t i)
+{
+    MList *timers = tmr_GetTimerList();
+
+    pushMList(timers);
+    StartMList(timers);
+    while (!eofMList(timers))
+    {
+        timernode *nod= (timernode *)DataMList(timers);
+
+        if (nod->slot == i)
+            return true;
+
+        NextMList(timers);
+    }
+    popMList(timers);
+
+    MList *wavs = snd_GetWavsList();
+
+    pushMList(wavs);
+    StartMList(wavs);
+    while (!eofMList(wavs))
+    {
+        musicnode *nod= (musicnode *)DataMList(wavs);
+
+        if (nod->slot == i)
+            return true;
+
+        NextMList(wavs);
+    }
+    popMList(wavs);
+
+    return false;
+}
+
 
 
 void InitScriptsEngine()
@@ -84,6 +120,7 @@ void InitScriptsEngine()
 
     memset(Flags,0x0,VAR_SLOTS_MAX * sizeof(uint8_t));
 }
+
 
 
 

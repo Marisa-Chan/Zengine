@@ -400,3 +400,13 @@ char * GetParams(char *str)
         }
     }
 }
+
+int GetIntVal(char *chr)
+{
+    if (chr[0]=='[')
+    {
+        return GetgVarInt(atoi(chr+1));
+    }
+    else
+        return atoi(chr);
+}

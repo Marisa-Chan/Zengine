@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/1000/Temp/pack_FILES/" />
+				<Option parameters="/media/166/packs" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DTRACE" />
@@ -55,6 +55,8 @@
 		<Unit filename="./Manage.h" />
 		<Unit filename="./Puzzle.cpp" />
 		<Unit filename="./Puzzle.h" />
+		<Unit filename="./Render.cpp" />
+		<Unit filename="./Render.h" />
 		<Unit filename="./ScriptSystem.cpp" />
 		<Unit filename="./ScriptSystem.h" />
 		<Unit filename="Sound.cpp" />
@@ -66,6 +68,8 @@
 		<Unit filename="./Timers.cpp" />
 		<Unit filename="./Timers.h" />
 		<Unit filename="./VkKeys.h" />
+		<Unit filename="./actions.cpp" />
+		<Unit filename="./actions.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
