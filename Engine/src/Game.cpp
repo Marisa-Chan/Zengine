@@ -24,6 +24,9 @@ uint8_t PrevCount = 0;
 */
 
 
+//////DEPRECATED
+extern SDL_Surface *screen;
+/////////////
 
 
 
@@ -808,18 +811,18 @@ void control_slot(ctrlnode *ct)
     slotnode *slut = ct->node.slot;
     bool mousein = false;
 
-    if (    (slut->hotspot.x          <= MouseX())    &&\
-            (slut->hotspot.w          >= MouseX())    &&\
-            (slut->hotspot.y+GAME_Y   <= MouseY())    &&\
-            (GAME_Y+slut->hotspot.h   >= MouseY()))
+    if ( slut->hotspot.x <= Rend_GetMouseGameX() &&\
+         slut->hotspot.w >= Rend_GetMouseGameX() &&\
+         slut->hotspot.y <= Rend_GetMouseGameY() &&\
+         slut->hotspot.h >= Rend_GetMouseGameY() )
         mousein = true;
 
     if (mousein)
     {
 
         if (GetgVarInt(ct->slot)!=0)
-            if (cur == CurDefault[CURSOR_IDLE])
-                cur=CurDefault[slut->cursor];
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(slut->cursor);
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
@@ -858,7 +861,13 @@ void control_push(ctrlnode *ct)
 
     pushnode *psh = ct->node.push;
 
-    if (Renderer == RENDER_FLAT)
+    if ( psh->x          <= Rend_GetMouseGameX() &&\
+         psh->x+psh->w   >= Rend_GetMouseGameX() &&\
+         psh->y          <= Rend_GetMouseGameY() &&\
+         psh->y+psh->h   >= Rend_GetMouseGameY() )
+            mousein = true;
+
+   /* if (Renderer == RENDER_FLAT)
     {
 
 
@@ -869,7 +878,7 @@ void control_push(ctrlnode *ct)
             mousein = true;
 
     }
-    else if (Renderer == RENDER_PANA)
+     else if (Renderer == RENDER_PANA)
     {
         if (MouseX()>=20 && MouseX()<=620)
         {
@@ -891,16 +900,16 @@ void control_push(ctrlnode *ct)
 
         }
         else if (MouseX()<20)
-            cur=CurDefault[CURSOR_LEFT];
+            Mouse_SetCursor(CURSOR_LEFT);
         else if (MouseX()>620)
-            cur=CurDefault[CURSOR_RIGH];
-    }
+            Mouse_SetCursor(CURSOR_RIGH);
+    }*/
 
 
     if (mousein)
     {
-        if (cur == CurDefault[CURSOR_IDLE])
-            cur=CurDefault[psh->cursor];
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(psh->cursor);
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
@@ -1019,7 +1028,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
         {
             str=GetParams(str);
             for (int i=0; i<NUM_CURSORS; i++)
-                if (strcasecmp(str,CurNames[i]) == 0)
+                if (strcasecmp(str,Mouse_GetName(i)) == 0)
                 {
                     slut->cursor = i;
                     break;
@@ -1108,13 +1117,7 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"cursor") == 0)
         {
             str = GetParams(str); //cursor
-
-            for (int i=0; i<NUM_CURSORS; i++)
-                if (strcasecmp(str,CurNames[i]) == 0)
-                {
-                    psh->cursor = i;
-                    break;
-                }
+            psh->cursor = Mouse_GetCursorIndex(str);
         }
     }
 
@@ -1145,7 +1148,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 
     if (strCMP(ctrltp,"flat")==0)
     {
-        Renderer = RENDER_FLAT;
+        Rend_SetRenderer (RENDER_FLAT);
 #ifdef FULLTRACE
         printf("    Flat Rendere\n");
 #endif
@@ -1156,7 +1159,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
         printf("    Panorama Rendere\n");
 #endif
         Parse_Control_Panorama(fl);
-        Renderer = RENDER_PANA;
+        Rend_SetRenderer (RENDER_PANA);
 //        Location.X -= 320;
     }
     else if (strCMP(ctrltp,"push_toggle")==0)
@@ -1410,7 +1413,7 @@ void DrawSlots()
                     SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
                 }
 
-                DrawImage(slut->srf,    slut->rectangle.x,  GAME_Y + slut->rectangle.y);
+                Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
             }
             else
             {
@@ -1431,85 +1434,19 @@ void DrawSlots()
 
 
 
-void InitGraphics(bool fullscreen)
-{
-    screen=InitGraphicAndSound(640,480,32,fullscreen);
-
-    for (int i=0; i<18; i++)
-    {
-        CurDefault[i]=new(Cursor);
-        LoadCursor(CurFiles[i],CurDefault[i]);
-    }
-
-    cur=CurDefault[CURSOR_IDLE];
-
-    tempbuf=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
-    fish=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
-
-    //cur=new(Cursor);//"g0gac011.zcr"));
-    //LoadCursor("g0gac011.zcr",cur);
-
-    SDL_ShowCursor(SDL_DISABLE);
-
-}
 
 
 
 
-void FlatRender()
-{
-    SDL_FillRect(screen,0,0);
-    DrawImage(scrbuf,0,GAME_Y);
-}
 
-void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength)
-{
-    SDL_LockSurface(srf);
-    SDL_LockSurface(nw);
-    for(int y = 0; y < srf->h; y ++)
-    for(int x = 0; x < srf->w; x ++){
 
-        int *nww=(int *)nw->pixels;
-        int *old=(int *)srf->pixels;
-        nww[x+y*nw->w] = old[fishtable[x][y]];
-    }
-    SDL_UnlockSurface(srf);
-    SDL_UnlockSurface(nw);
-}
-
-void PanaRender()
-{
-    if (MouseX() > 620)
-        *getdirectvar(7) +=10;
-
-    if (MouseX() < 20)
-        *getdirectvar(7) -=10;
-
-    if (*getdirectvar(7) >= scrbuf->w)
-        *getdirectvar(7) %= scrbuf->w;
-    if (*getdirectvar(7) < 0)
-        *getdirectvar(7) = scrbuf->w + *getdirectvar(7);
-
-    SDL_FillRect(screen,0,0);
-
-    /*DrawImage(scrbuf,-Location.X,GAME_Y);
-    if (Location.X > scrbuf->w - screen->w)
-        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);*/
-
-    DrawImageToSurf(scrbuf,-*getdirectvar(7),0,tempbuf);
-    if (*getdirectvar(7) > scrbuf->w - screen->w)
-        DrawImageToSurf(scrbuf,scrbuf->w-*getdirectvar(7),0,tempbuf);
-
-    MakeImageEye(tempbuf,fish,-0.5);
-    DrawImage(fish,0,GAME_Y);
-}
 
 
 
 void RenderFunc()
 {
 
-    if (Renderer == RENDER_FLAT)
+    if (Rend_GetRenderer() == RENDER_FLAT)
         FlatRender();
     else
         PanaRender();
@@ -1517,61 +1454,13 @@ void RenderFunc()
 
     DrawSlots();
 
-    ProcessCursor();
+    Rend_ProcessCursor();
 
     //SDL_Flip(screen);
 }
 
 
-void LoadCursor(char *file, Cursor *cur)
-{
-    char tmp[64];
-    char *tmp2;
-    strcpy(tmp,file);
-    int len=strlen(tmp);
-    tmp[len-1]='g';
-    tmp[len-2]='n';
-    tmp[len-3]='p';
 
-    tmp2=GetExactFilePath(tmp);
-    if (tmp2==NULL)
-        return;
-
-    cur->img = IMG_Load(tmp2);
-    if (cur->img)
-    {
-        SDL_Surface *z=SDL_ConvertSurface(cur->img,screen->format,0);
-        SDL_FreeSurface(cur->img);
-        cur->img=z;
-        SDL_SetColorKey(cur->img,SDL_SRCCOLORKEY ,SDL_MapRGB(cur->img->format,0,0,0));
-    }
-    tmp[len-2]='o';
-    tmp[len-1]='i';
-    tmp[len]='n';
-    tmp[len+1]='t';
-    tmp[len+2]=0x0;
-
-    tmp2=GetExactFilePath(tmp);
-    if (tmp2==NULL)
-        return;
-
-    FILE *f=fopen(tmp2,"rb");
-    fread(&cur->ox,1,2,f);
-    fread(&cur->oy,1,2,f);
-    fclose(f);
-}
-
-void DrawCursor(Cursor *cur, int x, int y)
-{
-    if (cur)
-        DrawImage(cur->img,x-cur->ox,y-cur->oy);
-}
-
-void DeleteCursor(Cursor *cur)
-{
-    SDL_FreeSurface(cur->img);
-    delete cur;
-}
 
 
 
@@ -1687,7 +1576,7 @@ void GameLoop()
 
 
 
-    cur=CurDefault[CURSOR_IDLE];
+    Mouse_SetCursor(CURSOR_IDLE);
 
     if (GetgVarInt(18) != 0)
         SetgVarInt(18,0);
@@ -1809,10 +1698,10 @@ void ProcessAnims()
                                 SMPEG_play(anm->mpg);
                             }*/
 
-                        DrawImageToSurf(anm->img,nod->x,nod->y,scrbuf);
+                        Rend_DrawImageToGamescr(anm->img,nod->x,nod->y);
                     }
                     else
-                        DrawAnimImageToSurf((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr,scrbuf);
+                        Rend_DrawImageToGamescr((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr);
                     nod->CurFr++;
 
                     if (nod->CurFr > nod->end)
@@ -1903,38 +1792,7 @@ void DeleteAnims(MList *lst)
 
 
 
-void ProcessCursor()
-{
-    if (GetgVarInt(SLOT_INVENTORY_MOUSE) != 0)
-    {
-        if (GetgVarInt(SLOT_INVENTORY_MOUSE) != current_obj_cur)
-        {
-            if (objcur[0]!=NULL)
-                DeleteCursor(objcur[0]);
-            if (objcur[1]!=NULL)
-                DeleteCursor(objcur[1]);
 
-            objcur[0]=new(Cursor);
-            objcur[1]=new(Cursor);
-
-            current_obj_cur=GetgVarInt(SLOT_INVENTORY_MOUSE);
-
-            char buf[16];
-            sprintf(buf,"g0bac%2.2x1.tga",current_obj_cur);
-            LoadCursor(buf,objcur[0]);
-            sprintf(buf,"g0bbc%2.2x1.tga",current_obj_cur);
-            LoadCursor(buf,objcur[1]);
-        }
-        if (cur == CurDefault[CURSOR_ACTIVE] || cur == CurDefault[CURSOR_HANDPU] || cur == CurDefault[CURSOR_IDLE])
-        {
-            if (cur == CurDefault[CURSOR_ACTIVE] || cur == CurDefault[CURSOR_HANDPU])
-                cur=objcur[1];
-            else
-                cur=objcur[0];
-        }
-    }
-    DrawCursor(cur,MouseX(),MouseY());
-}
 
 
 

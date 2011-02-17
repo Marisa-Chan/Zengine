@@ -6,21 +6,11 @@
 uint8_t     Renderer = RENDER_FLAT;
 
 int GAME_Y=68;
+int GAME_X=0;
+int GAME_W=640;
+int GAME_H=480-68*2;
 
 //18 default cursors
-
-char *(CurNames[])= {"active","arrow","backward","downarrow","forward","handpt","handpu","hdown","hleft",\
-                     "hright","hup","idle","leftarrow","rightarrow","suggest_surround","suggest_tilt","turnaround","zuparrow"
-                    };
-
-char *(CurFiles[])= {"g0gbc011.zcr","g0gac001.zcr","g0gac021.zcr","g0gac031.zcr","g0gac041.zcr","g0gac051.zcr","g0gac061.zcr","g0gac071.zcr","g0gac081.zcr",\
-                     "g0gac091.zcr","g0gac101.zcr","g0gac011.zcr","g0gac111.zcr","g0gac121.zcr","g0gac131.zcr","g0gac141.zcr","g0gac151.zcr","g0gac161.zcr"
-                    };
-
-Cursor *CurDefault[NUM_CURSORS];
-
-
-
 
 
 SDL_Surface *screen;
@@ -29,10 +19,10 @@ SDL_Surface *fish, *tempbuf;
 
 int fishtable[640][480-68*2];
 
-Cursor *cur;
+int PanaWidth=1800;
+int *PanaX;
 
-int current_obj_cur=0;
-Cursor *objcur[2];
+
 
 
 
@@ -93,4 +83,189 @@ void SetFishTable(double angl, double k)
 
 }
 
+void InitGraphics(bool fullscreen)
+{
+    screen=InitGraphicAndSound(640,480,32,fullscreen);
 
+
+
+    tempbuf=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
+    fish=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
+
+    //cur=new(Cursor);//"g0gac011.zcr"));
+    //LoadCursor("g0gac011.zcr",cur);
+
+    Mouse_LoadCursors();
+
+    SDL_ShowCursor(SDL_DISABLE);
+
+    PanaX = getdirectvar(SLOT_LOCATION_CUR_X);
+
+}
+
+void Rend_DrawImageToGamescr(SDL_Surface *scr,int x, int y)
+{
+    if (scrbuf)
+        DrawImageToSurf(scr,x,y,scrbuf);
+}
+
+void Rend_DrawImageToGamescr(anim_surf *scr,int x, int y, int frame)
+{
+    if (scrbuf)
+        DrawAnimImageToSurf(scr,x,y,frame,scrbuf);
+}
+
+void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y)
+{
+    if (scrbuf)
+        DrawImageToSurf(scr,x,y+GAME_Y,screen);
+}
+
+void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y)
+{
+    if (scrbuf)
+        DrawImageToSurf(scr,x,y,screen);
+}
+
+void Rend_LoadGamescr(char *path)
+{
+    if (scrbuf)
+        SDL_FreeSurface(scrbuf);
+
+    scrbuf=IMG_Load(path);
+
+    if (!scrbuf)
+        printf("ERROR:  IMG_Load(%s): %s\n\n",path, IMG_GetError());
+    else
+    {
+        ConvertImage(&scrbuf);
+    }
+}
+
+
+void Rend_ProcessCursor()
+{
+    if (GetgVarInt(SLOT_INVENTORY_MOUSE) != 0)
+    {
+        if (GetgVarInt(SLOT_INVENTORY_MOUSE) != Mouse_GetCurrentObjCur())
+            Mouse_LoadObjCursor( GetgVarInt(SLOT_INVENTORY_MOUSE) );
+
+        if (Mouse_IsCurrentCur(CURSOR_ACTIVE) || Mouse_IsCurrentCur(CURSOR_HANDPU) || Mouse_IsCurrentCur(CURSOR_IDLE))
+        {
+            if (Mouse_IsCurrentCur(CURSOR_ACTIVE) || Mouse_IsCurrentCur(CURSOR_HANDPU))
+                Mouse_SetCursor(CURSOR_OBJ_1);
+            else
+                Mouse_SetCursor(CURSOR_OBJ_0);
+        }
+    }
+    Mouse_DrawCursor(MouseX(),MouseY());
+}
+
+bool Rend_MouseInGamescr()
+{
+    return (MouseX() >= GAME_X          &&\
+            MouseX() <= GAME_X + GAME_W &&\
+            MouseY() >= GAME_Y          &&\
+            MouseY() <= GAME_Y + GAME_H );
+}
+
+int Rend_GetMouseGameX()
+{
+    int tmpl;
+    switch(Renderer)
+    {
+        case RENDER_FLAT:
+            return MouseX() - GAME_X;
+            break;
+
+        case RENDER_PANA:
+            tmpl = MouseX() - (GAME_W >> 1) + *PanaX;
+            if (tmpl < 0)
+                tmpl += PanaWidth;
+            else if (tmpl > PanaWidth)
+                tmpl -= PanaWidth;
+
+            return tmpl;
+
+            break;
+
+        default:
+            return MouseX() - GAME_X;
+    }
+}
+
+int Rend_GetMouseGameY()
+{
+    int tmpl;
+    switch(Renderer)
+    {
+        case RENDER_FLAT:
+            return MouseY() - GAME_Y;
+            break;
+
+        case RENDER_PANA:
+            return MouseY() - GAME_Y;
+            break;
+
+        default:
+            return MouseY() - GAME_Y;
+    }
+}
+
+void Rend_SetRenderer(int meth)
+{
+    Renderer = meth;
+}
+
+int Rend_GetRenderer()
+{
+    return Renderer;
+}
+
+void FlatRender()
+{
+    SDL_FillRect(screen,0,0);
+    DrawImage(scrbuf,0,GAME_Y);
+}
+
+void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength)
+{
+    SDL_LockSurface(srf);
+    SDL_LockSurface(nw);
+    for(int y = 0; y < srf->h; y ++)
+    for(int x = 0; x < srf->w; x ++){
+
+        int *nww=(int *)nw->pixels;
+        int *old=(int *)srf->pixels;
+        nww[x+y*nw->w] = old[fishtable[x][y]];
+    }
+    SDL_UnlockSurface(srf);
+    SDL_UnlockSurface(nw);
+}
+
+void PanaRender()
+{
+    if (MouseX() > 620)
+        *getdirectvar(7) +=10;
+
+    if (MouseX() < 20)
+        *getdirectvar(7) -=10;
+
+    if (*getdirectvar(7) >= scrbuf->w)
+        *getdirectvar(7) %= scrbuf->w;
+    if (*getdirectvar(7) < 0)
+        *getdirectvar(7) = scrbuf->w + *getdirectvar(7);
+
+    SDL_FillRect(screen,0,0);
+
+    /*DrawImage(scrbuf,-Location.X,GAME_Y);
+    if (Location.X > scrbuf->w - screen->w)
+        DrawImage(scrbuf,scrbuf->w-Location.X,GAME_Y);*/
+
+    DrawImageToSurf(scrbuf,-*getdirectvar(7),0,tempbuf);
+    if (*getdirectvar(7) > scrbuf->w - screen->w)
+        DrawImageToSurf(scrbuf,scrbuf->w-*getdirectvar(7),0,tempbuf);
+
+    MakeImageEye(tempbuf,fish,-0.5);
+    DrawImage(fish,0,GAME_Y);
+}

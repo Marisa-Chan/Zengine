@@ -139,12 +139,7 @@ void RenderFunc();
 
 void DrawImageToSurf(SDL_Surface *surf, int16_t x, int16_t y,SDL_Surface *dest);
 
-struct Cursor
-{
-    SDL_Surface *img;
-    int16_t ox;
-    int16_t oy;
-};
+
 
 
 void LoadCursor(char *file, Cursor *cur);

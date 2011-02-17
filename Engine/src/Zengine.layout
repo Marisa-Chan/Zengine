@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="Graph.cpp" open="1" top="0" tabpos="5">
+	<File name="./Control.cpp" open="1" top="0" tabpos="9">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="./ScriptSystem.cpp" open="1" top="0" tabpos="11">
-		<Cursor position="1015" topLine="61" />
+	<File name="./Game.cpp" open="1" top="0" tabpos="10">
+		<Cursor position="30721" topLine="1437" />
 	</File>
-	<File name="./ScriptSystem.h" open="1" top="0" tabpos="13">
-		<Cursor position="849" topLine="19" />
+	<File name="./Game.h" open="1" top="0" tabpos="17">
+		<Cursor position="2056" topLine="126" />
+	</File>
+	<File name="Graph.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="2279" topLine="104" />
+	</File>
+	<File name="./Render.cpp" open="1" top="1" tabpos="11">
+		<Cursor position="2082" topLine="66" />
+	</File>
+	<File name="./Render.h" open="1" top="0" tabpos="16">
+		<Cursor position="734" topLine="0" />
+	</File>
+	<File name="./ScriptSystem.cpp" open="1" top="0" tabpos="14">
+		<Cursor position="495" topLine="12" />
+	</File>
+	<File name="./ScriptSystem.h" open="1" top="0" tabpos="18">
+		<Cursor position="297" topLine="0" />
 	</File>
 	<File name="Sound.cpp" open="1" top="0" tabpos="7">
 		<Cursor position="773" topLine="13" />
@@ -16,14 +31,14 @@
 	<File name="Sound.h" open="1" top="0" tabpos="6">
 		<Cursor position="322" topLine="0" />
 	</File>
-	<File name="System.cpp" open="1" top="0" tabpos="12">
-		<Cursor position="8156" topLine="373" />
+	<File name="System.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="8108" topLine="374" />
 	</File>
 	<File name="System.h" open="1" top="0" tabpos="4">
-		<Cursor position="1381" topLine="48" />
+		<Cursor position="255" topLine="0" />
 	</File>
-	<File name="./actions.h" open="1" top="0" tabpos="10">
-		<Cursor position="1025" topLine="0" />
+	<File name="./actions.cpp" open="1" top="0" tabpos="15">
+		<Cursor position="576" topLine="0" />
 	</File>
 	<File name="main.cpp" open="1" top="0" tabpos="1">
 		<Cursor position="520" topLine="3" />

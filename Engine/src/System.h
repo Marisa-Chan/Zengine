@@ -13,7 +13,9 @@
 #include "mylist.h"
 
 #include "Graph.h"
+#include "Render.h"
 #include "Sound.h"
+#include "Mouse.h"
 #include "Manage.h"
 #include "Puzzle.h"
 #include "SoundFX.h"
