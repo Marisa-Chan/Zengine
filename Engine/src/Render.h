@@ -29,4 +29,8 @@ int Rend_GetRenderer();
 
 void Rend_ProcessCursor();
 
+
+#define GAMESCREEN_W 640
+#define GAMESCREEN_H 344
+
 #endif // RENDER_H_INCLUDED
