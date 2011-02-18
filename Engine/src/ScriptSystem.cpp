@@ -3,8 +3,8 @@
 #include "System.h"
 
 
-uint8_t SystemWorld;
-uint8_t SystemRoom;
+uint8_t SystemWorld = 'G';
+uint8_t SystemRoom  = 'J';
 
 
 
@@ -17,6 +17,7 @@ StateBoxEnt *StateBox[VAR_SLOTS_MAX];
 puzzlenode  *StateBoxStk[STATEBOX_STACK_MAX];
 uint32_t     StateBoxStkSz = 0;
 
+bool BreakExecute = false;
 
 
 
@@ -162,15 +163,15 @@ void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
     fclose(fl);
 }
 
-void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
+void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
 {
     //Needed reverse from 0x004246C7
 
-    if (GetgVarInt(3) != 'G' &&
-        GetgVarInt(4) != 'J' )
+    if (GetgVarInt(3) != SystemWorld &&
+        GetgVarInt(4) != SystemRoom  )
     {
-        if (w == 'G' &&
-            r == 'J' )
+        if (w == SystemWorld &&
+            r == SystemRoom  )
         {
             SetgVarInt(45,GetgVarInt(3));
             SetgVarInt(46,GetgVarInt(4));
@@ -283,11 +284,13 @@ void ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // w
     FillStateBoxFromList(*Getroom());
     FillStateBoxFromList(*Getworld());
 
-    SetgVarInt(3,w);
-    SetgVarInt(4,r);
-    SetgVarInt(5,v1);
-    SetgVarInt(6,v2);
+    SetgVarInt(3,toupper(w));
+    SetgVarInt(4,toupper(r));
+    SetgVarInt(5,toupper(v1));
+    SetgVarInt(6,toupper(v2));
     SetgVarInt(7,X);
+
+    BreakExecute = false;
 }
 
 
@@ -390,6 +393,64 @@ void ShakeStateBox(uint32_t indx)
 }
 
 
+
+
+void ScrSys_exec_puzzle_list(pzllst *lst)
+{
+    if (lst->exec_times<2)
+    {
+        StartMList(lst->_list);
+        while (!eofMList(lst->_list))
+        {
+            if (Puzzle_try_exec( (puzzlenode *)DataMList(lst->_list) ) == ACTION_BREAK )
+                {
+                    BreakExecute=true;
+                    break;
+                }
+            NextMList(lst->_list);
+        }
+        lst->exec_times++;
+    }
+    else
+    {
+        int i=0,j=lst->stksize;
+
+        while ( i < j)
+        {
+            if ( Puzzle_try_exec( lst->stack[i] ) == ACTION_BREAK )
+                {
+                    BreakExecute=true;
+                    break;
+                }
+            i++;
+        }
+
+        int z=0;
+        for (i = j; i < lst->stksize; i++)
+        {
+            lst->stack[z] = lst->stack[i];
+            z++;
+        }
+        lst->stksize = z;
+    }
+}
+
+bool ScrSys_BreakExec()
+{
+    return BreakExecute;
+}
+
+void ScrSys_SetBreak()
+{
+    BreakExecute=true;
+}
+
+
+
+
+
+
+
 ////Depricated
 
 int *DGetGVars()
@@ -401,5 +462,3 @@ uint8_t *DGetFlags()
 {
     return Flags;
 }
-
-

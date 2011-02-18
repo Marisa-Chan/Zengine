@@ -86,4 +86,5 @@ int GetIntVal(char *chr);
 
 #define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
 
+
 #endif // SYSTEM_H_INCLUDED

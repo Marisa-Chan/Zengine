@@ -19,18 +19,17 @@ int Rend_GetMouseGameY();
 bool Rend_MouseInGamescr();
 
 void Rend_SetRenderer(int meth);
-void SetFishTable(double angl, double k);
+void Rend_SetFishTable(double angl, double k);
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
 
-void FlatRender();
-void MakeImageEye(SDL_Surface *srf,SDL_Surface *nw,double dStrength);
-void PanaRender();
 int Rend_GetRenderer();
-
 void Rend_ProcessCursor();
 
+void Rend_RenderFunc();
+void Rend_InitGraphics(bool fullscreen);
 
 #define GAMESCREEN_W 640
+#define GAMESCREEN_P 20
 #define GAMESCREEN_H 344
 
 #endif // RENDER_H_INCLUDED

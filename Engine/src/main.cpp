@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
     InitVkKeys();
 
-    InitGraphics(fullscreen);
+    Rend_InitGraphics(fullscreen);
     InitScriptsEngine();
 
 

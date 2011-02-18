@@ -24,15 +24,23 @@ struct pzllst{
 
 struct func_node
 {
-    void (*func)(char*, pzllst *);
+    int          (*func)(char*, pzllst *);
     char         *param;
     puzzlenode   *owner;
 };
 
+struct crit_node
+{
+    uint32_t    slot1;
+    uint32_t    slot2;
+    uint8_t     oper;
+    bool        var2; //if true: slot2 is slot; false: slot2 - number
+};
 
 
 pzllst *CreatePzlLst();
 int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr);
+int Puzzle_try_exec(puzzlenode *pzlnod);
 
 
 

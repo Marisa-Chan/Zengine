@@ -6,7 +6,7 @@
 
 #define VAR_SLOTS_MAX 0xFFFF
 #define STATEBOX_STACK_MAX 1024
-
+#define MaxStateBoxEnts 0x400 //0xFF is very small
 
 
 #define SLOT_LOCATION_CUR_WO    3
@@ -26,6 +26,16 @@
 #define CRIT_OP_LEA   1  //<
 #define CRIT_OP_GRE   2  //>
 #define CRIT_OP_NOT   3  //!
+
+
+struct StateBoxEnt{
+    puzzlenode * nod[MaxStateBoxEnts];
+    uint32_t     cnt;
+};
+
+
+
+
 
 void    ScrSys_SetSystemClass(char World, char Room);
 uint8_t ScrSys_GetSystemWorld();
@@ -48,6 +58,16 @@ void InitScriptsEngine();
 
 void FillStateBoxFromList(pzllst *lst);
 
+void ScrSys_ChangeLocation(uint8_t w, uint8_t r, uint8_t v1, uint8_t v2, int32_t X);
+
+void ScrSys_exec_puzzle_list(pzllst *lst);
+
+
+
+void ShakeStateBox(uint32_t indx);
+
+bool ScrSys_BreakExec();
+void ScrSys_SetBreak();
 
 /////  Depricated
 int *DGetGVars();

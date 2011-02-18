@@ -9,7 +9,7 @@ extern int32_t RenderDelay;
 extern int32_t View_start_Loops;
 extern int GAME_Y;
 
-void action_set_screen(char *params, pzllst *owner)
+int action_set_screen(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
@@ -25,9 +25,11 @@ void action_set_screen(char *params, pzllst *owner)
     {
         ConvertImage(&scrbuf);
     }
+
+    return ACTION_NORMAL;
 }
 
-void action_set_partial_screen(char *params, pzllst *owner)
+int action_set_partial_screen(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:set_partial_screen(%s)\n",params);
@@ -70,9 +72,10 @@ void action_set_partial_screen(char *params, pzllst *owner)
         SDL_FreeSurface(tmp);
 
     }
+    return ACTION_NORMAL;
 }
 
-void action_assign(char *params, pzllst *owner)
+int action_assign(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:assign(%s)\n",params);
@@ -81,9 +84,10 @@ void action_assign(char *params, pzllst *owner)
     sscanf(params,"%s %s",tmp1,tmp2);
 
     SetgVarInt(GetIntVal(tmp1),GetIntVal(tmp2));
+    return ACTION_NORMAL;
 }
 
-void action_timer(char *params, pzllst *owner)
+int action_timer(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:timer(%s)\n",params);
@@ -99,7 +103,7 @@ void action_timer(char *params, pzllst *owner)
 //#ifdef TRACE
 //        printf("        owned %d\n",GetIntVal(tmp2));
 //#endif
-        return;
+        return ACTION_NORMAL;
     }
 
 
@@ -119,9 +123,10 @@ void action_timer(char *params, pzllst *owner)
 
     SetgVarInt(tmp1,1);
 
+    return ACTION_NORMAL;
 }
 
-void action_change_location(char *params, pzllst *owner)
+int action_change_location(char *params, pzllst *owner)
 {
 
     //need reverse from 0x00409891
@@ -169,17 +174,19 @@ void action_change_location(char *params, pzllst *owner)
     RenderDelay = 2;
     View_start_Loops = 1;
 
+    return ACTION_BREAK;
 }
 
-void action_dissolve(char *params, pzllst *owner)
+int action_dissolve(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:dissolve()\n");
 #endif
 
+    return ACTION_NORMAL;
 }
 
-void action_disable_control(char *params, pzllst *owner)
+int action_disable_control(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:disable_control(%s)\n",params);
@@ -188,9 +195,11 @@ void action_disable_control(char *params, pzllst *owner)
     int slot = GetIntVal(params);
 
     ScrSys_SetFlag(slot,FLAG_DISABLED);
+
+    return ACTION_NORMAL;
 }
 
-void action_enable_control(char *params, pzllst *owner)
+int action_enable_control(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:enable_control(%s)\n",params);
@@ -199,9 +208,11 @@ void action_enable_control(char *params, pzllst *owner)
     int slot = GetIntVal(params);
 
     ScrSys_SetFlag(slot, 0);
+
+    return ACTION_NORMAL;
 }
 
-void action_add(char *params, pzllst *owner)
+int action_add(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:add(%s)\n",params);
@@ -213,9 +224,11 @@ void action_add(char *params, pzllst *owner)
 
     tmp = GetIntVal(slot);
     SetgVarInt(tmp, GetgVarInt(tmp) + GetIntVal(number));
+
+    return ACTION_NORMAL;
 }
 
-void action_debug(char *params, pzllst *owner)
+int action_debug(char *params, pzllst *owner)
 {
 
 
@@ -228,9 +241,11 @@ void action_debug(char *params, pzllst *owner)
 #ifdef TRACE
     printf("DEBUG :%s\t: %d \n",txt,tmp);
 #endif
+
+    return ACTION_NORMAL;
 }
 
-void action_random(char *params, pzllst *owner)
+int action_random(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:random(%s)\n",params);
@@ -242,11 +257,13 @@ void action_random(char *params, pzllst *owner)
     number=GetIntVal(chars);
 
     SetgVarInt(slot, rand() % (number+1) );
+
+    return ACTION_NORMAL;
 }
 
 
 
-void action_streamvideo(char *params, pzllst *owner)
+int action_streamvideo(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:streamvideo(%s)\n",params);
@@ -325,9 +342,11 @@ void action_streamvideo(char *params, pzllst *owner)
     SMPEG_stop(anm->mpg);
     SMPEG_delete(anm->mpg);
     delete anm;
+
+    return ACTION_NORMAL;
 }
 
-void action_animplay(char *params, pzllst *owner)
+int action_animplay(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:animplay(%s)\n",params);
@@ -440,9 +459,11 @@ void action_animplay(char *params, pzllst *owner)
     }
 
     nod->CurFr = nod->start;
+
+    return ACTION_NORMAL;
 }
 
-void action_music(char *params, pzllst *owner)
+int action_music(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:music(%s)\n",params);
@@ -465,9 +486,11 @@ void action_music(char *params, pzllst *owner)
     tmr_AddToTimerList(nod);
 
     SetgVarInt(slot, 1);
+
+    return ACTION_NORMAL;
 }
 
-void action_universe_music(char *params, pzllst *owner)
+int action_universe_music(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:universe_music(%s) (%s)\n",params,ReturnListName(owner));
@@ -483,7 +506,7 @@ void action_universe_music(char *params, pzllst *owner)
     //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
     if (ScrSys_SlotIsOwned(slot))
-        return;
+        return ACTION_NORMAL;
 
 
 
@@ -498,7 +521,7 @@ void action_universe_music(char *params, pzllst *owner)
         printf("ERROR, NO CHANNELS!\n");
         Mix_FreeChunk(nod->chunk);
         delete nod;
-        return;
+        return ACTION_NORMAL;
     }
 
     if (GetIntVal(loop)==1)
@@ -523,15 +546,19 @@ void action_universe_music(char *params, pzllst *owner)
     snd_AddToWavsList(nod);
 
     SetgVarInt(slot, 1);
+
+    return ACTION_NORMAL;
 }
 
 
-void action_syncsound(char *params, pzllst *owner)
+int action_syncsound(char *params, pzllst *owner)
 {
     printf("PlayPreload \n");
+
+    return ACTION_NORMAL;
 }
 
-void action_animpreload(char *params, pzllst *owner)
+int action_animpreload(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:animpreload(%s)\n",params);
@@ -557,9 +584,11 @@ void action_animpreload(char *params, pzllst *owner)
     SetgVarInt(pre->slot,2);
 
     //printf("AnimPreload \n");
+
+    return ACTION_NORMAL;
 }
 
-void action_playpreload(char *params, pzllst *owner)
+int action_playpreload(char *params, pzllst *owner)
 {
     char sl[16];
     uint32_t slot;
@@ -572,7 +601,7 @@ void action_playpreload(char *params, pzllst *owner)
 
     MList *preload = *Getpreload();
     if (!preload)
-        return;
+        return ACTION_NORMAL;
 
     char buff[255];
     bool found = false;
@@ -595,7 +624,7 @@ void action_playpreload(char *params, pzllst *owner)
     }
 
     if (!found)
-        return;
+        return ACTION_NORMAL;
 
     if (sll == 0)
         sll = slot;
@@ -605,9 +634,11 @@ void action_playpreload(char *params, pzllst *owner)
 
     action_animplay(buff,owner);
     //SetgVarInt(GetIntVal(chars),2);
+
+    return ACTION_NORMAL;
 }
 
-void action_ttytext(char *params, pzllst *owner)
+int action_ttytext(char *params, pzllst *owner)
 {
     char chars[16];
     sscanf(params,"%s",chars);
@@ -623,9 +654,11 @@ void action_ttytext(char *params, pzllst *owner)
     tmr_AddToTimerList(nod);
 
     SetgVarInt(GetIntVal(chars), 1);
+
+    return ACTION_NORMAL;
 }
 
-void action_kill(char *params, pzllst *owner)
+int action_kill(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:kill(%s)\n",params);
@@ -668,7 +701,7 @@ void action_kill(char *params, pzllst *owner)
             NextMList(timers);
         }
 
-        return;
+        return ACTION_NORMAL;
     }
 
     if (strcasecmp(chars,"\"audio\"")==0)
@@ -685,13 +718,13 @@ void action_kill(char *params, pzllst *owner)
                 delete nod;
                 DeleteCurrent(wavs);
                 SetgVarInt(slot, 2);
-                return;
+                return ACTION_NORMAL;
             }
 
             NextMList(wavs);
         }
 
-        return;
+        return ACTION_NORMAL;
     }
 
     slot = GetIntVal(chars);
@@ -713,7 +746,7 @@ void action_kill(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(anims);
             SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(anims);
@@ -731,7 +764,7 @@ void action_kill(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(wavs);
             //   SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(wavs);
@@ -747,7 +780,7 @@ void action_kill(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(timers);
             SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(timers);
@@ -756,10 +789,12 @@ void action_kill(char *params, pzllst *owner)
 #ifdef TRACE
     printf("Nothing to kill %d\n",slot);
 #endif
+
+    return ACTION_NORMAL;
 }
 
 
-void action_stop(char *params, pzllst *owner)
+int action_stop(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:stop(%s)\n",params);
@@ -780,7 +815,7 @@ void action_stop(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(timers);
             SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(timers);
@@ -805,7 +840,7 @@ void action_stop(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(anims);
             SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(anims);
@@ -823,17 +858,19 @@ void action_stop(char *params, pzllst *owner)
             delete nod;
             DeleteCurrent(wavs);
             SetgVarInt(slot, 2);
-            return;
+            return ACTION_NORMAL;
         }
 
         NextMList(wavs);
     }
 
     printf("Nothing to stop %d\n",slot);
+
+    return ACTION_NORMAL;
 }
 
 
-void action_inventory(char *params, pzllst *owner)
+int action_inventory(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:inventory(%s)\n",params);
@@ -911,10 +948,10 @@ void action_inventory(char *params, pzllst *owner)
         SetgVarInt(item,0);
     }
 
-
+    return ACTION_NORMAL;
 }
 
-void action_crossfade(char *params, pzllst *owner)
+int action_crossfade(char *params, pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:crossfade(%s)\n",params);
@@ -947,4 +984,6 @@ void action_crossfade(char *params, pzllst *owner)
         NextMList(wavs);
     }
 
+
+    return ACTION_NORMAL;
 }
