@@ -173,19 +173,19 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         if (w == SystemWorld &&
             r == SystemRoom  )
         {
-            SetgVarInt(45,GetgVarInt(3));
-            SetgVarInt(46,GetgVarInt(4));
-            SetgVarInt(47,GetgVarInt(5));
-            SetgVarInt(48,GetgVarInt(6));
-            SetgVarInt(49,GetgVarInt(7));
+            SetDirectgVarInt(45,GetgVarInt(3));
+            SetDirectgVarInt(46,GetgVarInt(4));
+            SetDirectgVarInt(47,GetgVarInt(5));
+            SetDirectgVarInt(48,GetgVarInt(6));
+            SetDirectgVarInt(49,GetgVarInt(7));
         }
         else
         {
-            SetgVarInt(40,GetgVarInt(3));
-            SetgVarInt(41,GetgVarInt(4));
-            SetgVarInt(42,GetgVarInt(5));
-            SetgVarInt(43,GetgVarInt(6));
-            SetgVarInt(44,GetgVarInt(7));
+            SetDirectgVarInt(40,GetgVarInt(3));
+            SetDirectgVarInt(41,GetgVarInt(4));
+            SetDirectgVarInt(42,GetgVarInt(5));
+            SetDirectgVarInt(43,GetgVarInt(6));
+            SetDirectgVarInt(44,GetgVarInt(7));
         }
     }
 
@@ -220,7 +220,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 //    RenderDelay = 2;
 //    View_start_Loops = 1;
 
-    if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3))
+    if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || *Getview() == NULL)
     {
         if (*Getview())
         {
@@ -246,7 +246,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 
     }
 
-    if (temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3))
+    if (temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || *Getroom() == NULL)
     {
         if (*Getroom())
         {
@@ -264,7 +264,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         LoadScriptFile(*Getroom(),GetExactFilePath(buf),false,NULL);
     }
 
-    if (temp.World != GetgVarInt(3))
+    if (temp.World != GetgVarInt(3) || *Getworld() == NULL)
     {
         if (*Getworld())
         {

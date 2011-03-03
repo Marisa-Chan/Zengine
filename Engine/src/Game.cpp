@@ -319,6 +319,18 @@ void InitGameLoop()
     LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
 
     ScrSys_ChangeLocation('g','a','r','y',0);
+
+    //Hack
+    SetDirectgVarInt(40,'g');
+    SetDirectgVarInt(41,'a');
+    SetDirectgVarInt(42,'r');
+    SetDirectgVarInt(43,'y');
+    SetDirectgVarInt(45,'g');
+    SetDirectgVarInt(46,'a');
+    SetDirectgVarInt(47,'r');
+    SetDirectgVarInt(48,'y');
+    SetDirectgVarInt(53,100);
+    //\Hack
 }
 
 

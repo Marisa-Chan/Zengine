@@ -48,7 +48,7 @@ void Rend_SetFishTable(double angl, double k)
 
     for (int x=0; x<ww; x++)
     {
-        double poX = (double)x - half_w;
+        double poX = (double)x - half_w +0.01; //0.01 - for zero tan/atan issue (vertical line on half of screen)
 
         double nX  = k * hhdtan * atan(poX*tandhh);
         double nn  = cos(atan(poX*tandhh));
@@ -250,12 +250,12 @@ void Rend_DrawPanorama()
     for(int y = 0; y < GAMESCREEN_H; y++)
     {
 
-        int *nww = ((int *)screen->pixels) + (y+GAME_Y)*screen->w; // only for 32 bit
+        int *nww = ((int *)screen->pixels) + (y+GAME_Y)*screen->w; // only for 32 bit color
 
         for(int x = 0; x < GAMESCREEN_W; x++)
         {
            // int *nww = (int *)screen->pixels;
-            int *old = (int *)scrbuf->pixels;    // only for 32 bit
+            int *old = (int *)scrbuf->pixels;    // only for 32 bit color
 
             int newx = fishtable[x][y].x + *PanaX;
 
@@ -275,10 +275,10 @@ void Rend_DrawPanorama()
 void Rend_PanaRender()
 {
     if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-        *PanaX +=10;
+        *PanaX +=GetgVarInt(53)/10;
 
     if (MouseX() < GAMESCREEN_P)
-        *PanaX -=10;
+        *PanaX -=GetgVarInt(53)/10;
 
     if (*PanaX >= scrbuf->w)
         *PanaX %= scrbuf->w;
