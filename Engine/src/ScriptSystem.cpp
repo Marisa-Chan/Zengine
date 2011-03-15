@@ -54,12 +54,6 @@ void ScrSys_SetFlag(uint32_t indx, uint8_t newval)
     Flags[indx] = newval;
 }
 
-void ScrSys_SetSystemClass(char World, char Room)
-{
-    SystemWorld = toupper(World);
-    SystemRoom  = toupper(Room);
-}
-
 uint8_t ScrSys_GetSystemWorld()
 {
     return SystemWorld;
@@ -115,6 +109,7 @@ void InitScriptsEngine()
 
     snd_InitWavsList();
     tmr_InitTimerList();
+    anim_InitPreloadList();
 
     memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz = 0;

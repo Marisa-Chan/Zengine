@@ -18,7 +18,8 @@ OBJS =  \
 	ScriptSystem.cpp\
 	SoundFX.cpp\
 	Timers.cpp\
- 	Sound.cpp
+ 	Sound.cpp\
+	anims.cpp
 	
 
 

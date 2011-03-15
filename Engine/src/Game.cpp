@@ -584,7 +584,7 @@ void DeleteAnims(MList *lst)
 
 void DeleteAllPreload()
 {
-    MList *preload = *Getpreload();
+    MList *preload = anim_getpreloadLst();
 
     if (preload == NULL)
         return;

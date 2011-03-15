@@ -16,7 +16,7 @@ MList    *ctrl  =NULL;
 
 MList   *anims  =NULL;
 
-MList  *preload =NULL;
+
 
 
 
@@ -68,8 +68,5 @@ MList **Getanims()
     return &anims;
 }
 
-MList **Getpreload()
-{
-    return &preload;
-}
+
 

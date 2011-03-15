@@ -563,9 +563,9 @@ int action_animpreload(char *params, pzllst *owner)
 #ifdef TRACE
     printf("        action:animpreload(%s)\n",params);
 #endif
-    MList *preload = *Getpreload();
+    MList *preload = anim_getpreloadLst();
     if (!preload)
-        preload = CreateMList();
+        return ACTION_NORMAL;//preload = CreateMList();
 
     int      slot;
     char name[64];
@@ -599,7 +599,7 @@ int action_playpreload(char *params, pzllst *owner)
     printf("        action:playpreload(%s)\n",params);
 #endif
 
-    MList *preload = *Getpreload();
+    MList *preload = anim_getpreloadLst();
     if (!preload)
         return ACTION_NORMAL;
 

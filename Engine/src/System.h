@@ -23,6 +23,7 @@
 #include "Control.h"
 #include "ScriptSystem.h"
 #include "actions.h"
+#include "anims.h"
 #include "Game.h"
 
 

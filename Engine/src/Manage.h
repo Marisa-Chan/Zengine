@@ -15,7 +15,7 @@ pzllst **Getview();
 MList **Getctrl();
 
 MList **Getanims();
-MList **Getpreload();
+MList *Getpreload();
 
 
 #endif // MANAGE_H_INCLUDED
