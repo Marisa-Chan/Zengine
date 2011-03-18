@@ -21,7 +21,7 @@ bool Ctrl_Eligeblity(int obj, slotnode *slut)
 
 void Ctrl_DrawSlots()
 {
-    MList *ctrl = *Getctrl();
+    MList *ctrl = Getctrl();
     StartMList(ctrl);
 
     while (!eofMList(ctrl))
@@ -191,8 +191,8 @@ int Parse_Control_Panorama(FILE *fl)
 
     }
 
-    printf("%f\n",angle);
-    printf("%f\n",k);
+  //  printf("%f\n",angle);
+  //  printf("%f\n",k);
 
     Rend_SetFishTable(angle,k);
 
@@ -426,4 +426,74 @@ void ProcessControls(MList *ctrlst)
 
         PrevMList(ctrlst);
     }
+}
+
+
+
+void DeleteControlList(MList *lst)
+{
+    pushnode *psh;
+    slotnode *slt;
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        ctrlnode *nod=(ctrlnode *)DataMList(lst);
+
+
+        switch (nod->type)
+        {
+        case CTRL_PUSH:
+            psh=nod->node.push;
+            delete psh;
+            break;
+        case CTRL_SLOT:
+            slt=nod->node.slot;
+            if (slt->srf)
+                SDL_FreeSurface(slt->srf);
+            delete slt;
+            break;
+        }
+
+
+        delete nod;
+
+        NextMList(lst);
+    }
+
+    DeleteMList(lst);
+}
+
+void FlushControlList(MList *lst)
+{
+    pushnode *psh;
+    slotnode *slt;
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        ctrlnode *nod=(ctrlnode *)DataMList(lst);
+
+
+        switch (nod->type)
+        {
+        case CTRL_PUSH:
+            psh=nod->node.push;
+            delete psh;
+            break;
+        case CTRL_SLOT:
+            slt=nod->node.slot;
+            if (slt->srf)
+                SDL_FreeSurface(slt->srf);
+            delete slt;
+            break;
+        }
+
+
+        delete nod;
+
+        NextMList(lst);
+    }
+
+    FlushMList(lst);
 }

@@ -1,5 +1,4 @@
 
-
 #include "System.h"
 
 
@@ -20,6 +19,53 @@ uint32_t     StateBoxStkSz = 0;
 bool BreakExecute = false;
 
 
+pzllst   *uni    =NULL;
+pzllst   *world  =NULL;
+pzllst   *room   =NULL;
+pzllst   *view   =NULL;
+
+MList    *ctrl  =NULL;
+
+
+char * ScrSys_ReturnListName(pzllst *lst)
+{
+    if (lst == world)
+        return "world";
+
+    if (lst == uni)
+        return "universe";
+
+    if (lst == room)
+        return "room";
+
+    if (lst == view)
+        return "view";
+}
+
+pzllst *GetUni()
+{
+    return uni;
+}
+
+pzllst *Getworld()
+{
+    return world;
+}
+
+pzllst *Getroom()
+{
+    return room;
+}
+
+pzllst *Getview()
+{
+    return view;
+}
+
+MList *Getctrl()
+{
+    return ctrl;
+}
 
 void SetgVarInt(uint32_t indx, int var)
 {
@@ -52,16 +98,6 @@ uint8_t ScrSys_GetFlag(uint32_t indx)
 void ScrSys_SetFlag(uint32_t indx, uint8_t newval)
 {
     Flags[indx] = newval;
-}
-
-uint8_t ScrSys_GetSystemWorld()
-{
-    return SystemWorld;
-}
-
-uint8_t ScrSys_GetSystemRoom()
-{
-    return SystemRoom;
 }
 
 //Don't call it from loops for mylists!! it's cause error
@@ -106,10 +142,16 @@ void InitScriptsEngine()
 {
     memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
 
+    view  = CreatePzlLst();
+    room  = CreatePzlLst();
+    world = CreatePzlLst();
+    uni   = CreatePzlLst();
+
+    ctrl  = CreateMList();
 
     snd_InitWavsList();
     tmr_InitTimerList();
-    anim_InitPreloadList();
+    anim_InitAnimLists();
 
     memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz = 0;
@@ -158,15 +200,27 @@ void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
     fclose(fl);
 }
 
+void ScrSys_ClearStateBox()
+{
+    for (int i=0; i<VAR_SLOTS_MAX; i++)
+    {
+        if (StateBox[i] != NULL)
+            delete StateBox[i];
+    }
+
+    memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
+    StateBoxStkSz=0;
+}
+
 void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
 {
     //Needed reverse from 0x004246C7
 
     if (GetgVarInt(3) != SystemWorld &&
-        GetgVarInt(4) != SystemRoom  )
+            GetgVarInt(4) != SystemRoom  )
     {
         if (w == SystemWorld &&
-            r == SystemRoom  )
+                r == SystemRoom  )
         {
             SetDirectgVarInt(45,GetgVarInt(3));
             SetDirectgVarInt(46,GetgVarInt(4));
@@ -191,22 +245,13 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 
     Locate temp;
     temp.World =w;
-        temp.Room  =r;
-        temp.View1 =v1;
-        temp.View2 =v2;
-        temp.X     =X;
+    temp.Room  =r;
+    temp.View1 =v1;
+    temp.View2 =v2;
+    temp.X     =X;
 
 
-    ////////State box routine////////////
-    for (int i=0; i<VAR_SLOTS_MAX; i++)
-    {
-        if (StateBox[i] != NULL)
-            delete StateBox[i];
-    }
-
-    memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
-    StateBoxStkSz=0;
-    ////////---State box routine---//////////////
+    ScrSys_ClearStateBox();
 
     char buf[32];
     char tm[5];
@@ -215,18 +260,18 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 //    RenderDelay = 2;
 //    View_start_Loops = 1;
 
-    if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || *Getview() == NULL)
+    if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || view == NULL)
     {
-        if (*Getview())
-        {
-            tmr_DeleteTimerByOwner(*Getview());
-            snd_DeleteLoopedWavsByOwner(*Getview());
+        //if (view->_list->count > 0)
+        //{
+        tmr_DeleteTimerByOwner(view);
+        snd_DeleteLoopedWavsByOwner(view);
 
-            DeletePuzzleList(*Getview());
-            DeleteControlList(*Getctrl());
-            DeleteAnims(*Getanims());
-            DeleteAllPreload();
-        }
+        FlushPuzzleList(view);
+        FlushControlList(ctrl);
+        anim_FlushAnims();
+        anim_FlushPreload();
+        //}
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
@@ -234,50 +279,50 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[3]=temp.View2;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
-        *Getview()=CreatePzlLst();
-        *Getctrl()=CreateMList();
-        *Getanims()=CreateMList();
-        LoadScriptFile(*Getview(),GetExactFilePath(buf),true,*Getctrl());
+
+        LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
 
     }
 
-    if (temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || *Getroom() == NULL)
+    if (temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || room == NULL)
     {
-        if (*Getroom())
-        {
-            snd_DeleteLoopedWavsByOwner(*Getroom());
+        //if (room->_list->count > 0)
+        //{
+        snd_DeleteLoopedWavsByOwner(room);
 
-            DeletePuzzleList(*Getroom());
-        }
-
+        FlushPuzzleList(room);
+        //}
+        //room->exec_times = 0;
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
         tm[2]=0;
         sprintf(buf,"%s.scr",tm);
-        *Getroom()=CreatePzlLst();
-        LoadScriptFile(*Getroom(),GetExactFilePath(buf),false,NULL);
+
+        LoadScriptFile(room,GetExactFilePath(buf),false,NULL);
     }
 
-    if (temp.World != GetgVarInt(3) || *Getworld() == NULL)
+    if (temp.World != GetgVarInt(3) || world == NULL)
     {
-        if (*Getworld())
-        {
-            snd_DeleteLoopedWavsByOwner(*Getworld());
+        //if (world->_list->count > 0)
+        //{
+        snd_DeleteLoopedWavsByOwner(world);
 
-            DeletePuzzleList(*Getworld());
-        }
+        FlushPuzzleList(world);
+        //}
+        //world->exec_times = 0;
+
         tm[0]=temp.World;
         tm[1]=0;
         sprintf(buf,"%s.scr",tm);
-        *Getworld()=CreatePzlLst();
-        LoadScriptFile(*Getworld(),GetExactFilePath(buf),false,NULL);
+
+        LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
     }
 
-    FillStateBoxFromList(*GetUni());
-    FillStateBoxFromList(*Getview());
-    FillStateBoxFromList(*Getroom());
-    FillStateBoxFromList(*Getworld());
+    FillStateBoxFromList(uni);
+    FillStateBoxFromList(view);
+    FillStateBoxFromList(room);
+    FillStateBoxFromList(world);
 
     SetgVarInt(3,toupper(w));
     SetgVarInt(4,toupper(r));
@@ -398,10 +443,10 @@ void ScrSys_exec_puzzle_list(pzllst *lst)
         while (!eofMList(lst->_list))
         {
             if (Puzzle_try_exec( (puzzlenode *)DataMList(lst->_list) ) == ACTION_BREAK )
-                {
-                    BreakExecute=true;
-                    break;
-                }
+            {
+                BreakExecute=true;
+                break;
+            }
             NextMList(lst->_list);
         }
         lst->exec_times++;
@@ -413,10 +458,10 @@ void ScrSys_exec_puzzle_list(pzllst *lst)
         while ( i < j)
         {
             if ( Puzzle_try_exec( lst->stack[i] ) == ACTION_BREAK )
-                {
-                    BreakExecute=true;
-                    break;
-                }
+            {
+                BreakExecute=true;
+                break;
+            }
             i++;
         }
 

@@ -1,6 +1,15 @@
 #ifndef CONTROL_H_INCLUDED
 #define CONTROL_H_INCLUDED
 
+
+
+#define CTRL_PUSH     0
+#define CTRL_INPUT    1
+#define CTRL_SLOT     2
+#define CTRL_PANA     3
+#define CTRL_FLAT     4
+
+
 struct Rect
 {
     int x;
@@ -52,6 +61,9 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut);
 void Ctrl_DrawSlots();
+
+void DeleteControlList(MList *lst);
+void FlushControlList(MList *lst);
 
 
 #endif // CONTROL_H_INCLUDED

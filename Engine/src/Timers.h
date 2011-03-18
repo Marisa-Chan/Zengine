@@ -4,7 +4,7 @@
 struct timernode
 {
     uint32_t slot;
-    uint32_t time;
+    int32_t time;
     //uint32_t ownslot;
     pzllst  *owner;
 };

@@ -161,6 +161,11 @@ int MouseY()
     return My;
 }
 
+bool MouseInRect(int x, int y, int w, int h)
+{
+    return (MouseX()>=x) && (MouseX()<=x+w) && (MouseY()>=y) && (MouseY()<=y+h);
+}
+
 bool MouseDown(int btn)
 {
     if (Mstate & SDL_BUTTON(btn))
@@ -228,13 +233,13 @@ void ProcMTime()
 }
 
 //Resturn true if new tick appeared
-bool GetTick()
+bool GetBeat()
 {
     return btime;
 }
 
 //Return count of game timer ticks
-uint64_t GetTickCount()
+uint64_t GetBeatCount()
 {
     return mtime;
 }
@@ -308,6 +313,7 @@ char *GetExactFilePath(char *chr)
             }
         NextMList(FMan);
     }
+    printf("file %s not found!\n",chr);
     return NULL;
 }
 

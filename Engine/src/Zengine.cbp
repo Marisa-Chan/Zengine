@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/1000/Temp/pack_FILES" />
+				<Option parameters="/media/166/games/ZGI/pacs" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DTRACE" />
@@ -22,7 +22,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/1000/Temp/pack_FILES/" />
+				<Option parameters="/media/166/games/ZGI/pacs" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -75,6 +75,8 @@
 		<Unit filename="anims.cpp" />
 		<Unit filename="anims.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="./menu.cpp" />
+		<Unit filename="./menu.h" />
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
 		<Extensions>

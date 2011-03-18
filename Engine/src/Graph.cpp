@@ -52,6 +52,16 @@ SDL_Surface *CreateSurface(uint16_t w,uint16_t h)
     return SDL_CreateRGBSurface(SFTYPE,w,h,bpp,0,0,0,0);;
 }
 
+SDL_Surface *LoadConvertImg(char *file)
+{
+    SDL_Surface *tmpbuf=IMG_Load(file);
+    if (!tmpbuf)
+        printf("\nERROR:  IMG_Load(%s)\n\n",file, IMG_GetError());
+    else
+        ConvertImage(&tmpbuf);
+
+    return tmpbuf;
+}
 
 anim_surf *LoadAnimImage(char *file, int mask)
 {

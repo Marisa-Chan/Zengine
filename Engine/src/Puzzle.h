@@ -42,6 +42,7 @@ pzllst *CreatePzlLst();
 int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr);
 int Puzzle_try_exec(puzzlenode *pzlnod);
 
+void FlushPuzzleList(pzllst *lst);
 
 
 #endif // PUZZLE_H_INCLUDED

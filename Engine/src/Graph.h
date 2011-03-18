@@ -44,6 +44,8 @@ void DrawAnimImage(anim_surf *anim, int x, int y, int frame);
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf);
 void FreeAnimImage(anim_surf *anim);
 
+SDL_Surface *LoadConvertImg(char *file);
+
 
 
 #endif // GRAPH_H_INCLUDED

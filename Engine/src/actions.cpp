@@ -100,8 +100,9 @@ int action_timer(char *params, pzllst *owner)
     if (ScrSys_SlotIsOwned(tmp1))
     {
         //SetgVarInt(tmp1,1);
+//
 //#ifdef TRACE
-//        printf("        owned %d\n",GetIntVal(tmp2));
+ //       printf("        owned %d\n",GetIntVal(tmp2));
 //#endif
         return ACTION_NORMAL;
     }
@@ -113,8 +114,7 @@ int action_timer(char *params, pzllst *owner)
     nod->owner = owner;
 
     s=PrepareString(tmp2);
-
-    nod->time = GetTickCount() + GetIntVal(s);
+    nod->time = GetIntVal(s);
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
@@ -367,7 +367,7 @@ int action_animplay(char *params, pzllst *owner)
     char un4[16];
     sscanf(params,"%d %s %s %s %s %s %s %s %s %s %s %s %s",&slot,file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
 
-    MList *anims = *Getanims();
+    MList *anims = anim_getanimlst();
     StartMList(anims);
     while (!eofMList(anims))
     {
@@ -376,7 +376,7 @@ int action_animplay(char *params, pzllst *owner)
 
         if (nd->slot == slot)
         {
-            DeleteAnimNod(nd);
+            anim_DeleteAnimNod(nd);
             DeleteCurrent(anims);
         }
 
@@ -400,7 +400,6 @@ int action_animplay(char *params, pzllst *owner)
 
     nod->slot = slot;
 
-    nod->nexttick = millisec();
     nod->x = GetIntVal(x);
     nod->y = GetIntVal(y);
     nod->w = GetIntVal(w) - nod->x +1;
@@ -481,7 +480,7 @@ int action_music(char *params, pzllst *owner)
     nod->owner = owner;
 
 
-    nod->time = GetTickCount() + 10;
+    nod->time = 10;
 
     tmr_AddToTimerList(nod);
 
@@ -493,7 +492,7 @@ int action_music(char *params, pzllst *owner)
 int action_universe_music(char *params, pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:universe_music(%s) (%s)\n",params,ReturnListName(owner));
+    printf("        action:universe_music(%s) (%s)\n",params,ScrSys_ReturnListName(owner));
 #endif
 
     int slot;
@@ -649,7 +648,7 @@ int action_ttytext(char *params, pzllst *owner)
     nod->owner = owner;
 
 
-    nod->time = GetTickCount() + 15;
+    nod->time = 15;
 
     tmr_AddToTimerList(nod);
 
@@ -670,9 +669,7 @@ int action_kill(char *params, pzllst *owner)
 
     if (strcasecmp(chars,"\"all\"")==0)
     {
-        MList *anims = *Getanims();
-        DeleteAnims(anims);
-        *Getanims() = CreateMList();
+        anim_FlushAnims();
 
         MList *wavs = snd_GetWavsList();
         StartMList(wavs);
@@ -729,7 +726,7 @@ int action_kill(char *params, pzllst *owner)
 
     slot = GetIntVal(chars);
 
-    MList *anims = *Getanims();
+    MList *anims = anim_getanimlst();
     StartMList(anims);
     while(!eofMList(anims))
     {
@@ -821,7 +818,7 @@ int action_stop(char *params, pzllst *owner)
         NextMList(timers);
     }
 
-    MList *anims = *Getanims();
+    MList *anims = anim_getanimlst();
     StartMList(anims);
     while(!eofMList(anims))
     {

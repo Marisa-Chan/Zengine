@@ -641,6 +641,61 @@ void DeletePuzzleList(pzllst *lst)
     delete lst;
 }
 
+void FlushPuzzleList(pzllst *lst)
+{
+    StartMList(lst->_list);
+    while (!eofMList(lst->_list))
+    {
+        puzzlenode *nod=(puzzlenode *)DataMList(lst->_list);
+
+
+#ifdef FULLTRACE
+        printf("Deleting Puzzle #%d\n",nod->slot);
+#endif
+
+        StartMList(nod->CritList);
+        while (!eofMList(nod->CritList))
+        {
+
+            MList *criteries=(MList *)DataMList(nod->CritList);
+
+            StartMList(criteries);
+            while (!eofMList(criteries))
+            {
+                crit_node *critnd=(crit_node *)DataMList(criteries);
+                delete critnd;
+                NextMList(criteries);
+            }
+            DeleteMList(criteries);
+
+            NextMList(nod->CritList);
+        }
+        DeleteMList(nod->CritList);
+
+
+        StartMList(nod->ResList);
+        while (!eofMList(nod->ResList))
+        {
+            func_node *fun=(func_node *)DataMList(nod->ResList);
+            if (fun->param != NULL)
+                free(fun->param);
+            delete fun;
+            NextMList(nod->ResList);
+        }
+        DeleteMList(nod->ResList);
+
+
+        delete nod;
+
+        NextMList(lst->_list);
+    }
+
+    lst->exec_times = 0;
+    lst->stksize    = 0;
+
+    FlushMList(lst->_list);
+}
+
 bool examine_criterias(puzzlenode *nod)
 {
     StartMList(nod->CritList);
@@ -687,7 +742,7 @@ int Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
         {
 
 #ifdef TRACE
-            printf("Puzzle: %d (%s) \n",pzlnod->slot,ReturnListName(pzlnod->owner));
+            printf("Puzzle: %d (%s) \n",pzlnod->slot,ScrSys_ReturnListName(pzlnod->owner));
 #endif
 
             SetgVarInt(pzlnod->slot, 1);

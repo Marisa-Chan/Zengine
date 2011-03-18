@@ -15,8 +15,21 @@
 #define SLOT_LOCATION_CUR_V2    6
 #define SLOT_LOCATION_CUR_X     7
 #define SLOT_INVENTORY_MOUSE    9
+#define SLOT_MOUSE_RIGHT_CLICK 18
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
+#define SLOT_SPELL_1          191
+#define SLOT_SPELL_2          192
+#define SLOT_SPELL_3          193
+#define SLOT_SPELL_4          194
+#define SLOT_SPELL_5          195
+#define SLOT_SPELL_6          196
+#define SLOT_SPELL_7          197
+#define SLOT_SPELL_8          198
+#define SLOT_SPELL_9          199
+#define SLOT_SPELL_10         200
+#define SLOT_SPELL_11         201
+#define SLOT_SPELL_12         202
 
 #define FLAG_ONCE_PER_I 1
 #define FLAG_DISABLED   2
@@ -34,8 +47,13 @@ struct StateBoxEnt{
 };
 
 
+pzllst *GetUni();
+pzllst *Getworld();
+pzllst *Getroom();
+pzllst *Getview();
+MList  *Getctrl();
 
-
+char * ScrSys_ReturnListName(pzllst *lst);
 
 void    ScrSys_SetSystemClass(char World, char Room);
 uint8_t ScrSys_GetSystemWorld();

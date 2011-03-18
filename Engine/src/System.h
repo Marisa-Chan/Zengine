@@ -24,6 +24,7 @@
 #include "ScriptSystem.h"
 #include "actions.h"
 #include "anims.h"
+#include "menu.h"
 #include "Game.h"
 
 
@@ -36,8 +37,8 @@
 //Game timer functions
 void InitMTime(int fps);
 void ProcMTime();
-bool GetTick();
-uint64_t GetTickCount();
+bool GetBeat();
+uint64_t GetBeatCount();
 
 //Keyboard functions
 void FlushHits();
@@ -52,6 +53,8 @@ bool MouseUp(int btn);
 void FlushMouseBtn(int btn);
 void SetHit(SDLKey key);
 bool KeyHit(SDLKey key);
+
+bool MouseInRect(int x, int y, int w, int h);
 
 
 void InitVkKeys();

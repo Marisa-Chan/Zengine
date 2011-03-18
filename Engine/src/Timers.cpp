@@ -27,7 +27,7 @@ void tmr_DeleteTimerByOwner(pzllst *owner)
         {
             if (nod->slot != 0)
             {
-                SetgVarInt(nod->slot, nod->time - GetTickCount());
+                SetgVarInt(nod->slot, nod->time - GetBeatCount());
                 //printf("deleted timer %d, ost %d",nod->slot,  nod->time - GetTickCount());
             }
             //printf("deleted timer %d, ost %d %d \n",nod->slot,  nod->time - GetTickCount(),nod->ownslot);
@@ -49,7 +49,8 @@ void tmr_ProcessTimers()
         timernode *nod=(timernode *)DataMList(timers);
 
         if (nod)
-            if (nod->time<GetTickCount())
+            {
+            if (nod->time < 0)
             {
                 SetgVarInt(nod->slot,2);
 #ifdef TRACE
@@ -58,6 +59,9 @@ void tmr_ProcessTimers()
                 delete nod;
                 DeleteCurrent(timers);
 
+            }
+            if (GetBeat())
+                nod->time--;
             }
 
         NextMList(timers);

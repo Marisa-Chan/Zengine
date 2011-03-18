@@ -60,6 +60,9 @@ int main(int argc, char **argv)
     InitVkKeys();
 
     Rend_InitGraphics(fullscreen);
+
+    menu_LoadGraphics();
+
     InitScriptsEngine();
 
 

@@ -14,11 +14,7 @@
 
 
 
-#define CTRL_PUSH     0
-#define CTRL_INPUT    1
-#define CTRL_SLOT     2
-#define CTRL_PANA     3
-#define CTRL_FLAT     4
+
 
 
 
@@ -42,36 +38,6 @@ void ProcessControls(MList *ctrlst);
 
 bool ProcessCriteries(MList *lst);
 
-void DeletePuzzleList(pzllst *lst);
-void DeleteControlList(MList *lst);
-
-
-struct animnode
-{
-    uint32_t slot;
-    int      x;
-    int      y;
-    int      w;
-    int      h;
-    int  start;
-    int    end;
-    int   loopcnt;
-    int   unk1; //???
-    int   unk2;
-    int   unk3;
-    int   unk4;
-    int  CurFr;
-    uint32_t nexttick;
-    int  loops;
-    void *anim;
-    bool   vid;
-};
-
-void ProcessAnims();
-void DeleteAnims(MList *lst);
-void DeleteAnimNod(animnode *nod);
-void DeleteAllPreload();
-
 
 void GameLoop();
 void InitGameLoop();
@@ -83,14 +49,7 @@ void InitGameLoop();
 
 
 
-struct struct_Preload{
-    uint32_t  slot;
-    char    *fil;
-    int32_t   u1;
-    int32_t   u2;
-    int32_t   u3;
-    int32_t   u4;
-};
+
 
 
 

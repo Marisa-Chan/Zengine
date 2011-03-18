@@ -51,7 +51,7 @@ void SaveGame(char *file)
         NextMList(wavs);
     }
 
-    MList *anims = *Getanims();
+    MList *anims = anim_getanimlst();
     StartMList(anims);
     while (!eofMList(anims))
     {
@@ -60,7 +60,7 @@ void SaveGame(char *file)
         NextMList(anims);
     }
 
-    pzllst *room = *Getroom();
+    pzllst *room = Getroom();
     StartMList(room->_list);
     while (!eofMList(room->_list))
     {
@@ -69,7 +69,7 @@ void SaveGame(char *file)
         NextMList(room->_list);
     }
 
-    pzllst *view = *Getview();
+    pzllst *view = Getview();
     StartMList(view->_list);
     while (!eofMList(view->_list))
     {
@@ -78,7 +78,7 @@ void SaveGame(char *file)
         NextMList(view->_list);
     }
 
-    pzllst *world = *Getworld();
+    pzllst *world = Getworld();
     StartMList(world->_list);
     while (!eofMList(world->_list))
     {
@@ -87,7 +87,7 @@ void SaveGame(char *file)
         NextMList(world->_list);
     }
 
-    pzllst *uni = *GetUni();
+    pzllst *uni = GetUni();
     StartMList(uni->_list);
     while (!eofMList(uni->_list))
     {
@@ -161,39 +161,6 @@ void LoadGame(char *file)
 
 
 
-void DeleteControlList(MList *lst)
-{
-    pushnode *psh;
-    slotnode *slt;
-
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        ctrlnode *nod=(ctrlnode *)DataMList(lst);
-
-
-        switch (nod->type)
-        {
-        case CTRL_PUSH:
-            psh=nod->node.push;
-            delete psh;
-            break;
-        case CTRL_SLOT:
-            slt=nod->node.slot;
-            if (slt->srf)
-                SDL_FreeSurface(slt->srf);
-            delete slt;
-            break;
-        }
-
-
-        delete nod;
-
-        NextMList(lst);
-    }
-
-    DeleteMList(lst);
-}
 
 
 
@@ -314,8 +281,7 @@ bool ProcessCriteries(MList *lst)
 
 void InitGameLoop()
 {
-    *GetUni() = CreatePzlLst();
-    pzllst *uni = *GetUni();
+    pzllst *uni = GetUni();
     LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
 
     ScrSys_ChangeLocation('g','a','r','y',0);
@@ -329,7 +295,7 @@ void InitGameLoop()
     SetDirectgVarInt(46,'a');
     SetDirectgVarInt(47,'r');
     SetDirectgVarInt(48,'y');
-    SetDirectgVarInt(53,100);
+    SetDirectgVarInt(53,250);
     //\Hack
 }
 
@@ -369,13 +335,13 @@ void GameLoop()
 
     tmr_ProcessTimers();
     snd_ProcessWavs();
-    ProcessAnims();
+    anim_ProcessAnims();
 
 
-    pzllst *room = *Getroom();
-    pzllst *view = *Getview();
-    pzllst *world = *Getworld();
-    pzllst *uni = *GetUni();
+    pzllst *room  = Getroom();
+    pzllst *view  = Getview();
+    pzllst *world = Getworld();
+    pzllst *uni   =  GetUni();
 
     if (!ScrSys_BreakExec())
         ScrSys_exec_puzzle_list(world);
@@ -390,7 +356,7 @@ void GameLoop()
         ScrSys_exec_puzzle_list(uni);
 
 
-    MList *ctrl = *Getctrl();
+    MList *ctrl = Getctrl();
 
     if (!ScrSys_BreakExec())
         ProcessControls(ctrl);
@@ -453,155 +419,5 @@ void GameLoop()
 
 
 
-
-void ProcessAnims()
-{
-    MList *anims = *Getanims();
-    StartMList(anims);
-
-    while (!eofMList(anims))
-    {
-        animnode *nod=(animnode *)DataMList(anims);
-
-        if (nod)
-            if (nod->anim)
-                if (nod->nexttick<millisec())
-                    //if (GetTick())
-                {
-                    if (nod->vid)
-                    {
-                        anim_avi *anm=(anim_avi *)nod->anim;
-                        //if (!anm->pld)
-                        // {
-                        SMPEG_renderFrame(anm->mpg,nod->CurFr+1);
-                        //  }
-
-                        /*if (anm->loop == true && SMPEG_status(anm->mpg) == SMPEG_STOPPED)
-                            {
-                                SMPEG_rewind(anm->mpg);
-                                SMPEG_play(anm->mpg);
-                            }*/
-
-                        Rend_DrawImageToGamescr(anm->img,nod->x,nod->y);
-                    }
-                    else
-                        Rend_DrawImageToGamescr((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr);
-                    nod->CurFr++;
-
-                    if (nod->CurFr > nod->end)
-                    {
-                        nod->loops++;
-
-                        if (nod->loops<nod->loopcnt || nod->loopcnt == 0)
-                        {
-                            nod->CurFr=nod->start;
-                            if (nod->vid)
-                            {
-                                //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                                nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
-                            }
-                            else
-                                nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
-                        }
-
-                        else
-                        {
-#ifdef TRACE
-                            printf ("Animplay #%d End's\n",nod->slot);
-#endif
-                            if (nod->slot != 0)
-                                SetgVarInt(nod->slot,2);
-
-                            if (nod->vid)
-                            {
-                                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-                                SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-                                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-                            }
-                            else
-                                FreeAnimImage((anim_surf *)nod->anim);
-                            delete nod;
-                            DeleteCurrent(anims);
-                        }
-                    }
-                    else
-                    {
-                        if (nod->vid)
-                        {
-                            //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                            nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
-                        }
-                        else
-                            nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;
-                    }
-
-                }
-
-        NextMList(anims);
-    }
-}
-
-void DeleteAnimNod(animnode *nod)
-{
-    if (nod->vid)
-    {
-        SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-        SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-        SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-    }
-    else
-        FreeAnimImage((anim_surf *)nod->anim);
-
-    SetgVarInt(nod->slot,2);
-
-    delete nod;
-}
-
-void DeleteAnims(MList *lst)
-{
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        animnode *nod=(animnode *)DataMList(lst);
-
-        DeleteAnimNod(nod);
-
-        NextMList(lst);
-    }
-
-    FlushMList(lst);
-}
-
-
-
-
-
-
-
-
-
-
-
-void DeleteAllPreload()
-{
-    MList *preload = anim_getpreloadLst();
-
-    if (preload == NULL)
-        return;
-
-    StartMList(preload);
-
-    while (!eofMList(preload))
-    {
-        struct_Preload *pre = (struct_Preload *) DataMList(preload);
-
-        delete pre->fil;
-        delete pre;
-
-        NextMList(preload);
-    }
-    FlushMList(preload);
-    //*Getpreload() = NULL;
-}
 
 

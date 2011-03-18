@@ -275,10 +275,10 @@ void Rend_DrawPanorama()
 void Rend_PanaRender()
 {
     if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-        *PanaX +=GetgVarInt(53)/10;
+        *PanaX +=GetgVarInt(53)/20;
 
     if (MouseX() < GAMESCREEN_P)
-        *PanaX -=GetgVarInt(53)/10;
+        *PanaX -=GetgVarInt(53)/20;
 
     if (*PanaX >= scrbuf->w)
         *PanaX %= scrbuf->w;
@@ -303,6 +303,8 @@ void Rend_RenderFunc()
 
 
     Ctrl_DrawSlots();
+
+    menu_UpdateMenuBar();
 
     Rend_ProcessCursor();
 
