@@ -16,6 +16,11 @@
 
 #define menu_MAIN_CENTER       320
 
+#define menu_MAGIC_SPACE       28
+#define menu_MAGIC_ITEM_W      47
+
+#define menu_ITEM_SPACE        28
+
 uint16_t menu_bar_flag = 0xFFFF;
 
 bool   menu_Scrolled [3] = {false,false,false};
@@ -23,10 +28,15 @@ int16_t menu_ScrollPos[3] = {0,0,0};
 
 SDL_Surface *menubar[4][2];
 SDL_Surface *menuback[3][2];
+SDL_Surface *menupicto[256];
+
 
 int menu_MAIN_X = (640-580)/2;
 
 int8_t menu_mousefocus = -1;
+
+
+
 
 void menu_SetMenuBarVal(uint16_t val)
 {
@@ -55,10 +65,14 @@ void menu_LoadGraphics()
         sprintf(buf,"gmznu%2.2x1.tga",i);
         menubar[i][1] = LoadConvertImg(GetFilePath(buf));
     }
+
+    for (int i=0; i<256; i++)
+        menupicto[i] = NULL;
 }
 
 void menu_UpdateMenuBar()
 {
+    char buf[255];
 
     if (MouseY() <= 40)
         {
@@ -78,6 +92,28 @@ void menu_UpdateMenuBar()
                     }
 
                 DrawImage(menuback[menu_ITEM][0],menu_ScrollPos[menu_ITEM],0);
+
+                int item_count = GetgVarInt(SLOT_TOTAL_INV_AVAIL);
+                if (item_count == 0)
+                    item_count = 20;
+                printf("%d\n",item_count);
+                for (int i=0; i<item_count; i++)
+                {
+                    if (GetgVarInt(SLOT_START_SLOT + i) != 0)
+                    {
+                        int itemnum = GetgVarInt(SLOT_START_SLOT + i);
+
+                        if (menupicto[itemnum] == NULL)
+                            {
+                                sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
+                                menupicto[itemnum] = LoadConvertImg(GetFilePath(buf),0);
+                            }
+                        int itemspace = (600-menu_ITEM_SPACE) / item_count;
+                        DrawImage(menupicto[itemnum],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
+                    }
+                }
+
+
                 }
                 break;
 
@@ -94,6 +130,22 @@ void menu_UpdateMenuBar()
                     }
 
                 DrawImage(menuback[menu_MAGIC][0],640-menu_ScrollPos[menu_MAGIC],0);
+
+                for (int i=0; i<12; i++)
+                {
+                    if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
+                    {
+                        int itemnum = 0xE0 + i;
+                        if (menupicto[itemnum] == NULL)
+                            {
+                                sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
+                                menupicto[itemnum] = LoadConvertImg(GetFilePath(buf),0);
+                            }
+
+                        DrawImage(menupicto[itemnum],menu_ScrollPos[menu_MAGIC] + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i,0);
+                    }
+                }
+
                 }
                 break;
 
@@ -190,6 +242,8 @@ void menu_UpdateMenuBar()
                 }
 
                 break;
+
+
 
             default:
                DrawImage(menuback[menu_MAIN][1],menu_MAIN_X,0);

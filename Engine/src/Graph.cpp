@@ -63,6 +63,19 @@ SDL_Surface *LoadConvertImg(char *file)
     return tmpbuf;
 }
 
+SDL_Surface *LoadConvertImg(char *file,uint32_t key)
+{
+    SDL_Surface *tmpbuf=IMG_Load(file);
+    if (!tmpbuf)
+        printf("\nERROR:  IMG_Load(%s)\n\n",file, IMG_GetError());
+    else
+        ConvertImage(&tmpbuf);
+
+    SDL_SetColorKey(tmpbuf,SDL_SRCCOLORKEY ,key);
+
+    return tmpbuf;
+}
+
 anim_surf *LoadAnimImage(char *file, int mask)
 {
 
