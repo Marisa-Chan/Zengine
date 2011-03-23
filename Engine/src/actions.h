@@ -30,5 +30,6 @@ int action_kill(char *params, pzllst *owner);
 int action_stop(char *params, pzllst *owner);
 int action_inventory(char *params, pzllst *owner);
 int action_crossfade(char *params, pzllst *owner);
+int action_menu_bar_enable(char *params, pzllst *owner);
 
 #endif // ACTIONS_H_INCLUDED

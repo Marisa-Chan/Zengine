@@ -16,6 +16,9 @@ SDL_Surface *screen;
 SDL_Surface *scrbuf=NULL;
 SDL_Surface *fish, *tempbuf;
 
+int32_t RenderDelay = 0;
+
+
 struct xy
 {
     int x;
@@ -30,7 +33,10 @@ int *PanaX;
 
 
 
-
+void Rend_SetDelay(int delay)
+{
+    RenderDelay = delay;
+}
 
 void Rend_SetFishTable(double angl, double k)
 {
@@ -295,6 +301,11 @@ void Rend_PanaRender()
 
 void Rend_RenderFunc()
 {
+    if (RenderDelay>0)
+        {
+            RenderDelay--;
+            return;
+        }
 
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();

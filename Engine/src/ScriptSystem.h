@@ -14,8 +14,32 @@
 #define SLOT_LOCATION_CUR_V1    5
 #define SLOT_LOCATION_CUR_V2    6
 #define SLOT_LOCATION_CUR_X     7
-#define SLOT_INVENTORY_MOUSE    9
-#define SLOT_MOUSE_RIGHT_CLICK 18
+#define SLOT_KEY_PRESS          8 //keycode in slot
+#define SLOT_INVENTORY_MOUSE    9 //code of item in slot
+#define SLOT_MOUSE_DOWN        10 //1 if clicked
+#define SLOT_MOUSE_RIGHT_CLICK 18 //1 if right button of mouse
+#define SLOT_MENU_STATE        19
+#define SLOT_JUST_RESTORED     20
+#define SLOT_KLASTWORLD        45
+#define SLOT_KLASTROOM         46
+#define SLOT_KLASTNODE         47
+#define SLOT_KLASTVIEW         48
+#define SLOT_KLASTPOS          49
+#define SLOT_SUBTITLE_FLAG     51
+#define SLOT_PANAROTATE_SPEED  53
+#define SLOT_QSOUND_ENABLE     57
+#define SLOT_HIGH_QUIALITY     59
+#define SLOT_LINE_SKIP_VIDEO   65
+#define SLOT_INSTALL_LEVEL     67
+#define SLOT_COUNTRY_CODE      68
+#define SLOT_TURN_OFF_ANIM     71
+#define SLOT_INV_STORAGE_1    102
+#define SLOT_INV_STORAGE_2    103
+#define SLOT_INV_STORAGE_3    104
+#define SLOT_INV_STORAGE_4    105
+#define SLOT_INV_STORAGE_5    106
+#define SLOT_INV_STORAGE_6    107
+#define SLOT_TOTAL_INV_AVAIL  150
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
 #define SLOT_SPELL_1          191
@@ -94,3 +118,4 @@ uint8_t *DGetFlags();
 
 
 #endif // SCRIPTSYSTEM_H_INCLUDED
+

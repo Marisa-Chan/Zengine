@@ -6,7 +6,17 @@
 #define menu_MAGIC 1
 #define menu_MAIN  2
 
-uint16_t menu_bar = 0xFFFF;
+#define menu_MAIN_EL_W  135
+#define menu_MAIN_EL_H  32
+
+#define menu_MAIN_IMAGE_SAVE   0
+#define menu_MAIN_IMAGE_REST   1
+#define menu_MAIN_IMAGE_PREF   2
+#define menu_MAIN_IMAGE_EXIT   3
+
+#define menu_MAIN_CENTER       320
+
+uint16_t menu_bar_flag = 0xFFFF;
 
 bool   menu_Scrolled [3] = {false,false,false};
 int16_t menu_ScrollPos[3] = {0,0,0};
@@ -20,12 +30,12 @@ int8_t menu_mousefocus = -1;
 
 void menu_SetMenuBarVal(uint16_t val)
 {
-    menu_bar = val;
+    menu_bar_flag = val;
 }
 
 uint16_t menu_GetMenuBarVal()
 {
-    return menu_bar;
+    return menu_bar_flag;
 }
 
 void menu_LoadGraphics()
@@ -56,6 +66,8 @@ void menu_UpdateMenuBar()
             switch (menu_mousefocus)
             {
             case menu_ITEM:
+                if (menu_bar_flag & menu_BAR_ITEM)
+                {
                 if (!menu_Scrolled[menu_ITEM])
                     menu_ScrollPos [menu_ITEM]+=12;
 
@@ -66,10 +78,12 @@ void menu_UpdateMenuBar()
                     }
 
                 DrawImage(menuback[menu_ITEM][0],menu_ScrollPos[menu_ITEM],0);
-
+                }
                 break;
 
             case menu_MAGIC:
+                if (menu_bar_flag & menu_BAR_MAGIC)
+                {
                 if (!menu_Scrolled[menu_MAGIC])
                     menu_ScrollPos [menu_MAGIC]+=12;
 
@@ -80,7 +94,7 @@ void menu_UpdateMenuBar()
                     }
 
                 DrawImage(menuback[menu_MAGIC][0],640-menu_ScrollPos[menu_MAGIC],0);
-
+                }
                 break;
 
             case menu_MAIN:
@@ -95,12 +109,96 @@ void menu_UpdateMenuBar()
 
                 DrawImage(menuback[menu_MAIN][0],menu_MAIN_X,menu_ScrollPos[menu_MAIN]);
 
+                //EXIT
+                if (menu_bar_flag & menu_BAR_EXIT)
+                {
+                    if (MouseInRect(menu_MAIN_CENTER+menu_MAIN_EL_W,
+                                    menu_ScrollPos[menu_MAIN],
+                                    menu_MAIN_EL_W,
+                                    menu_MAIN_EL_H))
+                    {
+                        DrawImage(menubar[menu_MAIN_IMAGE_EXIT][1],menu_MAIN_CENTER+menu_MAIN_EL_W,
+                                                                   menu_ScrollPos[menu_MAIN]);
+
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            __END();
+
+                    }
+                    else
+                        DrawImage(menubar[menu_MAIN_IMAGE_EXIT][0],menu_MAIN_CENTER+menu_MAIN_EL_W,
+                                                                   menu_ScrollPos[menu_MAIN]);
+                }
+
+                //SETTINGS
+                if (menu_bar_flag & menu_BAR_SETTINGS)
+                {
+                    if (MouseInRect(menu_MAIN_CENTER,
+                                    menu_ScrollPos[menu_MAIN],
+                                    menu_MAIN_EL_W,
+                                    menu_MAIN_EL_H))
+                    {
+                        DrawImage(menubar[menu_MAIN_IMAGE_PREF][1],menu_MAIN_CENTER,
+                                                                   menu_ScrollPos[menu_MAIN]);
+
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            SetNeedLocate('g','j','p','e',0);
+
+                    }
+                    else
+                        DrawImage(menubar[menu_MAIN_IMAGE_PREF][0],menu_MAIN_CENTER,
+                                                                   menu_ScrollPos[menu_MAIN]);
+                }
+
+                //LOAD
+                if (menu_bar_flag & menu_BAR_RESTORE)
+                {
+                    if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W,
+                                    menu_ScrollPos[menu_MAIN],
+                                    menu_MAIN_EL_W,
+                                    menu_MAIN_EL_H))
+                    {
+                        DrawImage(menubar[menu_MAIN_IMAGE_REST][1],menu_MAIN_CENTER-menu_MAIN_EL_W,
+                                                                   menu_ScrollPos[menu_MAIN]);
+
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            SetNeedLocate('g','j','r','e',0);
+
+                    }
+                    else
+                        DrawImage(menubar[menu_MAIN_IMAGE_REST][0],menu_MAIN_CENTER-menu_MAIN_EL_W,
+                                                                   menu_ScrollPos[menu_MAIN]);
+                }
+
+                //SAVE
+                if (menu_bar_flag & menu_BAR_SAVE)
+                {
+                    if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W*2,
+                                    menu_ScrollPos[menu_MAIN],
+                                    menu_MAIN_EL_W,
+                                    menu_MAIN_EL_H))
+                    {
+                        DrawImage(menubar[menu_MAIN_IMAGE_SAVE][1],menu_MAIN_CENTER-menu_MAIN_EL_W*2,
+                                                                   menu_ScrollPos[menu_MAIN]);
+
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            SetNeedLocate('g','j','s','e',0);
+
+                    }
+                    else
+                        DrawImage(menubar[menu_MAIN_IMAGE_SAVE][0],menu_MAIN_CENTER-menu_MAIN_EL_W*2,
+                                                                   menu_ScrollPos[menu_MAIN]);
+                }
+
                 break;
 
             default:
                DrawImage(menuback[menu_MAIN][1],menu_MAIN_X,0);
-               DrawImage(menuback[menu_ITEM][1],0,0);
-               DrawImage(menuback[menu_MAGIC][1], 640-menuback[menu_MAGIC][1]->w, 0);
+
+               if (menu_bar_flag & menu_BAR_ITEM)
+                    DrawImage(menuback[menu_ITEM][1],0,0);
+
+               if (menu_bar_flag & menu_BAR_MAGIC)
+                    DrawImage(menuback[menu_MAGIC][1], 640-menuback[menu_MAGIC][1]->w, 0);
 
                if (MouseInRect(menu_MAIN_X,0,\
                             menuback[menu_MAIN][1]->w,\

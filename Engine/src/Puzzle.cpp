@@ -362,6 +362,19 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         return;
     }
 
+    if (strCMP(buf,"menu_bar_enable")==0)
+    {
+        nod=new(func_node);
+        AddToMList(lst,nod);
+
+        params=GetParams(str+end_s);
+        nod->param=(char *)malloc(strlen(params)+1);
+        strcpy(nod->param,params);
+
+        nod->func=action_menu_bar_enable;
+        return;
+    }
+
     if (strCMP(buf,"ttytext")==0)
     {
         nod=new(func_node);

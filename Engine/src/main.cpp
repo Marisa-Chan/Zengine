@@ -8,6 +8,13 @@
 
 using namespace std;
 
+bool done = false;
+
+void __END()
+{
+    done = true;
+}
+
 int main(int argc, char **argv)
 {
     InitFileManage();
@@ -74,7 +81,7 @@ int main(int argc, char **argv)
     int bl=0;
 
     InitMTime(15);
-    bool done = false;
+
 
     while (!done )
     {
@@ -109,8 +116,8 @@ int main(int argc, char **argv)
         UpdateKeyboard();
 
 
-        if (KeyHit(SDLK_ESCAPE))
-            done=true;
+        //if (KeyHit(SDLK_ESCAPE))
+            //done=true;
 
 
 

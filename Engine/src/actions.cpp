@@ -3,10 +3,7 @@
 
 extern SDL_Surface *scrbuf;
 extern SDL_Surface *screen;
-extern bool NeedToLoadScript;
-extern Locate Need_Locate;
-extern int32_t RenderDelay;
-extern int32_t View_start_Loops;
+
 extern int GAME_Y;
 
 int action_set_screen(char *params, pzllst *owner)
@@ -140,39 +137,11 @@ int action_change_location(char *params, pzllst *owner)
     char tmp4[16];
     sscanf(params,"%c, %c, %c%c, %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
 
-    NeedToLoadScript=true;
-    Need_Locate.World=toupper(tmp[0]);
-    Need_Locate.Room=toupper(tmp2[0]);
-    Need_Locate.View1=toupper(tmp3[0]);
-    Need_Locate.View2=toupper(tmp3[1]);
-    Need_Locate.X=GetIntVal(tmp4);
-
-
-    if (Need_Locate.World == '0')
-    {
-        if (GetgVarInt(3) == 'G' &&
-            GetgVarInt(4) == 'J')
-        {
-            Need_Locate.World = GetgVarInt(45);
-            Need_Locate.Room  = GetgVarInt(46);
-            Need_Locate.View1 = GetgVarInt(47);
-            Need_Locate.View2 = GetgVarInt(48);
-            Need_Locate.X     = GetgVarInt(49);
-        }
-        else
-        {
-            Need_Locate.World = GetgVarInt(40);
-            Need_Locate.Room  = GetgVarInt(41);
-            Need_Locate.View1 = GetgVarInt(42);
-            Need_Locate.View2 = GetgVarInt(43);
-            Need_Locate.X     = GetgVarInt(44);
-        }
-    }
-
+    SetNeedLocate(tmp[0],tmp2[0],tmp3[0], tmp3[1], GetIntVal(tmp4));
 
     //depricated
-    RenderDelay = 2;
-    View_start_Loops = 1;
+    Rend_SetDelay(2);
+   // View_start_Loops = 1;
 
     return ACTION_BREAK;
 }
@@ -981,6 +950,21 @@ int action_crossfade(char *params, pzllst *owner)
         NextMList(wavs);
     }
 
+
+    return ACTION_NORMAL;
+}
+
+
+int action_menu_bar_enable(char *params, pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:menu_bar_enable(%s)\n",params);
+#endif
+
+    uint16_t val;
+    val = GetIntVal(params);
+
+    menu_SetMenuBarVal(val);
 
     return ACTION_NORMAL;
 }
