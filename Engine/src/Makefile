@@ -19,7 +19,8 @@ OBJS =  \
 	SoundFX.cpp\
 	Timers.cpp\
  	Sound.cpp\
-	anims.cpp
+	anims.cpp\
+	menu.cpp
 	
 
 

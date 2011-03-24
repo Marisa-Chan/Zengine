@@ -1,12 +1,24 @@
-All what's need is convert resources of zork by utils.
-
-Well, someday i will wrote full automatic converter.
+All what's you need it's convert resources of zork by utils.
 
 *untga will rewrite original file. After work of untga convert result to png.
 
 *Use waver.pl for convert all sounds, but you must edit it's script for correct path's.
 
-Game video: http://www.youtube.com/watch?v=a88-Jgt5Grw
+Gameplay(on this engine) video: http://www.youtube.com/watch?v=a88-Jgt5Grw
+
+Screenshots:
+http://img850.imageshack.us/i/45844953.png/
+http://img508.imageshack.us/i/38819204.png/
+http://img222.imageshack.us/i/32948516.png/
+
 
 P.S. 
-Thanks w8m (unraw code reverser)
+Thanks w8m (for "unraw" code reverse)
+
+
+------------------License--------------------
+You may use this sources how you want, but must include author name or "based on:%Project name%" text or other link to this project.
+
+
+P.S.
+It's for world piece and love ;)
