@@ -27,29 +27,29 @@ action_syncsound	:reverse it and replace dummy
 action_animunload	:reverse it and write code
 action_stop		:reverse true behavior
 action_kill		:reverse true behavior
-action_region		:reverse it (what is it?O_o)
+action_region		:reverse it (what is it?O_o)   [Not used in ZGI]
 action_rotate_to	:reverse it and write code
 action_attenuate	:reverse it (what is it?O_o)
 action_crossfade	:reverse true behavior and parameters
-action_zoom		:reverse it and write code
+action_zoom		:reverse it and write code     [Not used in ZGI]
 action_dissolve		:reverse true behavior
 action_inventory	:inspect code and compare with asm
-action_set_master_volume:reverse it and write code
+action_set_master_volume:reverse it and write code     [Not used in ZGI]
 action_cursor		:reverse it and write code
-action_distort		:reverse it and write code
+action_distort		:reverse it and write code     [Not used in ZGI]
 action_save_game	:reverse it and write code
 action_restore_game	:reverse it and write code
-action_display_message	:reverse it (what is it?O_o)
+action_display_message	:reverse it (what is it?O_o)   [Not used in ZGI]
 action_pan_track	:reverse it (what is it?O_o)
 action_delay_render	:reverse it and write code (think, it's may needed in some scenes)
 action_flush_mouse_events:reverse it and write code
 action_copy_file	:reverse it (for what?!)
 action_quit		:reverse it
-action_set_venus	:reverse it (fuckin shit, what is it?!O___o)
-action_disable_venus	:no comments %)
+action_set_venus	:reverse it (fuckin shit, what is it?!O___o) [Not used in ZGI]
+action_disable_venus	:no comments %)                              [Not used in ZGI]
 action_clear_system_message:reverse it
-action_add_preblt	:reverse it
-action_remove_preblt	:don't know what is it (reverse it)
+action_add_preblt	:reverse it                                  [Not used in ZGI]
+action_remove_preblt	:don't know what is it (reverse it)          [Not used in ZGI]
 action_preferences	:reverse it
 action_ttytext		:reverse it
 
