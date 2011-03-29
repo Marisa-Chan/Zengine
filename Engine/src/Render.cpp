@@ -154,10 +154,13 @@ void Rend_ProcessCursor()
 
     if (Renderer == RENDER_PANA)
     {
-        if (MouseX() < GAMESCREEN_P)
-            Mouse_SetCursor(CURSOR_LEFT);
-        if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-            Mouse_SetCursor(CURSOR_RIGH);
+        if (Rend_MouseInGamescr())
+            if (MouseX() < GAMESCREEN_P)
+                Mouse_SetCursor(CURSOR_LEFT);
+
+        if (Rend_MouseInGamescr())
+            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
+                Mouse_SetCursor(CURSOR_RIGH);
     }
 
 
@@ -260,7 +263,7 @@ void Rend_DrawPanorama()
 
         for(int x = 0; x < GAMESCREEN_W; x++)
         {
-           // int *nww = (int *)screen->pixels;
+            // int *nww = (int *)screen->pixels;
             int *old = (int *)scrbuf->pixels;    // only for 32 bit color
 
             int newx = fishtable[x][y].x + *PanaX;
@@ -280,11 +283,13 @@ void Rend_DrawPanorama()
 
 void Rend_PanaRender()
 {
-    if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-        *PanaX +=GetgVarInt(53)/20;
+    if (Rend_MouseInGamescr())
+        if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
+            *PanaX +=GetgVarInt(53)/20;
 
-    if (MouseX() < GAMESCREEN_P)
-        *PanaX -=GetgVarInt(53)/20;
+    if (Rend_MouseInGamescr())
+        if (MouseX() < GAMESCREEN_P)
+            *PanaX -=GetgVarInt(53)/20;
 
     if (*PanaX >= scrbuf->w)
         *PanaX %= scrbuf->w;
@@ -302,10 +307,10 @@ void Rend_PanaRender()
 void Rend_RenderFunc()
 {
     if (RenderDelay>0)
-        {
-            RenderDelay--;
-            return;
-        }
+    {
+        RenderDelay--;
+        return;
+    }
 
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();

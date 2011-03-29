@@ -330,6 +330,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     SetgVarInt(6,toupper(v2));
     SetgVarInt(7,X);
 
+    menu_SetMenuBarVal(0xFFFF);
+
     BreakExecute = false;
 }
 
