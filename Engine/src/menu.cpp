@@ -82,6 +82,8 @@ void menu_UpdateMenuBar()
         case menu_ITEM:
             if (menu_bar_flag & menu_BAR_ITEM)
             {
+                SetgVarInt(SLOT_MENU_STATE,1);
+
                 if (!menu_Scrolled[menu_ITEM])
                     menu_ScrollPos [menu_ITEM]+=12;
 
@@ -96,9 +98,30 @@ void menu_UpdateMenuBar()
                 int item_count = GetgVarInt(SLOT_TOTAL_INV_AVAIL);
                 if (item_count == 0)
                     item_count = 20;
-                printf("%d\n",item_count);
+
+
+
                 for (int i=0; i<item_count; i++)
                 {
+
+
+                    int itemspace = (600-menu_ITEM_SPACE) / item_count;
+
+                    if (MouseInRect(menu_ScrollPos[menu_ITEM] + itemspace * i,0,28,32))
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
+                            {
+                                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(SLOT_START_SLOT + i));
+                                SetgVarInt(SLOT_START_SLOT + i,0);
+                            }
+                            else if (GetgVarInt(SLOT_INVENTORY_MOUSE) > 0  && GetgVarInt(SLOT_INVENTORY_MOUSE) < 0xE0) //ITEM_HACK
+                            {
+                                int te=GetgVarInt(SLOT_START_SLOT + i);
+                                SetgVarInt(SLOT_START_SLOT + i,GetgVarInt(SLOT_INVENTORY_MOUSE));
+                                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
+                            }
+
+
                     if (GetgVarInt(SLOT_START_SLOT + i) != 0)
                     {
                         int itemnum = GetgVarInt(SLOT_START_SLOT + i);
@@ -108,7 +131,7 @@ void menu_UpdateMenuBar()
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
                             menupicto[itemnum] = LoadConvertImg(GetFilePath(buf),0);
                         }
-                        int itemspace = (600-menu_ITEM_SPACE) / item_count;
+
                         DrawImage(menupicto[itemnum],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
                     }
                 }
@@ -120,6 +143,8 @@ void menu_UpdateMenuBar()
         case menu_MAGIC:
             if (menu_bar_flag & menu_BAR_MAGIC)
             {
+                SetgVarInt(SLOT_MENU_STATE,3);
+
                 if (!menu_Scrolled[menu_MAGIC])
                     menu_ScrollPos [menu_MAGIC]+=12;
 
@@ -133,9 +158,22 @@ void menu_UpdateMenuBar()
 
                 for (int i=0; i<12; i++)
                 {
+
+                    int itemnum;
+                    if (GetgVarInt(SLOT_REVERSED_SPELLBOOK) == 1)
+                        itemnum = 0xEE + i;
+                    else
+                        itemnum = 0xE0 + i;
+
+                    if (MouseInRect(640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,28,32))
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            if (GetgVarInt(SLOT_INVENTORY_MOUSE) == 0 || GetgVarInt(SLOT_INVENTORY_MOUSE) >= 0xE0)
+                                if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
+                                    SetgVarInt(SLOT_USER_CHOSE_THIS_SPELL,itemnum);
+
                     if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
                     {
-                        int itemnum = 0xE0 + i;
+
                         if (menupicto[itemnum] == NULL)
                         {
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
@@ -150,6 +188,9 @@ void menu_UpdateMenuBar()
             break;
 
         case menu_MAIN:
+
+            SetgVarInt(SLOT_MENU_STATE,2);
+
             if (!menu_Scrolled[menu_MAIN])
                 menu_ScrollPos [menu_MAIN]+=2;
 
@@ -286,6 +327,7 @@ void menu_UpdateMenuBar()
     }
     else
     {
+        SetDirectgVarInt(SLOT_MENU_STATE,0);
         menu_mousefocus = -1;
     }
 }

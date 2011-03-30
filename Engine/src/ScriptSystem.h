@@ -54,6 +54,8 @@
 #define SLOT_SPELL_10         200
 #define SLOT_SPELL_11         201
 #define SLOT_SPELL_12         202
+#define SLOT_USER_CHOSE_THIS_SPELL 205
+#define SLOT_REVERSED_SPELLBOOK    206
 
 #define FLAG_ONCE_PER_I 1
 #define FLAG_DISABLED   2

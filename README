@@ -58,7 +58,7 @@ Make 3D-sound for panorama-locations
 
 [Other]
 * Make graphics scaleable for other resolutions
-* Complate menubar code and interactions
++ Complate menubar code and interactions [complate 30.03.11]
 * Write subtitles code
 * Reverse what will happen with now-playing sound/anims/timers/etc while "change_location"
 * Clear code
