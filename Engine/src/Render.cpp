@@ -308,6 +308,7 @@ void Rend_RenderFunc()
 {
     if (RenderDelay>0)
     {
+        //if (GetBeat())
         RenderDelay--;
         return;
     }

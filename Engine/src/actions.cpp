@@ -6,7 +6,7 @@ extern SDL_Surface *screen;
 
 extern int GAME_Y;
 
-int action_set_screen(char *params, pzllst *owner)
+int action_set_screen(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
@@ -26,7 +26,7 @@ int action_set_screen(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_set_partial_screen(char *params, pzllst *owner)
+int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:set_partial_screen(%s)\n",params);
@@ -72,7 +72,7 @@ int action_set_partial_screen(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_assign(char *params, pzllst *owner)
+int action_assign(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:assign(%s)\n",params);
@@ -84,17 +84,16 @@ int action_assign(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_timer(char *params, pzllst *owner)
+int action_timer(char *params, int aSlot, pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:timer(%s)\n",params);
+    printf("        action:timer:%d(%s)\n",aSlot,params);
 #endif
-    int tmp1;
     char tmp2[16];
     char *s;
-    sscanf(params,"%d %s",&tmp1,tmp2);
+    sscanf(params,"%s",tmp2);
 
-    if (ScrSys_SlotIsOwned(tmp1))
+    if (ScrSys_SlotIsOwned(aSlot))
     {
         //SetgVarInt(tmp1,1);
 //
@@ -106,11 +105,11 @@ int action_timer(char *params, pzllst *owner)
 
 
     timernode *nod = new (timernode);
-    nod->slot = tmp1;
+    nod->slot = aSlot;
 
     nod->owner = owner;
 
-    s=PrepareString(tmp2);
+    s = PrepareString(tmp2);
     nod->time = GetIntVal(s);
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
@@ -118,12 +117,12 @@ int action_timer(char *params, pzllst *owner)
 
     tmr_AddToTimerList(nod);
 
-    SetgVarInt(tmp1,1);
+    SetgVarInt(aSlot,1);
 
     return ACTION_NORMAL;
 }
 
-int action_change_location(char *params, pzllst *owner)
+int action_change_location(char *params, int aSlot , pzllst *owner)
 {
 
     //need reverse from 0x00409891
@@ -146,7 +145,7 @@ int action_change_location(char *params, pzllst *owner)
     return ACTION_BREAK;
 }
 
-int action_dissolve(char *params, pzllst *owner)
+int action_dissolve(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:dissolve()\n");
@@ -155,7 +154,7 @@ int action_dissolve(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_disable_control(char *params, pzllst *owner)
+int action_disable_control(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:disable_control(%s)\n",params);
@@ -168,7 +167,7 @@ int action_disable_control(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_enable_control(char *params, pzllst *owner)
+int action_enable_control(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:enable_control(%s)\n",params);
@@ -181,7 +180,7 @@ int action_enable_control(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_add(char *params, pzllst *owner)
+int action_add(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:add(%s)\n",params);
@@ -197,7 +196,7 @@ int action_add(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_debug(char *params, pzllst *owner)
+int action_debug(char *params, int aSlot , pzllst *owner)
 {
 
 
@@ -214,25 +213,25 @@ int action_debug(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_random(char *params, pzllst *owner)
+int action_random(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:random(%s)\n",params);
+    printf("        action:random:%d(%s)\n",aSlot,params);
 #endif
 
-    int slot,number;
+    int number;
     char chars[16];
-    sscanf(params,"%d %s",&slot, chars);
+    sscanf(params,"%s", chars);
     number=GetIntVal(chars);
 
-    SetgVarInt(slot, rand() % (number+1) );
+    SetgVarInt(aSlot, rand() % (number+1) );
 
     return ACTION_NORMAL;
 }
 
 
 
-int action_streamvideo(char *params, pzllst *owner)
+int action_streamvideo(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:streamvideo(%s)\n",params);
@@ -315,13 +314,12 @@ int action_streamvideo(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_animplay(char *params, pzllst *owner)
+int action_animplay(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:animplay(%s)\n",params);
+    printf("        action:animplay:%d(%s)\n",aSlot,params);
 #endif
 
-    uint32_t slot;
     char file[255];
     char x[16];
     char y[16];
@@ -334,7 +332,7 @@ int action_animplay(char *params, pzllst *owner)
     char un2[16];
     char mask[16];
     char un4[16];
-    sscanf(params,"%d %s %s %s %s %s %s %s %s %s %s %s %s",&slot,file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
+    sscanf(params,"%s %s %s %s %s %s %s %s %s %s %s %s",file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
 
     MList *anims = anim_getanimlst();
     StartMList(anims);
@@ -343,7 +341,7 @@ int action_animplay(char *params, pzllst *owner)
 
         animnode *nd = (animnode *)DataMList(anims);
 
-        if (nd->slot == slot)
+        if (nd->slot == aSlot)
         {
             anim_DeleteAnimNod(nd);
             DeleteCurrent(anims);
@@ -354,7 +352,7 @@ int action_animplay(char *params, pzllst *owner)
 
 
 
-    SetgVarInt(slot, 1);
+    SetgVarInt(aSlot, 1);
 
 
 
@@ -367,7 +365,7 @@ int action_animplay(char *params, pzllst *owner)
 
 
 
-    nod->slot = slot;
+    nod->slot = aSlot;
 
     nod->x = GetIntVal(x);
     nod->y = GetIntVal(y);
@@ -431,20 +429,19 @@ int action_animplay(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_music(char *params, pzllst *owner)
+int action_music(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:music(%s)\n",params);
+    printf("        action:music:%d(%s)\n",aSlot,params);
 #endif
 
-    int slot;
     char chars[16];
-    sscanf(params,"%d %s",&slot, chars);
+    sscanf(params,"%s", chars);
 
 
 
     timernode *nod = new (timernode);
-    nod->slot = slot;
+    nod->slot = aSlot;
 
     nod->owner = owner;
 
@@ -453,33 +450,32 @@ int action_music(char *params, pzllst *owner)
 
     tmr_AddToTimerList(nod);
 
-    SetgVarInt(slot, 1);
+    SetgVarInt(aSlot, 1);
 
     return ACTION_NORMAL;
 }
 
-int action_universe_music(char *params, pzllst *owner)
+int action_universe_music(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:universe_music(%s) (%s)\n",params,ScrSys_ReturnListName(owner));
+    printf("        action:universe_music:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
 #endif
 
-    int slot;
     char unk1[16];
     char file[16];
     char loop[16];
     char vol[16];
-    sscanf(params,"%d %s %s %s %s",&slot, unk1, file, loop, vol);
+    sscanf(params,"%s %s %s %s", unk1, file, loop, vol);
 
     //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
-    if (ScrSys_SlotIsOwned(slot))
+    if (ScrSys_SlotIsOwned(aSlot))
         return ACTION_NORMAL;
 
 
 
     musicnode *nod = new (musicnode);
-    nod->slot = slot;
+    nod->slot = aSlot;
 
     nod->chunk = Mix_LoadWAV(GetFilePath(file));
 
@@ -513,39 +509,38 @@ int action_universe_music(char *params, pzllst *owner)
 
     snd_AddToWavsList(nod);
 
-    SetgVarInt(slot, 1);
+    SetgVarInt(aSlot, 1);
 
     return ACTION_NORMAL;
 }
 
 
-int action_syncsound(char *params, pzllst *owner)
+int action_syncsound(char *params, int aSlot , pzllst *owner)
 {
     printf("PlayPreload \n");
 
     return ACTION_NORMAL;
 }
 
-int action_animpreload(char *params, pzllst *owner)
+int action_animpreload(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
-    printf("        action:animpreload(%s)\n",params);
+    printf("        action:animpreload:%d(%s)\n",aSlot,params);
 #endif
     MList *preload = anim_getpreloadLst();
     if (!preload)
         return ACTION_NORMAL;//preload = CreateMList();
 
-    int      slot;
     char name[64];
 
     struct_Preload *pre = new (struct_Preload);
 
-    sscanf(params,"%d %s", &slot, name);
+    sscanf(params,"%s", name);
 
-    pre->fil = new (char[255]);
+    pre->fil = (char *)malloc(255);
 
     strcpy(pre->fil,name);
-    pre->slot = slot;
+    pre->slot = aSlot;
 
     AddToMList(preload,pre);
 
@@ -556,15 +551,15 @@ int action_animpreload(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_playpreload(char *params, pzllst *owner)
+int action_playpreload(char *params, int aSlot , pzllst *owner)
 {
     char sl[16];
     uint32_t slot;
     int x,y,w,h,start,end,loop,sll;
-    sscanf(params,"%d %s %d %d %d %d %d %d %d",&sll,sl,&x,&y,&w,&h,&start,&end,&loop);
+    sscanf(params,"%s %d %d %d %d %d %d %d",sl,&x,&y,&w,&h,&start,&end,&loop);
 
 #ifdef TRACE
-    printf("        action:playpreload(%s)\n",params);
+    printf("        action:playpreload:%d(%s)\n",aSlot,params);
 #endif
 
     MList *preload = anim_getpreloadLst();
@@ -582,6 +577,7 @@ int action_playpreload(char *params, pzllst *owner)
     while (!eofMList(preload))
     {
         pre = (struct_Preload *)DataMList(preload);
+        printf("%d\n",pre->slot);
         if (pre->slot == slot)
         {
             found = true;
@@ -592,27 +588,32 @@ int action_playpreload(char *params, pzllst *owner)
     }
 
     if (!found)
-        return ACTION_NORMAL;
+        {
+            printf("        not found %d\n",slot);
+            return ACTION_NORMAL;
+        }
 
-    if (sll == 0)
-        sll = slot;
 
-    sprintf(buff,"%d %s %d %d %d %d %d %d %d %d %d %d %d",sll ,pre->fil,\
+
+    sprintf(buff,"%s %d %d %d %d %d %d %d %d %d %d %d" ,pre->fil,\
             x, y, w, h, start, end, loop, 0, 0, 0, 0);
 
-    action_animplay(buff,owner);
+    if (aSlot == 0)
+        action_animplay(buff,slot,owner);
+    else
+        action_animplay(buff,aSlot,owner);
     //SetgVarInt(GetIntVal(chars),2);
 
     return ACTION_NORMAL;
 }
 
-int action_ttytext(char *params, pzllst *owner)
+int action_ttytext(char *params, int aSlot , pzllst *owner)
 {
     char chars[16];
-    sscanf(params,"%s",chars);
+    //sscanf(params,"%s",chars);
 
     timernode *nod = new (timernode);
-    nod->slot = GetIntVal(chars);
+    nod->slot = aSlot;
 
     nod->owner = owner;
 
@@ -626,7 +627,7 @@ int action_ttytext(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_kill(char *params, pzllst *owner)
+int action_kill(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:kill(%s)\n",params);
@@ -760,7 +761,7 @@ int action_kill(char *params, pzllst *owner)
 }
 
 
-int action_stop(char *params, pzllst *owner)
+int action_stop(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:stop(%s)\n",params);
@@ -836,7 +837,7 @@ int action_stop(char *params, pzllst *owner)
 }
 
 
-int action_inventory(char *params, pzllst *owner)
+int action_inventory(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:inventory(%s)\n",params);
@@ -917,7 +918,7 @@ int action_inventory(char *params, pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_crossfade(char *params, pzllst *owner)
+int action_crossfade(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:crossfade(%s)\n",params);
@@ -955,7 +956,7 @@ int action_crossfade(char *params, pzllst *owner)
 }
 
 
-int action_menu_bar_enable(char *params, pzllst *owner)
+int action_menu_bar_enable(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:menu_bar_enable(%s)\n",params);
@@ -965,6 +966,20 @@ int action_menu_bar_enable(char *params, pzllst *owner)
     val = GetIntVal(params);
 
     menu_SetMenuBarVal(val);
+
+    return ACTION_NORMAL;
+}
+
+int action_delay_render(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:delay_render(%s)\n",params);
+#endif
+
+    uint16_t val;
+    val = GetIntVal(params);
+
+    Rend_SetDelay(val);
 
     return ACTION_NORMAL;
 }

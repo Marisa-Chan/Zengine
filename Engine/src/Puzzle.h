@@ -24,9 +24,10 @@ struct pzllst{
 
 struct func_node
 {
-    int          (*func)(char*, pzllst *);
+    int          (*func)(char*, int , pzllst *);
     char         *param;
     puzzlenode   *owner;
+    int           slot;
 };
 
 struct crit_node

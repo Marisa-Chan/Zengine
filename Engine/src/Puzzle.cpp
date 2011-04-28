@@ -11,17 +11,25 @@ pzllst *CreatePzlLst()
     return tmp;
 }
 
+char *copy_params(char *params)
+{
+    char *tmp = (char *)malloc(strlen(params)+1);
+    strcpy(tmp,params);
+    return tmp;
+}
 
 void Parse_Puzzle_Results_Action(char *instr, MList *lst)
 {
     char *str;
     char buf[255];
-    bool HaveDts=false;
+    int  slot;
 
     func_node *nod;
     char *params;
 
     str = instr;
+
+    slot = 0;
 
     memset(buf,0,255);
 
@@ -35,7 +43,10 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         else
         {
             if (str[i]==':')
-                HaveDts=true;
+                slot = atoi(str + i + 1);
+
+            params = GetParams(str + i);
+
             end_s=i;
             break;
         }
@@ -43,354 +54,292 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
 
     if (strCMP(buf,"set_screen")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_set_screen;
+        nod->func  = action_set_screen;
         return;
     }
 
     if (strCMP(buf,"debug")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_debug;
+        nod->func  = action_debug;
         return;
     }
 
     if (strCMP(buf,"assign")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_assign;
+        nod->func  = action_assign;
         return;
     }
     if (strCMP(buf,"timer")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_timer;
+        nod->func  = action_timer;
         return;
     }
     if (strCMP(buf,"set_partial_screen")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_set_partial_screen;
+        nod->func  = action_set_partial_screen;
         return;
     }
 
     if (strCMP(buf,"change_location")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_change_location;
+        nod->func  = action_change_location;
         return;
     }
 
     if (strCMP(buf,"dissolve")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
         //params=GetParams(str+end_s);
-        nod->param=NULL;
+        nod->param = NULL;
         //strcpy(nod->param,params);
 
-        nod->func=action_dissolve; //make save prev W R VI
+        nod->func  = action_dissolve; //make save prev W R VI
         return;
     }
 
     if (strCMP(buf,"disable_control")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_disable_control;
+        nod->func  = action_disable_control;
         return;
     }
     if (strCMP(buf,"enable_control")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_enable_control;
+        nod->func  = action_enable_control;
         return;
     }
     if (strCMP(buf,"add")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_add;
+        nod->func  = action_add;
         return;
     }
     if (strCMP(buf,"random")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_random;
+        nod->func  = action_random;
         return;
     }
     if (strCMP(buf,"animplay")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        //SetgVarInt(tmp1,0); //hack ?
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_animplay;
+        nod->func  = action_animplay;
         return;
     }
     if (strCMP(buf,"universe_music")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_universe_music;
+        nod->func  = action_universe_music;
         return;
     }
     if (strCMP(buf,"music")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_universe_music;
+        nod->func  = action_universe_music;
         return;
     }
 
     if (strCMP(buf,"kill")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_kill;
+        nod->func  = action_kill;
         return;
     }
 
     if (strCMP(buf,"stop")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_stop;
+        nod->func  = action_stop;
         return;
     }
 
     if (strCMP(buf,"inventory")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_inventory;
+        nod->func = action_inventory;
         return;
     }
 
     if (strCMP(buf,"crossfade")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_crossfade;
+        nod->func  = action_crossfade;
         return;
     }
 
     if (strCMP(buf,"streamvideo")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_streamvideo;
+        nod->func  = action_streamvideo;
         return;
     }
 
     if (strCMP(buf,"animpreload")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-//        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_animpreload;
+        nod->func  = action_animpreload;
         return;
     }
     if (strCMP(buf,"playpreload")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        if (HaveDts)
-            sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
-        else
-            sprintf(buff,"%d %s",0,GetParams(str+end_s));
-
-
-        //sprintf(buff,"%d %s",atoi(str+end_s+1),GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_playpreload;
+        nod->func  = action_playpreload;
         return;
     }
     if (strCMP(buf,"syncsound")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_syncsound;
+        nod->func  = action_syncsound;
         return;
     }
 
     if (strCMP(buf,"menu_bar_enable")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        params=GetParams(str+end_s);
-        nod->param=(char *)malloc(strlen(params)+1);
-        strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        nod->func=action_menu_bar_enable;
+        nod->func  = action_menu_bar_enable;
+        return;
+    }
+
+    if (strCMP(buf,"delay_render")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_delay_render;
         return;
     }
 
     if (strCMP(buf,"ttytext")==0)
     {
-        nod=new(func_node);
+        nod = new(func_node);
         AddToMList(lst,nod);
 
-        char buff[255];
-        int tmp1=0;
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
-        sscanf(str+end_s+1,"%d",&tmp1);
-
-        sprintf(buff,"%d %s",tmp1,GetParams(str+end_s+1));
-
-        nod->param=(char *)malloc(strlen(buff)+1);
-        strcpy(nod->param,buff);
-
-        nod->func=action_ttytext;
+        nod->func  = action_ttytext;
         return;
     }
 }
@@ -731,7 +680,7 @@ int execute_puzzle_node(puzzlenode *nod)
     while (!eofMList(nod->ResList))
     {
         func_node *fun=(func_node *)DataMList(nod->ResList);
-        if (fun->func(fun->param, nod->owner) == ACTION_BREAK)
+        if (fun->func(fun->param, fun->slot , nod->owner) == ACTION_BREAK)
             {
                 return ACTION_BREAK;
                 break;
