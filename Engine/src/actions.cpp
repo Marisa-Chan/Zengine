@@ -136,7 +136,7 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
     char tmp4[16];
     sscanf(params,"%c, %c, %c%c, %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
 
-    SetNeedLocate(tmp[0],tmp2[0],tmp3[0], tmp3[1], GetIntVal(tmp4));
+    SetNeedLocate(tolower(tmp[0]),tolower(tmp2[0]),tolower(tmp3[0]), tolower(tmp3[1]), GetIntVal(tmp4));
 
     //depricated
     Rend_SetDelay(2);
@@ -980,6 +980,30 @@ int action_delay_render(char *params, int aSlot , pzllst *owner)
     val = GetIntVal(params);
 
     Rend_SetDelay(val);
+
+    return ACTION_NORMAL;
+}
+
+
+int action_pan_track(char *params, int aSlot , pzllst *owner)
+{
+    //action:pan_track:XXXXX(TargetSlot X-Pos)
+
+    return ACTION_NORMAL;
+}
+
+int action_cursor(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:cursor(%s)\n",params);
+#endif
+
+    if (tolower(params[0]) == 'u')
+        Mouse_ShowCursor();
+    else if (tolower(params[0]) == 'h')
+        Mouse_HideCursor();
+    else
+        return ACTION_ERROR;
 
     return ACTION_NORMAL;
 }

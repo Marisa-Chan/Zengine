@@ -24,6 +24,8 @@ Cursor *cur;
 int current_obj_cur=0;
 Cursor *objcur[2] = {NULL, NULL};
 
+static bool DrawCursor = true;
+
 
 void Mouse_LoadCursors()
 {
@@ -103,7 +105,8 @@ void Mouse_LoadCursor(char *file, Cursor *cur)
 void Mouse_DrawCursor(int x, int y)
 {
     if (cur)
-        Rend_DrawImageToScr(cur->img,x-cur->ox,y-cur->oy);
+        if (DrawCursor)
+            Rend_DrawImageToScr(cur->img,x-cur->ox,y-cur->oy);
 }
 
 void Mouse_DeleteCursor(Cursor *cur)
@@ -135,6 +138,15 @@ int Mouse_GetCurrentObjCur()
     return current_obj_cur;
 }
 
+void Mouse_ShowCursor()
+{
+    DrawCursor = true;
+}
+
+void Mouse_HideCursor()
+{
+    DrawCursor = false;
+}
 
 void Mouse_LoadObjCursor(int num)
 {

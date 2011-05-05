@@ -35,7 +35,6 @@ action_zoom		:reverse it and write code     [Not used in ZGI]
 action_dissolve		:reverse true behavior
 action_inventory	:inspect code and compare with asm
 action_set_master_volume:reverse it and write code     [Not used in ZGI]
-action_cursor		:reverse it and write code
 action_distort		:reverse it and write code     [Not used in ZGI]
 action_save_game	:reverse it and write code
 action_restore_game	:reverse it and write code

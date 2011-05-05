@@ -239,10 +239,6 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     }
 
 
-
-
-
-
     Locate temp;
     temp.World =w;
     temp.Room  =r;
@@ -317,6 +313,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         sprintf(buf,"%s.scr",tm);
 
         LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
+
+        Mouse_ShowCursor();
     }
 
     FillStateBoxFromList(uni);
@@ -324,10 +322,10 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     FillStateBoxFromList(room);
     FillStateBoxFromList(world);
 
-    SetgVarInt(3,toupper(w));
-    SetgVarInt(4,toupper(r));
-    SetgVarInt(5,toupper(v1));
-    SetgVarInt(6,toupper(v2));
+    SetgVarInt(3,tolower(w));
+    SetgVarInt(4,tolower(r));
+    SetgVarInt(5,tolower(v1));
+    SetgVarInt(6,tolower(v2));
     SetgVarInt(7,X);
 
     menu_SetMenuBarVal(0xFFFF);
