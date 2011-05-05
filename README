@@ -23,7 +23,7 @@ Thanks w8m (for "unraw" code reverse)
 
 [Script Functions]
 action_music		:needs more parameters info and code (replace timer-dummy)
-action_universe_music	:needs more parameters info
+action_universe_music	:last parameter, what is it !?
 action_playpreload      :needs more parameters info
 action_streamvideo	:needs more parameters info
 action_animplay		:needs more parameters info

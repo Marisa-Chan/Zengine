@@ -25,7 +25,7 @@ OBJS =  \
 
 
 pc: $(OBJS)
-	$(CXX) -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+	$(CXX) -o $(TARGET) $(OBJS) $(LIBS) -DTRACE -I /usr/include/ -I /usr/include/SDL/
 
 clean:
 	rm -f $(TARGET) $(TARGET_DINGOO) *.o

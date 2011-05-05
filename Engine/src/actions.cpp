@@ -331,7 +331,7 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     char loop[16];
     char un2[16];
     char mask[16];
-    char un4[16];
+    char un4[16]; //framerate or 0 (default)
     sscanf(params,"%s %s %s %s %s %s %s %s %s %s %s %s",file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
 
     MList *anims = anim_getanimlst();
@@ -535,6 +535,9 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
 
     struct_Preload *pre = new (struct_Preload);
 
+    //%s %d %d %d %f
+    //name     ? ? ?   framerate
+    //in zgi   0 0 0
     sscanf(params,"%s", name);
 
     pre->fil = (char *)malloc(255);
@@ -923,7 +926,8 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:crossfade(%s)\n",params);
 #endif
-
+    //crossfade(%d %d %d %d %d %d %ld)
+    // item1 item2 fromvol1 fromvol2 tovol1 tovol2 time_in_millisecs
     uint32_t item,item2;
     char slot[16];
     char slot2[16]; //unknown slot
