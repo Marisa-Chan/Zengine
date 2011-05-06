@@ -840,6 +840,57 @@ int action_stop(char *params, int aSlot , pzllst *owner)
 }
 
 
+void act_inv_drop(int item)
+{
+    if (item == 0)
+        return;
+
+    if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
+        {
+            SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+        }
+        else
+        {
+            for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
+                if (GetgVarInt(i)==item)
+                {
+                    SetgVarInt(i,0);
+                    break;
+                }
+        }
+
+}
+
+void act_inv_add(int item)
+{
+    if (item == 0)
+        return;
+
+    for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+        if (GetgVarInt(i) == item)
+            SetgVarInt(i,0);
+
+    for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+        if (GetgVarInt(i)==0)
+        {
+            if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+            {
+                SetgVarInt(i,GetgVarInt(SLOT_INVENTORY_MOUSE));
+                SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+            }
+            else
+                break;
+        }
+
+    SetgVarInt(SLOT_INVENTORY_MOUSE,item);
+
+}
+
+void act_inv_cycle()
+{
+
+}
+
 int action_inventory(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
@@ -851,72 +902,31 @@ int action_inventory(char *params, int aSlot , pzllst *owner)
     char chars[16];
     sscanf(params,"%s %s",cmd,chars);
     item = GetIntVal(chars);
-    int i;
 
     if (strcasecmp(cmd,"add")==0)
     {
-        for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-            if (GetgVarInt(i) == item)
-            {
-                SetgVarInt(i,0);
-            }
-        for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-            if (GetgVarInt(i)==0)
-            {
-                if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-                {
-                    SetgVarInt(i,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                    SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-                }
-                else
-                    break;
-            }
-
-        SetgVarInt(SLOT_INVENTORY_MOUSE,item);
+        act_inv_add(item);
     }
-
-
-    if (strcasecmp(cmd,"addi")==0)
+    else if (strcasecmp(cmd,"addi")==0)
     {
         item=GetgVarInt(item);
-        for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-            if (GetgVarInt(i)==0)
-            {
-                if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-                {
-                    SetgVarInt(i,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                    SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-                }
-                else
-                    break;
-            }
-
-        SetgVarInt(SLOT_INVENTORY_MOUSE,item);
+        act_inv_add(item);
     }
-
-    if (strcasecmp(cmd,"drop")==0)
+    else if (strcasecmp(cmd,"drop")==0)
     {
-
-        if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
-        {
-            SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-        }
-        else
-        {
-            for (i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-                if (GetgVarInt(i)==item)
-                {
-                    SetgVarInt(i,0);
-                    break;
-                }
-        }
-
+        act_inv_drop(item);
     }
-
-    if (strcasecmp(cmd,"dropi")==0)
+    else if (strcasecmp(cmd,"dropi")==0)
     {
-        SetgVarInt(item,0);
+        item = GetgVarInt(item);
+        act_inv_drop(item);
     }
+    else if (strcasecmp(cmd,"cycle")==0)
+    {
+        act_inv_cycle();
+    }
+    else
+        return ACTION_ERROR;
 
     return ACTION_NORMAL;
 }

@@ -2,12 +2,7 @@
 #define SCRIPTSYSTEM_H_INCLUDED
 
 #include "Puzzle.h"
-
-
-#define VAR_SLOTS_MAX 0xFFFF
-#define STATEBOX_STACK_MAX 1024
-#define MaxStateBoxEnts 0x400 //0xFF is very small
-
+#include "config.h"
 
 #define SLOT_LOCATION_CUR_WO    3
 #define SLOT_LOCATION_CUR_RO    4
@@ -39,6 +34,7 @@
 #define SLOT_INV_STORAGE_4    105
 #define SLOT_INV_STORAGE_5    106
 #define SLOT_INV_STORAGE_6    107
+#define SLOT_INV_STORAGE_50   149
 #define SLOT_TOTAL_INV_AVAIL  150
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170

@@ -74,6 +74,7 @@
 		<Unit filename="actions.h" />
 		<Unit filename="anims.cpp" />
 		<Unit filename="anims.h" />
+		<Unit filename="./config.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="./menu.cpp" />
 		<Unit filename="./menu.h" />

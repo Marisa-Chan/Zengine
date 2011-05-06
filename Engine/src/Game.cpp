@@ -19,16 +19,16 @@ int8_t  SaveSlot = 0;
 void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 {
     NeedToLoadScript  = true;
-    Need_Locate.World = toupper(w);
-    Need_Locate.Room  = toupper(r);
-    Need_Locate.View1 = toupper(v1);
-    Need_Locate.View2 = toupper(v2);
+    Need_Locate.World = tolower(w);
+    Need_Locate.Room  = tolower(r);
+    Need_Locate.View1 = tolower(v1);
+    Need_Locate.View2 = tolower(v2);
     Need_Locate.X     = X;
 
     if (Need_Locate.World == '0')
     {
-        if (GetgVarInt(3) == 'G' &&
-            GetgVarInt(4) == 'J')
+        if (GetgVarInt(3) == tolower(SystemWorld) &&
+            GetgVarInt(4) == tolower(SystemRoom))
         {
             Need_Locate.World = GetgVarInt(45);
             Need_Locate.Room  = GetgVarInt(46);
@@ -45,7 +45,6 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
             Need_Locate.X     = GetgVarInt(44);
         }
     }
-
 
 }
 

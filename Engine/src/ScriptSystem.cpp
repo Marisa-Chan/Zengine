@@ -2,9 +2,6 @@
 #include "System.h"
 
 
-uint8_t SystemWorld = 'G';
-uint8_t SystemRoom  = 'J';
-
 
 
 int          gVars   [VAR_SLOTS_MAX];
@@ -216,11 +213,11 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 {
     //Needed reverse from 0x004246C7
 
-    if (GetgVarInt(3) != SystemWorld &&
-            GetgVarInt(4) != SystemRoom  )
+    if (tolower(GetgVarInt(3)) != tolower(SystemWorld) &&
+            tolower(GetgVarInt(4)) != tolower(SystemRoom)  )
     {
-        if (w == SystemWorld &&
-                r == SystemRoom  )
+        if (tolower(w) == tolower(SystemWorld) &&
+                tolower(r) == tolower(SystemRoom)  )
         {
             SetDirectgVarInt(45,GetgVarInt(3));
             SetDirectgVarInt(46,GetgVarInt(4));
