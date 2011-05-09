@@ -103,19 +103,20 @@ int action_timer(char *params, int aSlot, pzllst *owner)
         return ACTION_NORMAL;
     }
 
+    struct_action_res *nod = new (struct_action_res);
+    nod->nodes.node_timer = new (timernode);
 
-    timernode *nod = new (timernode);
     nod->slot = aSlot;
-
     nod->owner = owner;
+    nod->node_type = NODE_TYPE_TIMER;
 
     s = PrepareString(tmp2);
-    nod->time = GetIntVal(s);
+    nod->nodes.node_timer->time = GetIntVal(s);
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
 
-    tmr_AddToTimerList(nod);
+    ScrSys_AddToActResList(nod);
 
     SetgVarInt(aSlot,1);
 
@@ -440,8 +441,8 @@ int action_music(char *params, int aSlot , pzllst *owner)
 
 
 
-    timernode *nod = new (timernode);
-    nod->slot = aSlot;
+  /*  timernode *nod = new (timernode);
+/*    nod->slot = aSlot;
 
     nod->owner = owner;
 
@@ -450,7 +451,7 @@ int action_music(char *params, int aSlot , pzllst *owner)
 
     tmr_AddToTimerList(nod);
 
-    SetgVarInt(aSlot, 1);
+    SetgVarInt(aSlot, 1);*/
 
     return ACTION_NORMAL;
 }
@@ -474,40 +475,44 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
 
 
 
-    musicnode *nod = new (musicnode);
+    struct_action_res *nod = new (struct_action_res);
+    nod->nodes.node_music = new (musicnode);
+
     nod->slot = aSlot;
+    nod->node_type = NODE_TYPE_MUSIC;
+    nod->owner = owner;
 
-    nod->chunk = Mix_LoadWAV(GetFilePath(file));
+    char *filp=GetFilePath(file);
 
-    nod->chn = GetFreeChannel();
-    if (nod->chn == -1)
+    nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
+
+    nod->nodes.node_music->chn = GetFreeChannel();
+    if (nod->nodes.node_music->chn == -1)
     {
         printf("ERROR, NO CHANNELS!\n");
-        Mix_FreeChunk(nod->chunk);
+        Mix_FreeChunk(nod->nodes.node_music->chunk);
         delete nod;
         return ACTION_NORMAL;
     }
 
     if (GetIntVal(loop)==1)
     {
-        Mix_PlayChannel(nod->chn,nod->chunk,-1);
-        nod->looped = true;
+        Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,-1);
+        nod->nodes.node_music->looped = true;
     }
     else
     {
-        Mix_PlayChannel(nod->chn,nod->chunk,0);
-        nod->looped = false;
+        Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,0);
+        nod->nodes.node_music->looped = false;
     }
 
 
-    LockChan(nod->chn);
+    LockChan(nod->nodes.node_music->chn);
 
-    Mix_Volume( nod->chn, GetLogVol(GetIntVal(vol)) );
+    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(GetIntVal(vol)) );
 //    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
 
-    nod->owner = owner;
-
-    snd_AddToWavsList(nod);
+    ScrSys_AddToActResList(nod);
 
     SetgVarInt(aSlot, 1);
 
@@ -533,7 +538,7 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
 
     char name[64];
 
-    struct_Preload *pre = new (struct_Preload);
+    animprenode *pre = new (animprenode);
 
     //%s %d %d %d %f
     //name     ? ? ?   framerate
@@ -572,14 +577,14 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     char buff[255];
     bool found = false;
 
-    struct_Preload *pre;
+    animprenode *pre;
 
     slot = GetIntVal(sl);
 
     StartMList(preload);
     while (!eofMList(preload))
     {
-        pre = (struct_Preload *)DataMList(preload);
+        pre = (animprenode *)DataMList(preload);
         printf("%d\n",pre->slot);
         if (pre->slot == slot)
         {
@@ -615,7 +620,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     char chars[16];
     //sscanf(params,"%s",chars);
 
-    timernode *nod = new (timernode);
+  /*  timernode *nod = new (timernode);
     nod->slot = aSlot;
 
     nod->owner = owner;
@@ -625,7 +630,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
 
     tmr_AddToTimerList(nod);
 
-    SetgVarInt(GetIntVal(chars), 1);
+    SetgVarInt(GetIntVal(chars), 1);*/
 
     return ACTION_NORMAL;
 }
@@ -644,26 +649,38 @@ int action_kill(char *params, int aSlot , pzllst *owner)
     {
         anim_FlushAnims();
 
-        MList *wavs = snd_GetWavsList();
-        StartMList(wavs);
-        while(!eofMList(wavs))
+
+
+        MList *allres = GetAction_res_List();
+        StartMList(allres);
+        while(!eofMList(allres))
         {
-            musicnode *nod = (musicnode *)DataMList(wavs);
-            Mix_HaltChannel(nod->chn);
-            UnlockChan(nod->chn);
+            struct_action_res *nod = (struct_action_res *)DataMList(allres);
+            if (nod->node_type == NODE_TYPE_MUSIC)
+            {
+            Mix_HaltChannel(nod->nodes.node_music->chn);
+            UnlockChan(nod->nodes.node_music->chn);
             SetgVarInt(nod->slot, 2);
             delete nod;
-            DeleteCurrent(wavs);
+            DeleteCurrent(allres);
+            }
+
+            if (nod->node_type == NODE_TYPE_TIMER)
+            {
+            SetgVarInt(nod->slot, 2);
+            delete nod;
+            DeleteCurrent(allres);
+            }
 
 
-            NextMList(wavs);
+            NextMList(allres);
         }
 
         MList *timers = tmr_GetTimerList();
         StartMList(timers);
         while(!eofMList(timers))
         {
-            musicnode *nod = (musicnode *)DataMList(timers);
+            timernode *nod = (timernode *)DataMList(timers);
 
             delete nod;
             DeleteCurrent(timers);
@@ -676,22 +693,22 @@ int action_kill(char *params, int aSlot , pzllst *owner)
 
     if (strcasecmp(chars,"\"audio\"")==0)
     {
-        MList *wavs = snd_GetWavsList();
-        StartMList(wavs);
-        while(!eofMList(wavs))
+        MList *allres = GetAction_res_List();
+        StartMList(allres);
+        while(!eofMList(allres))
         {
-            musicnode *nod = (musicnode *)DataMList(wavs);
-            if (nod->slot == slot)
+            struct_action_res *nod = (struct_action_res *)DataMList(allres);
+            if (nod->node_type == NODE_TYPE_MUSIC)
             {
-                Mix_HaltChannel(nod->chn);
-                UnlockChan(nod->chn);
-                delete nod;
-                DeleteCurrent(wavs);
-                SetgVarInt(slot, 2);
-                return ACTION_NORMAL;
+            Mix_HaltChannel(nod->nodes.node_music->chn);
+            UnlockChan(nod->nodes.node_music->chn);
+            SetgVarInt(nod->slot, 2);
+            delete nod;
+            DeleteCurrent(allres);
             }
 
-            NextMList(wavs);
+
+            NextMList(allres);
         }
 
         return ACTION_NORMAL;
@@ -722,39 +739,35 @@ int action_kill(char *params, int aSlot , pzllst *owner)
         NextMList(anims);
     }
 
-    MList *wavs = snd_GetWavsList();
-    StartMList(wavs);
-    while(!eofMList(wavs))
-    {
-        musicnode *nod = (musicnode *)DataMList(wavs);
-        if (nod->slot == slot)
+        MList *allres = GetAction_res_List();
+        StartMList(allres);
+        while(!eofMList(allres))
         {
-            Mix_HaltChannel(nod->chn);
-            UnlockChan(nod->chn);
+            struct_action_res *nod = (struct_action_res *)DataMList(allres);
+            if (nod->slot == slot)
+            {
+
+
+            if (nod->node_type == NODE_TYPE_MUSIC)
+            {
+            Mix_HaltChannel(nod->nodes.node_music->chn);
+            UnlockChan(nod->nodes.node_music->chn);
+            SetgVarInt(nod->slot, 2);
             delete nod;
-            DeleteCurrent(wavs);
-            //   SetgVarInt(slot, 2);
+            DeleteCurrent(allres);
+            }
+            if (nod->node_type == NODE_TYPE_TIMER)
+            {
+            SetgVarInt(nod->slot, 2);
+            delete nod;
+            DeleteCurrent(allres);
+            }
             return ACTION_NORMAL;
+            }
+
+            NextMList(allres);
         }
 
-        NextMList(wavs);
-    }
-
-    MList *timers = tmr_GetTimerList();
-    StartMList(timers);
-    while(!eofMList(timers))
-    {
-        musicnode *nod = (musicnode *)DataMList(timers);
-        if (nod->slot == slot)
-        {
-            delete nod;
-            DeleteCurrent(timers);
-            SetgVarInt(slot, 2);
-            return ACTION_NORMAL;
-        }
-
-        NextMList(timers);
-    }
 
 #ifdef TRACE
     printf("Nothing to kill %d\n",slot);
@@ -775,21 +788,6 @@ int action_stop(char *params, int aSlot , pzllst *owner)
     sscanf(params,"%s",chars);
     slot = GetIntVal(chars);
 
-    MList *timers = tmr_GetTimerList();
-    StartMList(timers);
-    while(!eofMList(timers))
-    {
-        timernode *nod = (timernode *)DataMList(timers);
-        if (nod->slot == slot)
-        {
-            delete nod;
-            DeleteCurrent(timers);
-            SetgVarInt(slot, 2);
-            return ACTION_NORMAL;
-        }
-
-        NextMList(timers);
-    }
 
     MList *anims = anim_getanimlst();
     StartMList(anims);
@@ -816,23 +814,34 @@ int action_stop(char *params, int aSlot , pzllst *owner)
         NextMList(anims);
     }
 
-    MList *wavs = snd_GetWavsList();
-    StartMList(wavs);
-    while(!eofMList(wavs))
-    {
-        musicnode *nod = (musicnode *)DataMList(wavs);
-        if (nod->slot == slot)
+        MList *allres = GetAction_res_List();
+        StartMList(allres);
+        while(!eofMList(allres))
         {
-            Mix_HaltChannel(nod->chn);
-            UnlockChan(nod->chn);
-            delete nod;
-            DeleteCurrent(wavs);
-            SetgVarInt(slot, 2);
-            return ACTION_NORMAL;
-        }
+            struct_action_res *nod = (struct_action_res *)DataMList(allres);
+            if (nod->slot == slot)
+            {
 
-        NextMList(wavs);
-    }
+
+            if (nod->node_type == NODE_TYPE_MUSIC)
+            {
+            Mix_HaltChannel(nod->nodes.node_music->chn);
+            UnlockChan(nod->nodes.node_music->chn);
+            SetgVarInt(nod->slot, 2);
+            delete nod;
+            DeleteCurrent(allres);
+            }
+            if (nod->node_type == NODE_TYPE_TIMER)
+            {
+            SetgVarInt(nod->slot, 2);
+            delete nod;
+            DeleteCurrent(allres);
+            }
+            return ACTION_NORMAL;
+            }
+
+            NextMList(allres);
+        }
 
     printf("Nothing to stop %d\n",slot);
 
@@ -956,11 +965,11 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
     {
         musicnode *nod = (musicnode *)DataMList(wavs);
 
-        if (nod->slot == item)
-            Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol)));
+//        if (nod->slot == item)
+//            Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol)));
 
-        if (nod->slot == item2)
-            Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol2)));
+ //       if (nod->slot == item2)
+ //           Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol2)));
 
         NextMList(wavs);
     }

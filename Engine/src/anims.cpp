@@ -140,7 +140,7 @@ void anim_FlushPreload()
 
     while (!eofMList(preload))
     {
-        struct_Preload *pre = (struct_Preload *) DataMList(preload);
+        animprenode *pre = (animprenode *) DataMList(preload);
 
         delete pre->fil;
         delete pre;

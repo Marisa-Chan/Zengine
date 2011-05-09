@@ -12,6 +12,9 @@
 
 #include "mylist.h"
 
+#include "config.h"
+#include "types.h"
+
 #include "Graph.h"
 #include "Render.h"
 #include "Sound.h"

@@ -1,5 +1,5 @@
 Progress: [###########-----------]
-         0%          51%         100%
+         0%          52%         100%
 
 
 All what's you need it's convert resources of zork by utils.
@@ -44,7 +44,6 @@ action_save_game	:reverse it and write code
 action_restore_game	:reverse it and write code
 action_display_message	:reverse it (what is it?O_o)   [Not used in ZGI]
 action_pan_track	:reverse it (what is it?O_o)
-action_delay_render	:check asm
 action_flush_mouse_events:reverse it and write code
 action_copy_file	:reverse it (for what?!) (not needed ?)
 action_quit		:reverse it

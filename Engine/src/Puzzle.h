@@ -1,10 +1,10 @@
 #ifndef PUZZLE_H_INCLUDED
 #define PUZZLE_H_INCLUDED
 
+#include "config.h"
+#include "types.h"
+#include "ScriptSystem.h"
 
-#define pzlSTACK 0x800
-
-struct pzllst;
 
 struct puzzlenode
 {
@@ -15,12 +15,6 @@ struct puzzlenode
     pzllst    *owner;
 };
 
-struct pzllst{
-    MList      *_list;
-    puzzlenode *stack[pzlSTACK];
-    int16_t     stksize;
-    uint8_t     exec_times;
-};
 
 struct func_node
 {

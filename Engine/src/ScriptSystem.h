@@ -1,8 +1,11 @@
 #ifndef SCRIPTSYSTEM_H_INCLUDED
 #define SCRIPTSYSTEM_H_INCLUDED
 
-#include "Puzzle.h"
+#include "types.h"
 #include "config.h"
+
+#include "Puzzle.h"
+
 
 #define SLOT_LOCATION_CUR_WO    3
 #define SLOT_LOCATION_CUR_RO    4
@@ -62,20 +65,58 @@
 #define CRIT_OP_GRE   2  //>
 #define CRIT_OP_NOT   3  //!
 
+#define NODE_TYPE_MUSIC    0
+#define NODE_TYPE_TIMER    1
+#define NODE_TYPE_ANIM     2
+#define NODE_TYPE_ANIMPRE  3
+#define NODE_TYPE_PANTRACK 4
+#define NODE_TYPE_TTYTEXT  5
+#define NODE_TYPE_ROTATETO 6
+#define NODE_TYPE_SYNCSND  7
+#define NODE_TYPE_CROSSFAD 8
+
+#define NODE_RET_OK        0
+#define NODE_RET_DELETE    1
+
 
 struct StateBoxEnt{
     puzzlenode * nod[MaxStateBoxEnts];
     uint32_t     cnt;
 };
 
+struct pzllst{
+    MList      *_list;
+    puzzlenode *stack[pzlSTACK];
+    int16_t     stksize;
+    uint8_t     exec_times;
+};
+
+struct struct_action_res
+{
+    int32_t    slot;
+    pzllst     *owner;
+    int8_t     node_type;
+    union
+    {
+        musicnode   *node_music;
+        timernode   *node_timer;
+        animnode    *node_anim;
+        animprenode *node_animpre;
+    } nodes;
+};
 
 pzllst *GetUni();
 pzllst *Getworld();
 pzllst *Getroom();
 pzllst *Getview();
 MList  *Getctrl();
+MList  *GetAction_res_List();
+
+void ScrSys_AddToActResList(void *);
 
 char * ScrSys_ReturnListName(pzllst *lst);
+
+void ScrSys_ProcessAllRes();
 
 void    ScrSys_SetSystemClass(char World, char Room);
 uint8_t ScrSys_GetSystemWorld();
@@ -86,8 +127,8 @@ void    ScrSys_SetFlag(uint32_t indx, uint8_t newval);
 
 bool ScrSys_SlotIsOwned(uint32_t i);
 
-void SetgVarInt(uint32_t indx, int var);
-int  GetgVarInt(uint32_t indx);
+void SetgVarInt(int32_t indx, int var);
+int  GetgVarInt(int32_t indx);
 void SetDirectgVarInt(uint32_t indx, int var);
 int *getdirectvar(uint32_t indx);
 

@@ -25,7 +25,7 @@ struct animnode
     bool   vid;
 };
 
-struct struct_Preload{
+struct animprenode{
     uint32_t  slot;
     char    *fil;
     int32_t   u1;

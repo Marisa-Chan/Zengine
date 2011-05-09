@@ -1,4 +1,3 @@
-
 #include "System.h"
 
 MList  *timers  = NULL;
@@ -19,53 +18,46 @@ void tmr_DeleteTimers()
 
 void tmr_DeleteTimerByOwner(pzllst *owner)
 {
-    StartMList(timers);
-    while (!eofMList(timers))
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while (!eofMList(allres))
     {
-        timernode *nod=(timernode *)DataMList(timers);
+        struct_action_res *nod=(struct_action_res *)DataMList(allres);
         if (nod->owner == owner)
         {
             if (nod->slot != 0)
-            {
-                SetgVarInt(nod->slot, nod->time - GetBeatCount());
-                //printf("deleted timer %d, ost %d",nod->slot,  nod->time - GetTickCount());
-            }
-            //printf("deleted timer %d, ost %d %d \n",nod->slot,  nod->time - GetTickCount(),nod->ownslot);
+                SetgVarInt(nod->slot, nod->nodes.node_timer->time);
+
+            delete nod->nodes.node_timer;
             delete nod;
 
-            DeleteCurrent(timers);
+            DeleteCurrent(allres);
         }
 
-        NextMList(timers);
+        NextMList(allres);
     }
 }
 
-void tmr_ProcessTimers()
+int tmr_ProcessTimer(struct_action_res *nod)
 {
-    StartMList(timers);
+    if (nod->node_type != NODE_TYPE_TIMER)
+        return NODE_RET_OK;
 
-    while (!eofMList(timers))
+    if (nod->nodes.node_timer->time < 0)
     {
-        timernode *nod=(timernode *)DataMList(timers);
-
-        if (nod)
-            {
-            if (nod->time < 0)
-            {
-                SetgVarInt(nod->slot,2);
+        SetgVarInt(nod->slot,2);
 #ifdef TRACE
-                printf ("Timer #%d End's\n",nod->slot);
+        printf ("Timer #%d End's\n",nod->slot);
 #endif
-                delete nod;
-                DeleteCurrent(timers);
+        delete nod->nodes.node_timer;
+        delete nod;
 
-            }
-            if (GetBeat())
-                nod->time--;
-            }
-
-        NextMList(timers);
+        return NODE_RET_DELETE;
     }
+    if (GetBeat())
+        nod->nodes.node_timer->time--;
+
+return NODE_RET_OK;
 }
 
 void tmr_InitTimerList()

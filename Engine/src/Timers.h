@@ -3,16 +3,14 @@
 
 struct timernode
 {
-    uint32_t slot;
     int32_t time;
     //uint32_t ownslot;
-    pzllst  *owner;
 };
 
 
 void tmr_DeleteTimers();
 void tmr_DeleteTimerByOwner(pzllst *owner);
-void tmr_ProcessTimers();
+int  tmr_ProcessTimer(struct_action_res *nod);
 
 void tmr_InitTimerList();
 void tmr_DeleteTimerList();

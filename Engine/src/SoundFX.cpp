@@ -6,43 +6,59 @@ MList    *wavs  =NULL;
 
 void snd_DeleteLoopedWavsByOwner(pzllst *owner)
 {
-    StartMList(wavs);
-    while (!eofMList(wavs))
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while (!eofMList(allres))
     {
-        musicnode *nod=(musicnode *)DataMList(wavs);
-        if (nod->owner == owner && nod->looped)
-        {
-            Mix_HaltChannel(nod->chn);
-            Mix_FreeChunk(nod->chunk);
-            UnlockChan(nod->chn);
-            if (nod->slot != 0)
-                SetgVarInt(nod->slot,2);
-            delete nod;
-            DeleteCurrent(wavs);
-        }
-        NextMList(wavs);
+        struct_action_res *nod=(struct_action_res *)DataMList(allres);
+        if (nod->node_type == NODE_TYPE_MUSIC)
+            if (nod->owner == owner && nod->nodes.node_music->looped)
+                {
+                    Mix_HaltChannel(nod->nodes.node_music->chn);
+                    Mix_FreeChunk(nod->nodes.node_music->chunk);
+                    UnlockChan(nod->nodes.node_music->chn);
+                    if (nod->slot != 0)
+                        SetgVarInt(nod->slot,2);
+                    delete nod->nodes.node_music;
+                    delete nod;
+                    DeleteCurrent(allres);
+                }
+        NextMList(allres);
     }
 }
 
-void snd_ProcessWavs()
+int snd_ProcessWav(struct_action_res *nod)
 {
-    StartMList(wavs);
+    if (nod->node_type != NODE_TYPE_MUSIC)
+        return NODE_RET_OK;
 
-    while (!eofMList(wavs))
-    {
-        musicnode *mnod = (musicnode *) DataMList(wavs);
-
-        if (!Mix_Playing(mnod->chn))
+        if (!Mix_Playing(nod->nodes.node_music->chn))
         {
-            Mix_FreeChunk(mnod->chunk);
-            SetgVarInt(mnod->slot,2);
-            UnlockChan(mnod->chn);
-            delete mnod;
-            DeleteCurrent(wavs);
+            Mix_FreeChunk(nod->nodes.node_music->chunk);
+            SetgVarInt(nod->slot,2);
+            UnlockChan(nod->nodes.node_music->chn);
+            delete nod->nodes.node_music;
+            delete nod;
+            return NODE_RET_DELETE;
         }
 
-        NextMList(wavs);
-    }
+    return NODE_RET_OK;
+}
+
+void snd_DeleteWav(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_MUSIC)
+        return;
+
+    if (Mix_Playing(nod->nodes.node_music->chn))
+        Mix_HaltChannel(nod->nodes.node_music->chn);
+
+    Mix_FreeChunk(nod->nodes.node_music->chunk);
+    SetgVarInt(nod->slot,2);
+    UnlockChan(nod->nodes.node_music->chn);
+    delete nod->nodes.node_music;
+    delete nod;
+
 }
 
 void snd_DeleteWavs()

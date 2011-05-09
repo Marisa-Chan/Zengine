@@ -22,6 +22,7 @@ struct MList
     unsigned int indx;     //count of elements
     MList_node  *Stack[MLIST_STACK];
     unsigned int stkpos;
+    bool         dontstp;
 };
 
 //Linked-list functions
@@ -38,6 +39,7 @@ void DeleteMList(MList *lst);
 void FlushMList(MList *lst);
 void DeleteCurrent(MList *lst);
 bool eofMList(MList *lst);
+int getIndxMList(MList *lst);
 
 bool pushMList(MList *lst);
 bool popMList(MList *lst);

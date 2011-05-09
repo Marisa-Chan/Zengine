@@ -65,22 +65,16 @@ void SaveGame(char *file)
     void *tmpVars[VAR_SLOTS_MAX];
     memcpy(tmpVars,DGetGVars(),VAR_SLOTS_MAX*sizeof(void *));
 
-    MList *timers = tmr_GetTimerList();
-    StartMList(timers);
-    while (!eofMList(timers))
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while (!eofMList(allres))
     {
-        timernode *nod=(timernode *)DataMList(timers);
-        SetgVarInt(tmpVars,nod->slot,2);
-        NextMList(timers);
-    }
-
-    MList *wavs = snd_GetWavsList();
-    StartMList(wavs);
-    while (!eofMList(wavs))
-    {
-        musicnode *nod=(musicnode *)DataMList(wavs);
-        SetgVarInt(tmpVars,nod->slot,2);
-        NextMList(wavs);
+        struct_action_res *nod=(struct_action_res *)DataMList(allres);
+        if (nod->node_type == NODE_TYPE_MUSIC)
+            SetgVarInt(tmpVars,nod->slot,2);
+        if (nod->node_type == NODE_TYPE_TIMER)
+            SetgVarInt(tmpVars,nod->slot,2);
+        NextMList(allres);
     }
 
     MList *anims = anim_getanimlst();
@@ -365,8 +359,9 @@ void GameLoop()
             SetgVarInt(10,1);
     }
 
-    tmr_ProcessTimers();
-    snd_ProcessWavs();
+//    tmr_ProcessTimers();
+//    snd_ProcessWavs();
+    ScrSys_ProcessAllRes();
     anim_ProcessAnims();
 
 

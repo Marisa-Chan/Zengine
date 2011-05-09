@@ -1,4 +1,3 @@
-
 #include "System.h"
 
 
@@ -16,12 +15,14 @@ uint32_t     StateBoxStkSz = 0;
 bool BreakExecute = false;
 
 
-pzllst   *uni    =NULL;
-pzllst   *world  =NULL;
-pzllst   *room   =NULL;
-pzllst   *view   =NULL;
+pzllst   *uni    =NULL; //universe script
+pzllst   *world  =NULL; //world script
+pzllst   *room   =NULL; //room script
+pzllst   *view   =NULL; //view script
 
-MList    *ctrl  =NULL;
+MList    *ctrl   =NULL; //contorls
+
+MList    *actres =NULL; //sounds, animations, ttytexts and other.
 
 
 char * ScrSys_ReturnListName(pzllst *lst)
@@ -64,11 +65,26 @@ MList *Getctrl()
     return ctrl;
 }
 
-void SetgVarInt(uint32_t indx, int var)
+MList *GetAction_res_List()
 {
-    gVars[indx]=var;
+    return actres;
+}
 
-    ShakeStateBox(indx);
+void ScrSys_AddToActResList(void *nod)
+{
+    if (actres != NULL)
+        AddToMList(actres,nod);
+}
+
+void SetgVarInt(int32_t indx, int var)
+{
+    if (indx > 0 && indx < VAR_SLOTS_MAX )
+    {
+        gVars[indx]=var;
+
+        ShakeStateBox(indx);
+    }
+
 }
 
 void SetDirectgVarInt(uint32_t indx, int var)
@@ -76,7 +92,7 @@ void SetDirectgVarInt(uint32_t indx, int var)
     gVars[indx]=var;
 }
 
-int GetgVarInt(uint32_t indx)
+int GetgVarInt(int32_t indx)
 {
     return gVars[indx];
 }
@@ -100,35 +116,20 @@ void ScrSys_SetFlag(uint32_t indx, uint8_t newval)
 //Don't call it from loops for mylists!! it's cause error
 bool ScrSys_SlotIsOwned(uint32_t i)
 {
-    MList *timers = tmr_GetTimerList();
+    MList *allres = GetAction_res_List();
 
-    pushMList(timers);
-    StartMList(timers);
-    while (!eofMList(timers))
+    pushMList(allres);
+    StartMList(allres);
+    while (!eofMList(allres))
     {
-        timernode *nod= (timernode *)DataMList(timers);
+        struct_action_res *nod= (struct_action_res *)DataMList(allres);
 
         if (nod->slot == i)
             return true;
 
-        NextMList(timers);
+        NextMList(allres);
     }
-    popMList(timers);
-
-    MList *wavs = snd_GetWavsList();
-
-    pushMList(wavs);
-    StartMList(wavs);
-    while (!eofMList(wavs))
-    {
-        musicnode *nod= (musicnode *)DataMList(wavs);
-
-        if (nod->slot == i)
-            return true;
-
-        NextMList(wavs);
-    }
-    popMList(wavs);
+    popMList(allres);
 
     return false;
 }
@@ -145,6 +146,8 @@ void InitScriptsEngine()
     uni   = CreatePzlLst();
 
     ctrl  = CreateMList();
+
+    actres = CreateMList();
 
     snd_InitWavsList();
     tmr_InitTimerList();
@@ -482,9 +485,55 @@ void ScrSys_SetBreak()
     BreakExecute=true;
 }
 
+void ScrSys_ProcessAllRes()
+{
+    MList *lst = GetAction_res_List();
 
+    int result=NODE_RET_OK;
 
+    pushMList(lst);
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(lst);
 
+        switch(nod->node_type)
+        {
+        case NODE_TYPE_MUSIC:
+            result = snd_ProcessWav(nod);
+            break;
+        case NODE_TYPE_TIMER:
+            result = tmr_ProcessTimer(nod);
+            break;
+
+        default:
+            break;
+        };
+
+        if (result == NODE_RET_DELETE)
+            DeleteCurrent(lst);
+
+        NextMList(lst);
+    }
+    popMList(lst);
+}
+
+MList *ScrSys_FindResAllBySlot(int32_t slot)
+{
+    MList *lst = new (MList);
+    *lst = *GetAction_res_List();
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        struct_action_res *nod = (struct_action_res *) DataMList(lst);
+        if (nod->slot == slot)
+            return lst;
+        NextMList(lst);
+    }
+    delete lst;
+    return NULL;
+}
 
 
 
