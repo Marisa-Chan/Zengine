@@ -10,4 +10,6 @@
 
 #define pzlSTACK 0x800
 
+#define TRY_CHANNELS 16
+
 #endif // CONFIG_H_INCLUDED

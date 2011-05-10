@@ -96,8 +96,7 @@ struct struct_action_res
     int32_t    slot;
     pzllst     *owner;
     int8_t     node_type;
-    union
-    {
+    union nodes{
         musicnode   *node_music;
         timernode   *node_timer;
         animnode    *node_anim;
@@ -115,6 +114,8 @@ MList  *GetAction_res_List();
 void ScrSys_AddToActResList(void *);
 
 char * ScrSys_ReturnListName(pzllst *lst);
+
+MList *ScrSys_FindResAllBySlot(int32_t slot);
 
 void ScrSys_ProcessAllRes();
 

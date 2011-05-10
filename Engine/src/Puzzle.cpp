@@ -342,6 +342,18 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod->func  = action_ttytext;
         return;
     }
+
+    if (strCMP(buf,"attenuate")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_attenuate;
+        return;
+    }
 }
 
 int Parse_Puzzle_Flags(puzzlenode *pzl,FILE *fl)

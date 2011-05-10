@@ -1,7 +1,7 @@
 #include "System.h"
 #include "Sound.h"
 
-#define TRY_CHANNELS 16
+
 int CHANNELS=0;
 
 uint8_t chanvol[TRY_CHANNELS];
@@ -23,6 +23,8 @@ int GetLogVol(uint8_t linear)
 {
     if (linear < 101)
         return SoundVol[linear];
+    else if (linear > 100)
+        return SoundVol[100];
     else
         return 0;
 }

@@ -1,4 +1,3 @@
-
 #include "System.h"
 
 extern SDL_Surface *scrbuf;
@@ -98,7 +97,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
         //SetgVarInt(tmp1,1);
 //
 //#ifdef TRACE
- //       printf("        owned %d\n",GetIntVal(tmp2));
+//       printf("        owned %d\n",GetIntVal(tmp2));
 //#endif
         return ACTION_NORMAL;
     }
@@ -141,7 +140,7 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
 
     //depricated
     Rend_SetDelay(2);
-   // View_start_Loops = 1;
+    // View_start_Loops = 1;
 
     return ACTION_BREAK;
 }
@@ -441,17 +440,17 @@ int action_music(char *params, int aSlot , pzllst *owner)
 
 
 
-  /*  timernode *nod = new (timernode);
-/*    nod->slot = aSlot;
+    /*  timernode *nod = new (timernode);
+    /*    nod->slot = aSlot;
 
-    nod->owner = owner;
+      nod->owner = owner;
 
 
-    nod->time = 10;
+      nod->time = 10;
 
-    tmr_AddToTimerList(nod);
+      tmr_AddToTimerList(nod);
 
-    SetgVarInt(aSlot, 1);*/
+      SetgVarInt(aSlot, 1);*/
 
     return ACTION_NORMAL;
 }
@@ -462,11 +461,11 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
     printf("        action:universe_music:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
 #endif
 
-    char unk1[16];
+    int type;
     char file[16];
     char loop[16];
     char vol[16];
-    sscanf(params,"%s %s %s %s", unk1, file, loop, vol);
+    sscanf(params,"%d %s %s %s", &type, file, loop, vol);
 
     //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
@@ -475,11 +474,9 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
 
 
 
-    struct_action_res *nod = new (struct_action_res);
-    nod->nodes.node_music = new (musicnode);
+    struct_action_res *nod = snd_CreateWavNode();
 
     nod->slot = aSlot;
-    nod->node_type = NODE_TYPE_MUSIC;
     nod->owner = owner;
 
     char *filp=GetFilePath(file);
@@ -490,10 +487,12 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
     if (nod->nodes.node_music->chn == -1)
     {
         printf("ERROR, NO CHANNELS!\n");
-        Mix_FreeChunk(nod->nodes.node_music->chunk);
-        delete nod;
+        snd_DeleteWav(nod);
         return ACTION_NORMAL;
     }
+
+    Mix_SetDistance(nod->nodes.node_music->chn,0);
+    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
 
     if (GetIntVal(loop)==1)
     {
@@ -509,7 +508,9 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
 
     LockChan(nod->nodes.node_music->chn);
 
-    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(GetIntVal(vol)) );
+    nod->nodes.node_music->volume = GetIntVal(vol);
+
+
 //    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
 
     ScrSys_AddToActResList(nod);
@@ -596,10 +597,10 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     }
 
     if (!found)
-        {
-            printf("        not found %d\n",slot);
-            return ACTION_NORMAL;
-        }
+    {
+        printf("        not found %d\n",slot);
+        return ACTION_NORMAL;
+    }
 
 
 
@@ -620,17 +621,17 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     char chars[16];
     //sscanf(params,"%s",chars);
 
-  /*  timernode *nod = new (timernode);
-    nod->slot = aSlot;
+    /*  timernode *nod = new (timernode);
+      nod->slot = aSlot;
 
-    nod->owner = owner;
+      nod->owner = owner;
 
 
-    nod->time = 15;
+      nod->time = 15;
 
-    tmr_AddToTimerList(nod);
+      tmr_AddToTimerList(nod);
 
-    SetgVarInt(GetIntVal(chars), 1);*/
+      SetgVarInt(GetIntVal(chars), 1);*/
 
     return ACTION_NORMAL;
 }
@@ -658,18 +659,18 @@ int action_kill(char *params, int aSlot , pzllst *owner)
             struct_action_res *nod = (struct_action_res *)DataMList(allres);
             if (nod->node_type == NODE_TYPE_MUSIC)
             {
-            Mix_HaltChannel(nod->nodes.node_music->chn);
-            UnlockChan(nod->nodes.node_music->chn);
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                Mix_HaltChannel(nod->nodes.node_music->chn);
+                UnlockChan(nod->nodes.node_music->chn);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
 
             if (nod->node_type == NODE_TYPE_TIMER)
             {
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
 
 
@@ -700,11 +701,11 @@ int action_kill(char *params, int aSlot , pzllst *owner)
             struct_action_res *nod = (struct_action_res *)DataMList(allres);
             if (nod->node_type == NODE_TYPE_MUSIC)
             {
-            Mix_HaltChannel(nod->nodes.node_music->chn);
-            UnlockChan(nod->nodes.node_music->chn);
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                Mix_HaltChannel(nod->nodes.node_music->chn);
+                UnlockChan(nod->nodes.node_music->chn);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
 
 
@@ -739,34 +740,34 @@ int action_kill(char *params, int aSlot , pzllst *owner)
         NextMList(anims);
     }
 
-        MList *allres = GetAction_res_List();
-        StartMList(allres);
-        while(!eofMList(allres))
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while(!eofMList(allres))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(allres);
+        if (nod->slot == slot)
         {
-            struct_action_res *nod = (struct_action_res *)DataMList(allres);
-            if (nod->slot == slot)
-            {
 
 
             if (nod->node_type == NODE_TYPE_MUSIC)
             {
-            Mix_HaltChannel(nod->nodes.node_music->chn);
-            UnlockChan(nod->nodes.node_music->chn);
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                Mix_HaltChannel(nod->nodes.node_music->chn);
+                UnlockChan(nod->nodes.node_music->chn);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
             if (nod->node_type == NODE_TYPE_TIMER)
             {
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
             return ACTION_NORMAL;
-            }
-
-            NextMList(allres);
         }
+
+        NextMList(allres);
+    }
 
 
 #ifdef TRACE
@@ -814,34 +815,34 @@ int action_stop(char *params, int aSlot , pzllst *owner)
         NextMList(anims);
     }
 
-        MList *allres = GetAction_res_List();
-        StartMList(allres);
-        while(!eofMList(allres))
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while(!eofMList(allres))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(allres);
+        if (nod->slot == slot)
         {
-            struct_action_res *nod = (struct_action_res *)DataMList(allres);
-            if (nod->slot == slot)
-            {
 
 
             if (nod->node_type == NODE_TYPE_MUSIC)
             {
-            Mix_HaltChannel(nod->nodes.node_music->chn);
-            UnlockChan(nod->nodes.node_music->chn);
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                Mix_HaltChannel(nod->nodes.node_music->chn);
+                UnlockChan(nod->nodes.node_music->chn);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
             if (nod->node_type == NODE_TYPE_TIMER)
             {
-            SetgVarInt(nod->slot, 2);
-            delete nod;
-            DeleteCurrent(allres);
+                SetgVarInt(nod->slot, 2);
+                delete nod;
+                DeleteCurrent(allres);
             }
             return ACTION_NORMAL;
-            }
-
-            NextMList(allres);
         }
+
+        NextMList(allres);
+    }
 
     printf("Nothing to stop %d\n",slot);
 
@@ -855,18 +856,18 @@ void act_inv_drop(int item)
         return;
 
     if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
-        {
-            SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-        }
-        else
-        {
-            for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-                if (GetgVarInt(i)==item)
-                {
-                    SetgVarInt(i,0);
-                    break;
-                }
-        }
+    {
+        SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+    }
+    else
+    {
+        for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
+            if (GetgVarInt(i)==item)
+            {
+                SetgVarInt(i,0);
+                break;
+            }
+    }
 
 }
 
@@ -950,29 +951,75 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
     uint32_t item,item2;
     char slot[16];
     char slot2[16]; //unknown slot
-    char unk1[16];
-    char unk2[16];
+    char frVol1[16];
+    char frVol2[16];
     char toVol[16];
     char toVol2[16];
-    char unk4[16];
-    sscanf(params,"%s %s %s %s %s %s %s",slot,slot2,unk1,unk2,toVol,toVol2,unk4);
+    char tim[16];
+    sscanf(params,"%s %s %s %s %s %s %s",slot,slot2,frVol1,frVol2,toVol,toVol2,tim);
     item = GetIntVal(slot);
     item2 = GetIntVal(slot2);
 
-    MList *wavs = snd_GetWavsList();
-    StartMList(wavs);
-    while(!eofMList(wavs))
+    if (item > 0)
     {
-        musicnode *nod = (musicnode *)DataMList(wavs);
+        MList *tmp = ScrSys_FindResAllBySlot(item);
 
-//        if (nod->slot == item)
-//            Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol)));
+        if (tmp != NULL)
+        {
+            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
 
- //       if (nod->slot == item2)
- //           Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol2)));
+            tnod->nodes.node_music->crossfade = true;
 
-        NextMList(wavs);
+            if (GetIntVal(frVol1)>=0)
+                tnod->nodes.node_music->volume = GetIntVal(frVol1);
+
+            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 66.6) ;
+            tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
+
+            if (Mix_Playing(tnod->nodes.node_music->chn))
+                Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
+
+            delete tmp;
+        }
     }
+
+    if (item2 > 0)
+    {
+        MList *tmp = ScrSys_FindResAllBySlot(item2);
+
+        if (tmp != NULL)
+        {
+            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+
+            tnod->nodes.node_music->crossfade = true;
+
+            if (GetIntVal(frVol2)>=0)
+                tnod->nodes.node_music->volume = GetIntVal(frVol2);
+
+            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 66.6) ;
+            tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol2) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
+
+            if (Mix_Playing(tnod->nodes.node_music->chn))
+                Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
+
+            delete tmp;
+        }
+    }
+
+    /* MList *wavs = snd_GetWavsList();
+     StartMList(wavs);
+     while(!eofMList(wavs))
+     {
+         musicnode *nod = (musicnode *)DataMList(wavs);
+
+    //        if (nod->slot == item)
+    //            Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol)));
+
+     //       if (nod->slot == item2)
+     //           Mix_Volume(nod->chn , GetLogVol(GetIntVal(toVol2)));
+
+         NextMList(wavs);
+     }*/
 
 
     return ACTION_NORMAL;
@@ -1014,6 +1061,37 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
 
     return ACTION_NORMAL;
 }
+
+
+int action_attenuate(char *params, int aSlot , pzllst *owner)
+{
+    //action:attenuate(TargetSlot, pos)
+#ifdef TRACE
+    printf("        action:attenuate(%s)\n",params);
+#endif
+    int slot;
+    int att;
+
+    sscanf(params,"%d, %d",&slot,&att);
+
+    att = floor(32767.0 / ((float)abs(att)) * 255.0);
+
+    if (slot > 0)
+    {
+        MList *tmp = ScrSys_FindResAllBySlot(slot);
+
+        if (tmp != NULL)
+        {
+            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+
+            Mix_SetDistance(tnod->nodes.node_music->chn,att);
+        }
+    }
+
+
+    return ACTION_NORMAL;
+}
+
 
 int action_cursor(char *params, int aSlot , pzllst *owner)
 {
