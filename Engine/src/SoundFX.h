@@ -20,6 +20,8 @@ struct musicnode
 
     bool        pantrack;
     int         pantrack_X;
+
+    int         pantrack_angle;
 };
 
 void snd_DeleteLoopedWavsByOwner(pzllst *owner);

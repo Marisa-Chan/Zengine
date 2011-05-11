@@ -60,6 +60,20 @@ int tmr_ProcessTimer(struct_action_res *nod)
 return NODE_RET_OK;
 }
 
+void tmr_DeleteTimer(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_TIMER)
+        return;
+
+    if (nod->nodes.node_timer->time < 0)
+        SetgVarInt(nod->slot,2);
+    else
+        SetgVarInt(nod->slot, nod->nodes.node_timer->time);
+
+    delete nod->nodes.node_timer;
+    delete nod;
+}
+
 void tmr_InitTimerList()
 {
     timers = CreateMList();

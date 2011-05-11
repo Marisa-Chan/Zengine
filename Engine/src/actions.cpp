@@ -491,8 +491,8 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
         return ACTION_NORMAL;
     }
 
-    Mix_SetDistance(nod->nodes.node_music->chn,0);
-    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
+    Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
+
 
     if (GetIntVal(loop)==1)
     {
@@ -505,10 +505,14 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
         nod->nodes.node_music->looped = false;
     }
 
+    nod->nodes.node_music->volume = GetIntVal(vol);
+
+    Mix_Volume( nod->nodes.node_music->chn, nod->nodes.node_music->volume);
+
 
     LockChan(nod->nodes.node_music->chn);
 
-    nod->nodes.node_music->volume = GetIntVal(vol);
+
 
 
 //    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
@@ -1058,6 +1062,30 @@ int action_delay_render(char *params, int aSlot , pzllst *owner)
 int action_pan_track(char *params, int aSlot , pzllst *owner)
 {
     //action:pan_track:XXXXX(TargetSlot X-Pos)
+    #ifdef TRACE
+        printf("        action:pan_track:%d(%s)\n",aSlot,params);
+    #endif
+
+    int slot;
+    int XX = 0;
+
+    sscanf(params,"%d %d",&slot,&XX);
+
+    if (slot > 0)
+    {
+        MList *tmp = ScrSys_FindResAllBySlot(slot);
+
+        if (tmp != NULL)
+        {
+            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+
+            tnod->nodes.node_music->pantrack = true;
+            tnod->nodes.node_music->pantrack_X = XX;
+
+            delete tmp;
+        }
+
+    }
 
     return ACTION_NORMAL;
 }
@@ -1084,7 +1112,11 @@ int action_attenuate(char *params, int aSlot , pzllst *owner)
         {
             struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
 
-            Mix_SetDistance(tnod->nodes.node_music->chn,att);
+            tnod->nodes.node_music->attenuate = att;
+            Mix_SetPosition(tnod->nodes.node_music->chn,
+                            tnod->nodes.node_music->pantrack_angle,
+                            tnod->nodes.node_music->attenuate);
+            delete tmp;
         }
     }
 

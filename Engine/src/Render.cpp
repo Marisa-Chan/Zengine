@@ -302,6 +302,10 @@ void Rend_PanaRender()
 }
 
 
+int Rend_GetPanaWidth()
+{
+    return PanaWidth;
+}
 
 
 void Rend_RenderFunc()

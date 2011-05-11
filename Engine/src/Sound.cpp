@@ -13,10 +13,10 @@ uint16_t audio_format = MIX_DEFAULT_FORMAT; /* 16-bit stereo */
 int audio_channels = MIX_DEFAULT_CHANNELS;
 int audio_buffers = 1024;
 
-const int SoundVol[101] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
-                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,\
-                           2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 13, 14, 16,\
+const int SoundVol[101] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
+                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,\
+                           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,\
+                           3, 3, 3, 4, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11, 12, 14, 15, 17,\
                            18, 20, 23, 26, 29, 32, 36, 41, 46, 51, 57, 64, 72, 81, 91, 102, 114, 127};
 
 int GetLogVol(uint8_t linear)
@@ -52,12 +52,14 @@ int GetFreeChannel()
 
 void LockChan(int i)
 {
-    ChanStatus[i]=true;
+    if (i>=0 && i < CHANNELS)
+        ChanStatus[i]=true;
 }
 
 void UnlockChan(int i)
 {
-    ChanStatus[i]=false;
+    if (i>=0 && i < CHANNELS)
+        ChanStatus[i]=false;
 }
 
 

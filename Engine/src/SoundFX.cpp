@@ -3,6 +3,8 @@
 
 MList    *wavs  =NULL;
 
+#define pi180 0.0174
+
 
 
 void snd_DeleteLoopedWavsByOwner(pzllst *owner)
@@ -49,6 +51,34 @@ int snd_ProcessWav(struct_action_res *nod)
             else
                 mnod->crossfade = false;
 
+        if (Rend_GetRenderer() != RENDER_PANA)
+        {
+            mnod->pantrack = false;
+            Mix_SetPosition(mnod->chn, 0, mnod->attenuate);
+        }
+
+        if (mnod->pantrack)
+        {
+            int PlX = GetgVarInt(SLOT_LOCATION_CUR_X);
+            float pixangle = (360.0 / Rend_GetPanaWidth());
+            int soundpos   = floor((PlX - mnod->pantrack_X) * pixangle);
+            if (soundpos < 0)
+                soundpos+=360;
+
+            soundpos = 360 - soundpos;
+            mnod->pantrack_angle = soundpos;
+
+            int tempdist = mnod->attenuate;
+            if (soundpos > 90 && soundpos < 270)
+                tempdist += (-cos(soundpos * pi180)*96.0);
+
+            if (tempdist > 255)
+                tempdist = 255;
+
+            Mix_SetPosition(mnod->chn, mnod->pantrack_angle, tempdist);
+
+        }
+
 
     return NODE_RET_OK;
 }
@@ -58,12 +88,17 @@ void snd_DeleteWav(struct_action_res *nod)
     if (nod->node_type != NODE_TYPE_MUSIC)
         return;
 
-    if (Mix_Playing(nod->nodes.node_music->chn))
-        Mix_HaltChannel(nod->nodes.node_music->chn);
+    if (nod->nodes.node_music->chn >= 0)
+    {
+        if (Mix_Playing(nod->nodes.node_music->chn))
+            Mix_HaltChannel(nod->nodes.node_music->chn);
 
-    Mix_FreeChunk(nod->nodes.node_music->chunk);
-    SetgVarInt(nod->slot,2);
+    Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
     UnlockChan(nod->nodes.node_music->chn);
+    }
+    Mix_FreeChunk(nod->nodes.node_music->chunk);
+    if (nod->slot != 0)
+        SetgVarInt(nod->slot,2);
     delete nod->nodes.node_music;
     delete nod;
 
@@ -87,6 +122,7 @@ struct_action_res *snd_CreateWavNode()
     tmp->nodes.node_music->crossfade_params.deltavolume = 0;
     tmp->nodes.node_music->crossfade_params.times       = 0;
     tmp->nodes.node_music->pantrack_X = 0;
+    tmp->nodes.node_music->pantrack_angle = 0;
     tmp->nodes.node_music->attenuate  = 0;
 
     return tmp;

@@ -18,6 +18,8 @@ int  Rend_GetMouseGameX();
 int  Rend_GetMouseGameY();
 bool Rend_MouseInGamescr();
 
+int Rend_GetPanaWidth();
+
 void Rend_SetRenderer(int meth);
 void Rend_SetFishTable(double angl, double k);
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
