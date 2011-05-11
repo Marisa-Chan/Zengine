@@ -22,7 +22,7 @@ Thanks w8m (for "unraw" code reverse)
 ------------------TODO------------------
 
 [Script Functions]
-action_music		:needs more parameters info and code (replace timer-dummy)
+action_music		:make it same with action_universe_music
 action_universe_music	:last parameter, what is it !?
 action_playpreload      :needs more parameters info
 action_streamvideo	:needs more parameters info
@@ -33,8 +33,6 @@ action_stop		:reverse true behavior
 action_kill		:reverse true behavior
 action_region		:reverse it (what is it?O_o)   [Not used in ZGI]
 action_rotate_to	:reverse it and write code
-action_attenuate	:reverse it (what is it?O_o)
-action_crossfade	:reverse true behavior and parameters
 action_zoom		:reverse it and write code     [Not used in ZGI]
 action_dissolve		:reverse true behavior
 action_inventory	: // add cycle code
