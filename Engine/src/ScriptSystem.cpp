@@ -116,20 +116,13 @@ void ScrSys_SetFlag(uint32_t indx, uint8_t newval)
 //Don't call it from loops for mylists!! it's cause error
 bool ScrSys_SlotIsOwned(uint32_t i)
 {
-    MList *allres = GetAction_res_List();
+    MList *res = ScrSys_FindResAllBySlot(i);
 
-    pushMList(allres);
-    StartMList(allres);
-    while (!eofMList(allres))
+    if (res != NULL)
     {
-        struct_action_res *nod= (struct_action_res *)DataMList(allres);
-
-        if (nod->slot == i)
-            return true;
-
-        NextMList(allres);
+        delete res;
+        return true;
     }
-    popMList(allres);
 
     return false;
 }
@@ -261,7 +254,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         //if (view->_list->count > 0)
         //{
         tmr_DeleteTimerByOwner(view);
-        snd_DeleteLoopedWavsByOwner(view);
+        //snd_DeleteLoopedWavsByOwner(view);
+        snd_DeleteNoUniverse(view);
 
         FlushPuzzleList(view);
         FlushControlList(ctrl);
@@ -284,7 +278,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     {
         //if (room->_list->count > 0)
         //{
-        snd_DeleteLoopedWavsByOwner(room);
+        //snd_DeleteLoopedWavsByOwner(room);
+        snd_DeleteNoUniverse(room);
 
         FlushPuzzleList(room);
         //}
@@ -302,7 +297,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     {
         //if (world->_list->count > 0)
         //{
-        snd_DeleteLoopedWavsByOwner(world);
+        //snd_DeleteLoopedWavsByOwner(world);
+        snd_DeleteNoUniverse(world);
 
         FlushPuzzleList(world);
         //}

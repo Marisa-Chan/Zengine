@@ -23,6 +23,7 @@ void tmr_DeleteTimerByOwner(pzllst *owner)
     while (!eofMList(allres))
     {
         struct_action_res *nod=(struct_action_res *)DataMList(allres);
+        if (nod->node_type == NODE_TYPE_TIMER)
         if (nod->owner == owner)
         {
             if (nod->slot != 0)

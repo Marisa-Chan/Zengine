@@ -429,38 +429,8 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
-int action_music(char *params, int aSlot , pzllst *owner)
+int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 {
-#ifdef TRACE
-    printf("        action:music:%d(%s)\n",aSlot,params);
-#endif
-
-    char chars[16];
-    sscanf(params,"%s", chars);
-
-
-
-    /*  timernode *nod = new (timernode);
-    /*    nod->slot = aSlot;
-
-      nod->owner = owner;
-
-
-      nod->time = 10;
-
-      tmr_AddToTimerList(nod);
-
-      SetgVarInt(aSlot, 1);*/
-
-    return ACTION_NORMAL;
-}
-
-int action_universe_music(char *params, int aSlot , pzllst *owner)
-{
-#ifdef TRACE
-    printf("        action:universe_music:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
-#endif
-
     int type;
     char file[16];
     char loop[16];
@@ -480,6 +450,8 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
     nod->owner = owner;
 
     char *filp=GetFilePath(file);
+
+    nod->nodes.node_music->universe = universe;
 
     nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
 
@@ -522,6 +494,24 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
     SetgVarInt(aSlot, 1);
 
     return ACTION_NORMAL;
+}
+
+int action_music(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:music:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
+#endif
+
+    return music_music(params,aSlot,owner,false);
+}
+
+int action_universe_music(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:universe_music:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
+#endif
+
+    return music_music(params,aSlot,owner,true);
 }
 
 
@@ -590,7 +580,7 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     while (!eofMList(preload))
     {
         pre = (animprenode *)DataMList(preload);
-        printf("%d\n",pre->slot);
+
         if (pre->slot == slot)
         {
             found = true;
@@ -755,10 +745,7 @@ int action_kill(char *params, int aSlot , pzllst *owner)
 
             if (nod->node_type == NODE_TYPE_MUSIC)
             {
-                Mix_HaltChannel(nod->nodes.node_music->chn);
-                UnlockChan(nod->nodes.node_music->chn);
-                SetgVarInt(nod->slot, 2);
-                delete nod;
+                snd_DeleteWav(nod);
                 DeleteCurrent(allres);
             }
             if (nod->node_type == NODE_TYPE_TIMER)

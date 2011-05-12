@@ -209,7 +209,7 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod->param = copy_params(params);
         nod->slot  = slot;
 
-        nod->func  = action_universe_music;
+        nod->func  = action_music;
         return;
     }
 

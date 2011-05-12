@@ -5,7 +5,22 @@ MList    *wavs  =NULL;
 
 #define pi180 0.0174
 
-
+void snd_DeleteNoUniverse(pzllst *owner)
+{
+    MList *allres = GetAction_res_List();
+    StartMList(allres);
+    while (!eofMList(allres))
+    {
+        struct_action_res *nod=(struct_action_res *)DataMList(allres);
+        if (nod->node_type == NODE_TYPE_MUSIC)
+            if (nod->owner == owner && nod->nodes.node_music->universe == false)
+                {
+                    snd_DeleteWav(nod);
+                    DeleteCurrent(allres);
+                }
+        NextMList(allres);
+    }
+}
 
 void snd_DeleteLoopedWavsByOwner(pzllst *owner)
 {
@@ -124,6 +139,7 @@ struct_action_res *snd_CreateWavNode()
     tmp->nodes.node_music->pantrack_X = 0;
     tmp->nodes.node_music->pantrack_angle = 0;
     tmp->nodes.node_music->attenuate  = 0;
+    tmp->nodes.node_music->universe   = false;
 
     return tmp;
 }

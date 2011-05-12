@@ -1,5 +1,5 @@
 Progress: [###########-----------]
-         0%          53%         100%
+         0%        53.5%         100%
 
 
 All what's you need it's convert resources of zork by utils.
@@ -22,8 +22,6 @@ Thanks w8m (for "unraw" code reverse)
 ------------------TODO------------------
 
 [Script Functions]
-action_music		:make it same with action_universe_music
-action_universe_music	:last parameter, what is it !?
 action_playpreload      :needs more parameters info
 action_streamvideo	:needs more parameters info
 action_animplay		:needs more parameters info
@@ -31,39 +29,45 @@ action_syncsound	:reverse it and replace dummy
 action_animunload	:reverse it and write code
 action_stop		:reverse true behavior
 action_kill		:reverse true behavior
-action_region		:reverse it (what is it?O_o)   [Not used in ZGI]
 action_rotate_to	:reverse it and write code
-action_zoom		:reverse it and write code     [Not used in ZGI]
 action_dissolve		:reverse true behavior
-action_inventory	: // add cycle code
-action_set_master_volume:reverse it and write code     [Not used in ZGI]
-action_distort		:reverse it and write code     [Not used in ZGI]
 action_save_game	:reverse it and write code
 action_restore_game	:reverse it and write code
-action_display_message	:reverse it (what is it?O_o)   [Not used in ZGI]
-action_pan_track	:reverse it (what is it?O_o)
+action_pan_track	:add object to list(for killing and etc)
 action_flush_mouse_events:reverse it and write code
 action_copy_file	:reverse it (for what?!) (not needed ?)
 action_quit		:reverse it
-action_set_venus	:reverse it (fuckin shit, what is it?!O___o) [Not used in ZGI]
-action_disable_venus	:no comments %)                              [Not used in ZGI]
 action_clear_system_message:reverse it
-action_add_preblt	:reverse it                                  [Not used in ZGI]
-action_remove_preblt	:don't know what is it (reverse it)          [Not used in ZGI]
 action_preferences	:reverse it
 action_ttytext		:reverse it
 
-[Sound]
-Make 3D-sound for panorama-locations(pan-track)
 
 [Other]
 * Make graphics scaleable for other resolutions
-+ Complate menubar code and interactions [complate 30.03.11]
+* Make menu items highlitable
 * Write subtitles code
-* Reverse what will happen with now-playing sound/anims/timers/etc while "change_location"
++/- Reverse what will happen with now-playing sound/anims/timers/etc while "change_location"
 * Clear code
 * Other little things...
 
+
+--------------TODO after release-----------------
+//(for other games on this engine)
+//because "Not used in ZGI"
+
+[Script Functions]
+action_music		: Find true meaning of first and optional last parameter
+action_universe_music	: Find true meaning of first and optional last parameter
+action_add_preblt	:reverse it                                  [Not used in ZGI]
+action_remove_preblt	:reverse it                                  [Not used in ZGI]
+action_region		:reverse it                                  [Not used in ZGI]
+action_set_master_volume:reverse it and write code     [Not used in ZGI]
+action_distort		:reverse it and write code     [Not used in ZGI]
+action_zoom		:reverse it and write code     [Not used in ZGI]
+action_inventory	: // add cycle code
+action_display_message	:reverse it                    [Not used in ZGI]
+action_set_venus	:reverse it                    [Not used in ZGI]
+action_disable_venus	:no comments %)                [Not used in ZGI]
 
 ------------------License--------------------
 You may use this sources how you want, but must include author name or "based on:%Project name%" text or other link to this project.
