@@ -22,24 +22,24 @@ Thanks w8m (for "unraw" code reverse)
 ------------------TODO------------------
 
 [Script Functions]
-action_playpreload      :needs more parameters info
-action_streamvideo	:needs more parameters info
-action_animplay		:needs more parameters info
-action_syncsound	:reverse it and replace dummy
-action_animunload	:reverse it and write code
-action_stop		:reverse true behavior
-action_kill		:reverse true behavior
-action_rotate_to	:reverse it and write code
-action_dissolve		:reverse true behavior
-action_save_game	:reverse it and write code
-action_restore_game	:reverse it and write code
-action_pan_track	:add object to list(for killing and etc)
-action_flush_mouse_events:reverse it and write code
-action_copy_file	:reverse it (for what?!) (not needed ?)
-action_quit		:reverse it
-action_clear_system_message:reverse it
-action_preferences	:reverse it
-action_ttytext		:reverse it
+action_playpreload          :needs more parameters info
+action_streamvideo	    :needs more parameters info
+action_animplay		    :needs more parameters info
+action_syncsound	    :reverse it and replace dummy
+action_animunload	    :reverse it and write code
+action_stop		    :reverse true behavior
+action_kill		    :reverse true behavior
+action_rotate_to	    :reverse it and write code
+action_dissolve		    :reverse true behavior
+action_save_game	    :reverse it and write code
+action_restore_game	    :reverse it and write code
+action_pan_track	    :add object to list(for killing and etc)
+action_flush_mouse_events   :reverse it and write code
+action_copy_file	    :reverse it (for what?!) (not needed ?)
+action_quit		    :reverse it
+action_clear_system_message :reverse it
+action_preferences	    :reverse it
+action_ttytext		    :reverse it
 
 
 [Other]
