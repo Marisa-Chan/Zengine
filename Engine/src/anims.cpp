@@ -1,4 +1,3 @@
-
 #include "System.h"
 #include "anims.h"
 
@@ -31,102 +30,137 @@ void anim_InitAnimLists()
     anims = CreateMList();
 }
 
-void anim_ProcessAnims()
+
+struct_action_res *anim_CreateAnimNode()
 {
-    StartMList(anims);
+    struct_action_res *tmp;
+    tmp = new (struct_action_res);
 
-    while (!eofMList(anims))
-    {
-        animnode *nod=(animnode *)DataMList(anims);
+    tmp->slot            = 0;
+    tmp->node_type       = NODE_TYPE_ANIM;
+    tmp->owner           = NULL;
 
-        if (nod)
-            if (nod->anim)
-                if (GetBeat())
-                {
-                    if (nod->vid)
-                    {
-                        anim_avi *anm=(anim_avi *)nod->anim;
-                        SMPEG_renderFrame(anm->mpg,nod->CurFr+1);
-
-                        Rend_DrawImageToGamescr(anm->img,nod->x,nod->y);
-                        nod->CurFr++;
-                    }
-                    else
-                        Rend_DrawImageToGamescr((anim_surf *)nod->anim,nod->x,nod->y,nod->CurFr);
-
-                    nod->CurFr++;
-
-                    if (nod->CurFr > nod->end)
-                    {
-                        nod->loops++;
-
-                        if (nod->loops<nod->loopcnt || nod->loopcnt == 0)
-                        {
-                            nod->CurFr=nod->start;
-/*                            if (nod->vid)
-                            {
-                                //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                                nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
-                            }
-                            else
-                                nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;*/
-                        }
-
-                        else
-                        {
-#ifdef TRACE
-                            printf ("Animplay #%d End's\n",nod->slot);
-#endif
-                            if (nod->slot != 0)
-                                SetgVarInt(nod->slot,2);
-
-                            if (nod->vid)
-                            {
-                                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-                                SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-                                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-                            }
-                            else
-                                FreeAnimImage((anim_surf *)nod->anim);
-                            delete nod;
-                            DeleteCurrent(anims);
-                        }
-                    }
-                }
-
-        NextMList(anims);
-    }
+    tmp->nodes.node_anim = new (animnode);
+    tmp->nodes.node_anim->anim.avi= NULL;
+    tmp->nodes.node_anim->CurFr   = 0;
+    tmp->nodes.node_anim->end     = 0;
+    tmp->nodes.node_anim->h       = 0;
+    tmp->nodes.node_anim->loopcnt = 0;
+    tmp->nodes.node_anim->loops   = 0;
+    tmp->nodes.node_anim->start   = 0;
+    tmp->nodes.node_anim->unk1    = 0;
+    tmp->nodes.node_anim->unk2    = 0;
+    tmp->nodes.node_anim->unk3    = 0;
+    tmp->nodes.node_anim->framerate = 0;
+    tmp->nodes.node_anim->vid     = false;
+    tmp->nodes.node_anim->w       = 0;
+    tmp->nodes.node_anim->x       = 0;
+    tmp->nodes.node_anim->y       = 0;
+    tmp->nodes.node_anim->nexttick = 0;
+    return tmp;
 }
 
-void anim_DeleteAnimNod(animnode *nod)
+int anim_ProcessAnim(struct_action_res *nod)
 {
-    if (nod->vid)
+    if (nod->node_type != NODE_TYPE_ANIM)
+        return NODE_RET_OK;
+
+    animnode *mnod = nod->nodes.node_anim;
+
+    if (mnod)
+        if (GetBeat())
+        {
+            mnod->nexttick--;
+
+            if (mnod->nexttick <= 0)
+            {
+                mnod->nexttick = mnod->framerate;
+
+                if (mnod->vid)
+                {
+                    SMPEG_renderFrame(mnod->anim.avi->mpg,
+                                      mnod->CurFr+1);
+
+                    Rend_DrawImageToGamescr(mnod->anim.avi->img,
+                                            mnod->x,
+                                            mnod->y);
+                    mnod->CurFr++;
+                }
+                else
+                    Rend_DrawImageToGamescr(mnod->anim.rlf,
+                                            mnod->x,
+                                            mnod->y,
+                                            mnod->CurFr);
+
+                mnod->CurFr++;
+
+                if (mnod->CurFr > mnod->end)
+                {
+                    mnod->loops++;
+
+                    if (mnod->loops < mnod->loopcnt || mnod->loopcnt == 0)
+                    {
+                        mnod->CurFr=mnod->start;
+                        /*                            if (nod->vid)
+                                                    {
+                                                        //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                                                        nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
+                                                    }
+                                                    else
+                                                        nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;*/
+                    }
+
+                    else
+                    {
+#ifdef TRACE
+                        printf ("Animplay #%d End's\n",nod->slot);
+#endif
+                        anim_DeleteAnimNod(nod);
+                        return NODE_RET_DELETE;
+                    }
+                }
+            }
+        }
+    return NODE_RET_OK;
+}
+
+void anim_DeleteAnimNod(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_ANIM)
+        return;
+
+    if (nod->nodes.node_anim->vid)
     {
-        SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-        SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-        SMPEG_delete(((anim_avi *)nod->anim)->mpg);
+        SDL_FreeSurface(nod-> nodes.node_anim-> anim.avi ->img);
+        SMPEG_stop(     nod-> nodes.node_anim-> anim.avi ->mpg);
+        SMPEG_delete(   nod-> nodes.node_anim-> anim.avi ->mpg);
     }
     else
-        FreeAnimImage((anim_surf *)nod->anim);
+        FreeAnimImage(nod->nodes.node_anim->anim.rlf);
 
-    SetgVarInt(nod->slot,2);
+    if (nod->slot >= 0)
+        SetgVarInt(nod->slot,2);
 
+    delete nod->nodes.node_anim;
     delete nod;
 }
 
 void anim_FlushAnims()
 {
-    StartMList(anims);
-    while (!eofMList(anims))
+    MList *all = GetAction_res_List();
+    StartMList(all);
+    while (!eofMList(all))
     {
-        animnode *nod=(animnode *)DataMList(anims);
+        struct_action_res *nod=(struct_action_res *)DataMList(all);
 
         anim_DeleteAnimNod(nod);
 
-        NextMList(anims);
+        DeleteCurrent(all);
+
+        NextMList(all);
     }
 
-    FlushMList(anims);
+    //FlushMList(all);
 }
 
 void anim_FlushPreload()

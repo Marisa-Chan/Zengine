@@ -331,23 +331,27 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     char loop[16];
     char un2[16];
     char mask[16];
-    char un4[16]; //framerate or 0 (default)
-    sscanf(params,"%s %s %s %s %s %s %s %s %s %s %s %s",file,x,y,w,h,st,en,loop,un1,un2,mask,un4);
+    char framerate[16]; //framerate or 0 (default)
+    sscanf(params,"%s %s %s %s %s %s %s %s %s %s %s %s",file,x,y,w,h,st,en,loop,un1,un2,mask,framerate);
 
-    MList *anims = anim_getanimlst();
-    StartMList(anims);
-    while (!eofMList(anims))
+
+
+
+    MList *all = GetAction_res_List();
+    StartMList(all);
+    while (!eofMList(all))
     {
 
-        animnode *nd = (animnode *)DataMList(anims);
+        struct_action_res *nd = (struct_action_res *)DataMList(all);
 
-        if (nd->slot == aSlot)
-        {
-            anim_DeleteAnimNod(nd);
-            DeleteCurrent(anims);
-        }
+        if (nd->node_type == NODE_TYPE_ANIM)
+            if (nd->slot == aSlot)
+            {
+                anim_DeleteAnimNod(nd);
+                DeleteCurrent(all);
+            }
 
-        NextMList(anims);
+        NextMList(all);
     }
 
 
@@ -356,72 +360,61 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
 
 
+    struct_action_res *glob = anim_CreateAnimNode();
 
-    animnode *nod = new (animnode);
-    anim_avi *anm;
-    AddToMList(anims,nod);
+    animnode *nod = glob->nodes.node_anim;
 
-
-
+    ScrSys_AddToActResList(glob);
 
 
-    nod->slot = aSlot;
+
+
+
+    glob->slot  = aSlot;
+    glob->owner = owner;
 
     nod->x = GetIntVal(x);
     nod->y = GetIntVal(y);
     nod->w = GetIntVal(w) - nod->x +1;
     nod->h = GetIntVal(h) - nod->y +1;
-    nod->loopcnt = GetIntVal(loop);
+    nod->loopcnt   = GetIntVal(loop);
+    nod->framerate = GetIntVal(framerate);
 
+    if (nod->framerate != 0)
+        nod->framerate = ceil(15.0 / float(nod->framerate));
+
+    nod->nexttick = nod->framerate;
     nod->loops=0;
 
     if (strcasestr(file,"avi")!=NULL)
     {
-        anm=new(anim_avi);
-        nod->anim = (void *) anm;
-        anm->mpg=SMPEG_new(GetFilePath(file),&anm->inf,0);
-        anm->img = CreateSurface(nod->w,nod->h);
-        SMPEG_setdisplay(anm->mpg,anm->img,0,0);
-        SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
-
-        //if (nod->loopcnt == 0 )
-        //  {
-
-        //     SMPEG_play(anm->mpg);
-
-        //    anm->pld=true;
-        //    anm->loop=true;
-        //}
-        //if (anm->inf.width != nod->w)
-        //   SMPEG_scaleXY(anm->mpg,1,1);
+        nod->anim.avi = new(anim_avi);
         nod->vid=true;
+
+        nod->anim.avi->mpg=SMPEG_new(GetFilePath(file),&nod->anim.avi->inf,0);
+        nod->anim.avi->img = CreateSurface(nod->w,nod->h);
+        SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
+        SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
+
+        nod->start= GetIntVal(st) *2;
+        nod->end= GetIntVal(en) *2;
+
+        SMPEG_renderFrame(nod->anim.avi->mpg,nod->start+1);
+
     }
     else
     {
-
-
-        nod->vid=false;
-
-
         int r=GetIntVal(mask),g,b;
         b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
         g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
         r=FiveBitToEightBitLookupTable[(r & 0x1F)];
 
-        nod->anim = LoadAnimImage(file,r | g<<8 | b<<16);
-    }
+        nod->anim.rlf = LoadAnimImage(file,r | g<<8 | b<<16);
+        nod->vid=false;
 
-    if (nod->vid)
-    {
-        nod->start= GetIntVal(st) *2;
-        nod->end= GetIntVal(en) *2;
-
-        SMPEG_renderFrame(anm->mpg,nod->start+1);
-    }
-    else
-    {
         nod->start= GetIntVal(st);
         nod->end= GetIntVal(en);
+
     }
 
     nod->CurFr = nod->start;
@@ -711,29 +704,6 @@ int action_kill(char *params, int aSlot , pzllst *owner)
 
     slot = GetIntVal(chars);
 
-    MList *anims = anim_getanimlst();
-    StartMList(anims);
-    while(!eofMList(anims))
-    {
-        animnode *nod = (animnode *)DataMList(anims);
-        if (nod->slot == slot)
-        {
-            if (nod->vid)
-            {
-                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-            }
-            else
-                FreeAnimImage((anim_surf *)nod->anim);
-            delete nod;
-            DeleteCurrent(anims);
-            SetgVarInt(slot, 2);
-            return ACTION_NORMAL;
-        }
-
-        NextMList(anims);
-    }
-
     MList *allres = GetAction_res_List();
     StartMList(allres);
     while(!eofMList(allres))
@@ -750,10 +720,16 @@ int action_kill(char *params, int aSlot , pzllst *owner)
             }
             if (nod->node_type == NODE_TYPE_TIMER)
             {
-                SetgVarInt(nod->slot, 2);
-                delete nod;
+                tmr_DeleteTimer(nod);
                 DeleteCurrent(allres);
             }
+
+            if (nod->node_type == NODE_TYPE_ANIM)
+            {
+                anim_DeleteAnimNod(nod);
+                DeleteCurrent(allres);
+            }
+
             return ACTION_NORMAL;
         }
 
@@ -781,31 +757,6 @@ int action_stop(char *params, int aSlot , pzllst *owner)
     slot = GetIntVal(chars);
 
 
-    MList *anims = anim_getanimlst();
-    StartMList(anims);
-    while(!eofMList(anims))
-    {
-        animnode *nod = (animnode *)DataMList(anims);
-        if (nod->slot == slot)
-        {
-            if (nod->vid)
-            {
-                SDL_FreeSurface(((anim_avi *)nod->anim)->img);
-                SMPEG_stop(((anim_avi *)nod->anim)->mpg);
-                SMPEG_delete(((anim_avi *)nod->anim)->mpg);
-            }
-            else
-                FreeAnimImage((anim_surf *)nod->anim);
-
-            delete nod;
-            DeleteCurrent(anims);
-            SetgVarInt(slot, 2);
-            return ACTION_NORMAL;
-        }
-
-        NextMList(anims);
-    }
-
     MList *allres = GetAction_res_List();
     StartMList(allres);
     while(!eofMList(allres))
@@ -829,6 +780,13 @@ int action_stop(char *params, int aSlot , pzllst *owner)
                 delete nod;
                 DeleteCurrent(allres);
             }
+
+            if (nod->node_type == NODE_TYPE_ANIM)
+            {
+                anim_DeleteAnimNod(nod);
+                DeleteCurrent(allres);
+            }
+
             return ACTION_NORMAL;
         }
 

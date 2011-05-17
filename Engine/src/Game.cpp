@@ -70,21 +70,19 @@ void SaveGame(char *file)
     while (!eofMList(allres))
     {
         struct_action_res *nod=(struct_action_res *)DataMList(allres);
+
         if (nod->node_type == NODE_TYPE_MUSIC)
             SetgVarInt(tmpVars,nod->slot,2);
+
         if (nod->node_type == NODE_TYPE_TIMER)
             SetgVarInt(tmpVars,nod->slot,2);
+
+        if (nod->node_type == NODE_TYPE_ANIM)
+            SetgVarInt(tmpVars,nod->slot,2);
+
         NextMList(allres);
     }
 
-    MList *anims = anim_getanimlst();
-    StartMList(anims);
-    while (!eofMList(anims))
-    {
-        animnode *nod=(animnode *)DataMList(anims);
-        SetgVarInt(tmpVars,nod->slot,2);
-        NextMList(anims);
-    }
 
     pzllst *room = Getroom();
     StartMList(room->_list);
@@ -362,8 +360,6 @@ void GameLoop()
 //    tmr_ProcessTimers();
 //    snd_ProcessWavs();
     ScrSys_ProcessAllRes();
-    anim_ProcessAnims();
-
 
     pzllst *room  = Getroom();
     pzllst *view  = Getview();

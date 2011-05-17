@@ -16,6 +16,20 @@ void tmr_DeleteTimers()
     FlushMList(timers);
 }
 
+void tmr_DeleteTimer(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_TIMER)
+        return;
+
+    if (nod->nodes.node_timer->time < 0)
+        SetgVarInt(nod->slot,2);
+    else
+        SetgVarInt(nod->slot, nod->nodes.node_timer->time);
+
+    delete nod->nodes.node_timer;
+    delete nod;
+}
+
 void tmr_DeleteTimerByOwner(pzllst *owner)
 {
     MList *allres = GetAction_res_List();
@@ -26,11 +40,7 @@ void tmr_DeleteTimerByOwner(pzllst *owner)
         if (nod->node_type == NODE_TYPE_TIMER)
         if (nod->owner == owner)
         {
-            if (nod->slot != 0)
-                SetgVarInt(nod->slot, nod->nodes.node_timer->time);
-
-            delete nod->nodes.node_timer;
-            delete nod;
+            tmr_DeleteTimer(nod);
 
             DeleteCurrent(allres);
         }
@@ -46,34 +56,21 @@ int tmr_ProcessTimer(struct_action_res *nod)
 
     if (nod->nodes.node_timer->time < 0)
     {
-        SetgVarInt(nod->slot,2);
 #ifdef TRACE
         printf ("Timer #%d End's\n",nod->slot);
 #endif
-        delete nod->nodes.node_timer;
-        delete nod;
+        tmr_DeleteTimer(nod);
 
         return NODE_RET_DELETE;
     }
+
     if (GetBeat())
         nod->nodes.node_timer->time--;
 
 return NODE_RET_OK;
 }
 
-void tmr_DeleteTimer(struct_action_res *nod)
-{
-    if (nod->node_type != NODE_TYPE_TIMER)
-        return;
 
-    if (nod->nodes.node_timer->time < 0)
-        SetgVarInt(nod->slot,2);
-    else
-        SetgVarInt(nod->slot, nod->nodes.node_timer->time);
-
-    delete nod->nodes.node_timer;
-    delete nod;
-}
 
 void tmr_InitTimerList()
 {

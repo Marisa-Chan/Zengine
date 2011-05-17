@@ -501,6 +501,9 @@ void ScrSys_ProcessAllRes()
         case NODE_TYPE_TIMER:
             result = tmr_ProcessTimer(nod);
             break;
+        case NODE_TYPE_ANIM:
+            result = anim_ProcessAnim(nod);
+            break;
 
         default:
             break;

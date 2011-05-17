@@ -6,7 +6,6 @@
 
 struct animnode
 {
-    uint32_t slot;
     int      x;
     int      y;
     int      w;
@@ -17,11 +16,15 @@ struct animnode
     int   unk1; //???
     int   unk2;
     int   unk3;
-    int   unk4;
+    int   framerate;
     int  CurFr;
-//    uint32_t nexttick;
+    int  nexttick;
     int  loops;
-    void *anim;
+    union anim
+    {
+        anim_surf *rlf;
+        anim_avi  *avi;
+    } anim;
     bool   vid;
 };
 
@@ -38,9 +41,11 @@ struct animprenode{
 MList *anim_getpreloadLst();
 MList *anim_getanimlst();
 
+struct_action_res *anim_CreateAnimNode();
+
 void anim_InitAnimLists();
-void anim_ProcessAnims();
-void anim_DeleteAnimNod(animnode *nod);
+int anim_ProcessAnim(struct_action_res *nod);
+void anim_DeleteAnimNod(struct_action_res *nod);
 void anim_FlushAnims();
 void anim_FlushPreload();
 
