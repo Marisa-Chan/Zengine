@@ -50,7 +50,7 @@ struct_action_res *anim_CreateAnimNode()
     tmp->nodes.node_anim->start   = 0;
     tmp->nodes.node_anim->unk1    = 0;
     tmp->nodes.node_anim->unk2    = 0;
-    tmp->nodes.node_anim->unk3    = 0;
+    tmp->nodes.node_anim->mask    = 0;
     tmp->nodes.node_anim->framerate = 0;
     tmp->nodes.node_anim->vid     = false;
     tmp->nodes.node_anim->w       = 0;
@@ -59,6 +59,25 @@ struct_action_res *anim_CreateAnimNode()
     tmp->nodes.node_anim->nexttick = 0;
     return tmp;
 }
+
+struct_action_res *anim_CreateAnimPreNode()
+{
+    struct_action_res *tmp;
+    tmp = new (struct_action_res);
+
+    tmp->slot            = 0;
+    tmp->node_type       = NODE_TYPE_ANIMPRE;
+    tmp->owner           = NULL;
+
+    tmp->nodes.node_animpre = new (animprenode);
+    tmp->nodes.node_animpre->fil = NULL;
+    tmp->nodes.node_animpre->u1  = 0;
+    tmp->nodes.node_animpre->u2  = 0;
+    tmp->nodes.node_animpre->mask      = 0;
+    tmp->nodes.node_animpre->framerate = 0;
+    return tmp;
+}
+
 
 int anim_ProcessAnim(struct_action_res *nod)
 {
@@ -145,6 +164,16 @@ void anim_DeleteAnimNod(struct_action_res *nod)
     delete nod;
 }
 
+void anim_DeleteAnimPreNod(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_ANIMPRE)
+        return;
+
+    delete nod->nodes.node_animpre->fil;
+    delete nod->nodes.node_animpre;
+    delete nod;
+}
+
 void anim_FlushAnims()
 {
     MList *all = GetAction_res_List();
@@ -153,9 +182,13 @@ void anim_FlushAnims()
     {
         struct_action_res *nod=(struct_action_res *)DataMList(all);
 
-        anim_DeleteAnimNod(nod);
+        if (nod->node_type == NODE_TYPE_ANIM)
+        {
+            anim_DeleteAnimNod(nod);
 
-        DeleteCurrent(all);
+            DeleteCurrent(all);
+        }
+
 
         NextMList(all);
     }
@@ -165,22 +198,20 @@ void anim_FlushAnims()
 
 void anim_FlushPreload()
 {
-    MList *preload = anim_getpreloadLst();
-
-    if (preload == NULL)
-        return;
-
-    StartMList(preload);
-
-    while (!eofMList(preload))
+    MList *all = GetAction_res_List();
+    StartMList(all);
+    while (!eofMList(all))
     {
-        animprenode *pre = (animprenode *) DataMList(preload);
+        struct_action_res *nod=(struct_action_res *)DataMList(all);
 
-        delete pre->fil;
-        delete pre;
+        if (nod->node_type == NODE_TYPE_ANIMPRE)
+        {
+            anim_DeleteAnimPreNod(nod);
 
-        NextMList(preload);
+            DeleteCurrent(all);
+        }
+
+
+        NextMList(all);
     }
-    FlushMList(preload);
-    //*Getpreload() = NULL;
 }

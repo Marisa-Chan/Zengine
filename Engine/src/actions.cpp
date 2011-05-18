@@ -377,6 +377,7 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     nod->y = GetIntVal(y);
     nod->w = GetIntVal(w) - nod->x +1;
     nod->h = GetIntVal(h) - nod->y +1;
+    nod->mask = GetIntVal(mask);
     nod->loopcnt   = GetIntVal(loop);
     nod->framerate = GetIntVal(framerate);
 
@@ -520,25 +521,33 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:animpreload:%d(%s)\n",aSlot,params);
 #endif
-    MList *preload = anim_getpreloadLst();
-    if (!preload)
-        return ACTION_NORMAL;//preload = CreateMList();
+
+    if (ScrSys_SlotIsOwned(aSlot))
+        return ACTION_NORMAL;
 
     char name[64];
+    char u1[16];
+    char u2[16];
+    char u3[16];
+    char u4[16];
 
-    animprenode *pre = new (animprenode);
+
+
+    struct_action_res *pre = anim_CreateAnimPreNode();
 
     //%s %d %d %d %f
     //name     ? ? ?   framerate
     //in zgi   0 0 0
-    sscanf(params,"%s", name);
+    sscanf(params,"%s %s %s %s %s", name,u1,u2,u3,u4);
 
-    pre->fil = (char *)malloc(255);
+    pre->nodes.node_animpre->fil = (char *)malloc(255);
 
-    strcpy(pre->fil,name);
+    strcpy(pre->nodes.node_animpre->fil,name);
     pre->slot = aSlot;
 
-    AddToMList(preload,pre);
+    pre->nodes.node_animpre->framerate = GetIntVal(u4);
+
+    ScrSys_AddToActResList(pre);
 
     SetgVarInt(pre->slot,2);
 
@@ -565,39 +574,35 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     char buff[255];
     bool found = false;
 
-    animprenode *pre;
+    struct_action_res *pre;
 
     slot = GetIntVal(sl);
 
-    StartMList(preload);
-    while (!eofMList(preload))
+    MList *pr = ScrSys_FindResAllBySlot(slot);
+
+
+    if (pr == NULL)
     {
-        pre = (animprenode *)DataMList(preload);
-
-        if (pre->slot == slot)
-        {
-            found = true;
-            break;
-        }
-
-        NextMList(preload);
-    }
-
-    if (!found)
-    {
+#ifdef TRACE
         printf("        not found %d\n",slot);
+#endif
         return ACTION_NORMAL;
     }
 
+    pre = (struct_action_res *)DataMList(pr);
 
+    if (pre->node_type != NODE_TYPE_ANIMPRE)
+        return ACTION_NORMAL;
 
-    sprintf(buff,"%s %d %d %d %d %d %d %d %d %d %d %d" ,pre->fil,\
-            x, y, w, h, start, end, loop, 0, 0, 0, 0);
+    sprintf(buff,"%s %d %d %d %d %d %d %d %d %d %d %d" ,pre->nodes.node_animpre->fil,\
+            x, y, w, h, start, end, loop, 0, 0, 0, pre->nodes.node_animpre->framerate);
 
     if (aSlot == 0)
         action_animplay(buff,slot,owner);
     else
         action_animplay(buff,aSlot,owner);
+
+    delete pr;
     //SetgVarInt(GetIntVal(chars),2);
 
     return ACTION_NORMAL;
