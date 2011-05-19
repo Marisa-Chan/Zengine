@@ -37,16 +37,14 @@ struct animprenode{
 };
 
 
-MList *anim_getpreloadLst();
-MList *anim_getanimlst();
 
 struct_action_res *anim_CreateAnimNode();
 struct_action_res *anim_CreateAnimPreNode();
 
-void anim_InitAnimLists();
 int anim_ProcessAnim(struct_action_res *nod);
-void anim_DeleteAnimNod(struct_action_res *nod);
-void anim_DeleteAnimPreNod(struct_action_res *nod);
+int anim_DeleteAnimNod(struct_action_res *nod);
+int anim_DeleteAnimPreNod(struct_action_res *nod);
+
 void anim_FlushAnims();
 void anim_FlushPreload();
 

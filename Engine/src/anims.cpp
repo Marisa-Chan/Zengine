@@ -2,35 +2,6 @@
 #include "anims.h"
 
 
-MList  *preload =NULL;
-
-MList   *anims  =NULL;
-
-
-MList *anim_getpreloadLst()
-{
-    return preload;
-}
-
-MList *anim_getanimlst()
-{
-    return anims;
-}
-
-void anim_InitAnimLists()
-{
-    if (preload)
-        DeleteMList(preload);
-
-    if (anims)
-        DeleteMList(anims);
-
-    preload = CreateMList();
-
-    anims = CreateMList();
-}
-
-
 struct_action_res *anim_CreateAnimNode()
 {
     struct_action_res *tmp;
@@ -143,10 +114,10 @@ int anim_ProcessAnim(struct_action_res *nod)
     return NODE_RET_OK;
 }
 
-void anim_DeleteAnimNod(struct_action_res *nod)
+int anim_DeleteAnimNod(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_ANIM)
-        return;
+        return NODE_RET_NO;
 
     if (nod->nodes.node_anim->vid)
     {
@@ -162,16 +133,20 @@ void anim_DeleteAnimNod(struct_action_res *nod)
 
     delete nod->nodes.node_anim;
     delete nod;
+
+    return NODE_RET_DELETE;
 }
 
-void anim_DeleteAnimPreNod(struct_action_res *nod)
+int anim_DeleteAnimPreNod(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_ANIMPRE)
-        return;
+        return NODE_RET_NO;
 
     delete nod->nodes.node_animpre->fil;
     delete nod->nodes.node_animpre;
     delete nod;
+
+    return NODE_RET_DELETE;
 }
 
 void anim_FlushAnims()

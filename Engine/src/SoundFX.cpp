@@ -1,8 +1,6 @@
 
 #include "System.h"
 
-MList    *wavs  =NULL;
-
 #define pi180 0.0174
 
 void snd_DeleteNoUniverse(pzllst *owner)
@@ -98,10 +96,10 @@ int snd_ProcessWav(struct_action_res *nod)
     return NODE_RET_OK;
 }
 
-void snd_DeleteWav(struct_action_res *nod)
+int snd_DeleteWav(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_MUSIC)
-        return;
+        return NODE_RET_NO;
 
     if (nod->nodes.node_music->chn >= 0)
     {
@@ -117,6 +115,7 @@ void snd_DeleteWav(struct_action_res *nod)
     delete nod->nodes.node_music;
     delete nod;
 
+    return NODE_RET_DELETE;
 }
 
 struct_action_res *snd_CreateWavNode()
@@ -144,43 +143,4 @@ struct_action_res *snd_CreateWavNode()
     return tmp;
 }
 
-void snd_DeleteWavs()
-{
-    Mix_HaltChannel(-1);
 
-    StartMList(wavs);
-    while (!eofMList(wavs))
-    {
-        musicnode *nod=(musicnode *)DataMList(wavs);
-        if (!nod->chunk)
-            Mix_FreeChunk(nod->chunk);
-        UnlockChan(nod->chn);
-        delete nod;
-
-        NextMList(wavs);
-    }
-
-    FlushMList(wavs);
-}
-
-void snd_InitWavsList()
-{
-    wavs = CreateMList();
-}
-
-void snd_DeleteWavsList()
-{
-    snd_DeleteWavs();
-    DeleteMList(wavs);
-    wavs = NULL;
-}
-
-void snd_AddToWavsList(void *item)
-{
-    AddToMList(wavs,item);
-}
-
-MList * snd_GetWavsList()
-{
-    return wavs;
-}

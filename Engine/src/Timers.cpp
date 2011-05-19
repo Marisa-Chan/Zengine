@@ -1,25 +1,9 @@
 #include "System.h"
 
-MList  *timers  = NULL;
-
-void tmr_DeleteTimers()
-{
-    StartMList(timers);
-    while (!eofMList(timers))
-    {
-        timernode *nod=(timernode *)DataMList(timers);
-        delete nod;
-
-        NextMList(timers);
-    }
-
-    FlushMList(timers);
-}
-
-void tmr_DeleteTimer(struct_action_res *nod)
+int tmr_DeleteTimer(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_TIMER)
-        return;
+        return NODE_RET_NO;
 
     if (nod->nodes.node_timer->time < 0)
         SetgVarInt(nod->slot,2);
@@ -28,6 +12,8 @@ void tmr_DeleteTimer(struct_action_res *nod)
 
     delete nod->nodes.node_timer;
     delete nod;
+
+    return NODE_RET_DELETE;
 }
 
 void tmr_DeleteTimerByOwner(pzllst *owner)
@@ -68,28 +54,4 @@ int tmr_ProcessTimer(struct_action_res *nod)
         nod->nodes.node_timer->time--;
 
 return NODE_RET_OK;
-}
-
-
-
-void tmr_InitTimerList()
-{
-    timers = CreateMList();
-}
-
-void tmr_DeleteTimerList()
-{
-    tmr_DeleteTimers();
-    DeleteMList(timers);
-    timers = NULL;
-}
-
-void tmr_AddToTimerList(void *item)
-{
-    AddToMList(timers,item);
-}
-
-MList *tmr_GetTimerList()
-{
-    return timers;
 }

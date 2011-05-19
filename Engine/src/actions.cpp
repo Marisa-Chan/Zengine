@@ -567,12 +567,8 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     printf("        action:playpreload:%d(%s)\n",aSlot,params);
 #endif
 
-    MList *preload = anim_getpreloadLst();
-    if (!preload)
-        return ACTION_NORMAL;
 
     char buff[255];
-    bool found = false;
 
     struct_action_res *pre;
 
@@ -628,122 +624,92 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+
+int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
+{
+    int slot;
+    char chars[16];
+    sscanf(params,"%s",chars);
+    if (iskillfunc)
+    {
+        if (strcasecmp(chars,"\"all\"")==0)
+        {
+            ScrSys_DeleteAllRes();
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"anim\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_ANIM);
+            ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPRE);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"audio\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_MUSIC);
+            //ScrSys_FlushResourcesByType(NODE_TYPE_SYNCSND);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"distort\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_DISTORT);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"pantrack\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_PANTRACK);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"region\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_REGION);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"timer\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_TIMER);
+            return ACTION_NORMAL;
+        }
+
+        if (strcasecmp(chars,"\"ttytext\"")==0)
+        {
+            ScrSys_FlushResourcesByType(NODE_TYPE_TTYTEXT);
+            return ACTION_NORMAL;
+        }
+    }
+
+    slot = GetIntVal(chars);
+
+    MList *pr = ScrSys_FindResAllBySlot(slot);
+
+    if (pr == NULL)
+        return ACTION_NOT_FOUND;
+
+    struct_action_res *nod = (struct_action_res *)DataMList(pr);
+
+    ScrSys_DeleteNode(nod);
+
+    delete pr;
+
+    return ACTION_NORMAL;
+}
+
 int action_kill(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:kill(%s)\n",params);
 #endif
 
-    int slot;
-    char chars[16];
-    sscanf(params,"%s",chars);
-
-    if (strcasecmp(chars,"\"all\"")==0)
-    {
-        anim_FlushAnims();
-
-
-
-        MList *allres = GetAction_res_List();
-        StartMList(allres);
-        while(!eofMList(allres))
-        {
-            struct_action_res *nod = (struct_action_res *)DataMList(allres);
-            if (nod->node_type == NODE_TYPE_MUSIC)
-            {
-                Mix_HaltChannel(nod->nodes.node_music->chn);
-                UnlockChan(nod->nodes.node_music->chn);
-                SetgVarInt(nod->slot, 2);
-                delete nod;
-                DeleteCurrent(allres);
-            }
-
-            if (nod->node_type == NODE_TYPE_TIMER)
-            {
-                SetgVarInt(nod->slot, 2);
-                delete nod;
-                DeleteCurrent(allres);
-            }
-
-
-            NextMList(allres);
-        }
-
-        MList *timers = tmr_GetTimerList();
-        StartMList(timers);
-        while(!eofMList(timers))
-        {
-            timernode *nod = (timernode *)DataMList(timers);
-
-            delete nod;
-            DeleteCurrent(timers);
-            SetgVarInt(slot, 2);
-            NextMList(timers);
-        }
-
-        return ACTION_NORMAL;
-    }
-
-    if (strcasecmp(chars,"\"audio\"")==0)
-    {
-        MList *allres = GetAction_res_List();
-        StartMList(allres);
-        while(!eofMList(allres))
-        {
-            struct_action_res *nod = (struct_action_res *)DataMList(allres);
-            if (nod->node_type == NODE_TYPE_MUSIC)
-            {
-                Mix_HaltChannel(nod->nodes.node_music->chn);
-                UnlockChan(nod->nodes.node_music->chn);
-                SetgVarInt(nod->slot, 2);
-                delete nod;
-                DeleteCurrent(allres);
-            }
-
-
-            NextMList(allres);
-        }
-
-        return ACTION_NORMAL;
-    }
-
-    slot = GetIntVal(chars);
-
-    MList *allres = GetAction_res_List();
-    StartMList(allres);
-    while(!eofMList(allres))
-    {
-        struct_action_res *nod = (struct_action_res *)DataMList(allres);
-        if (nod->slot == slot)
-        {
-
-
-            if (nod->node_type == NODE_TYPE_MUSIC)
-            {
-                snd_DeleteWav(nod);
-                DeleteCurrent(allres);
-            }
-            if (nod->node_type == NODE_TYPE_TIMER)
-            {
-                tmr_DeleteTimer(nod);
-                DeleteCurrent(allres);
-            }
-
-            if (nod->node_type == NODE_TYPE_ANIM)
-            {
-                anim_DeleteAnimNod(nod);
-                DeleteCurrent(allres);
-            }
-
-            return ACTION_NORMAL;
-        }
-
-        NextMList(allres);
-    }
-
+    int result = stopkiller(params,aSlot,owner, true);
 
 #ifdef TRACE
-    printf("Nothing to kill %d\n",slot);
+    if (result == ACTION_NOT_FOUND)
+        printf("Nothing to kill %s\n",params);
 #endif
 
     return ACTION_NORMAL;
@@ -756,49 +722,12 @@ int action_stop(char *params, int aSlot , pzllst *owner)
     printf("        action:stop(%s)\n",params);
 #endif
 
-    int slot;
-    char chars[16];
-    sscanf(params,"%s",chars);
-    slot = GetIntVal(chars);
+    int result = stopkiller(params,aSlot,owner, false);
 
-
-    MList *allres = GetAction_res_List();
-    StartMList(allres);
-    while(!eofMList(allres))
-    {
-        struct_action_res *nod = (struct_action_res *)DataMList(allres);
-        if (nod->slot == slot)
-        {
-
-
-            if (nod->node_type == NODE_TYPE_MUSIC)
-            {
-                Mix_HaltChannel(nod->nodes.node_music->chn);
-                UnlockChan(nod->nodes.node_music->chn);
-                SetgVarInt(nod->slot, 2);
-                delete nod;
-                DeleteCurrent(allres);
-            }
-            if (nod->node_type == NODE_TYPE_TIMER)
-            {
-                SetgVarInt(nod->slot, 2);
-                delete nod;
-                DeleteCurrent(allres);
-            }
-
-            if (nod->node_type == NODE_TYPE_ANIM)
-            {
-                anim_DeleteAnimNod(nod);
-                DeleteCurrent(allres);
-            }
-
-            return ACTION_NORMAL;
-        }
-
-        NextMList(allres);
-    }
-
-    printf("Nothing to stop %d\n",slot);
+#ifdef TRACE
+    if (result == ACTION_NOT_FOUND)
+        printf("Nothing to stop %s\n",params);
+#endif
 
     return ACTION_NORMAL;
 }

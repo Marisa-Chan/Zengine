@@ -142,9 +142,6 @@ void InitScriptsEngine()
 
     actres = CreateMList();
 
-    snd_InitWavsList();
-    tmr_InitTimerList();
-    anim_InitAnimLists();
 
     memset(StateBox,0x0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz = 0;
@@ -251,17 +248,13 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 
     if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || view == NULL)
     {
-        //if (view->_list->count > 0)
-        //{
-        tmr_DeleteTimerByOwner(view);
-        //snd_DeleteLoopedWavsByOwner(view);
-        snd_DeleteNoUniverse(view);
+
+        ScrSys_FlushResourcesByOwner(view);
+
 
         FlushPuzzleList(view);
         FlushControlList(ctrl);
-        anim_FlushAnims();
-        anim_FlushPreload();
-        //}
+
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
@@ -279,7 +272,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         //if (room->_list->count > 0)
         //{
         //snd_DeleteLoopedWavsByOwner(room);
-        snd_DeleteNoUniverse(room);
+        ScrSys_FlushResourcesByOwner(room);
+        //snd_DeleteNoUniverse(room);
 
         FlushPuzzleList(room);
         //}
@@ -298,7 +292,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         //if (world->_list->count > 0)
         //{
         //snd_DeleteLoopedWavsByOwner(world);
-        snd_DeleteNoUniverse(world);
+        ScrSys_FlushResourcesByOwner(world);
+        //snd_DeleteNoUniverse(world);
 
         FlushPuzzleList(world);
         //}
@@ -506,6 +501,7 @@ void ScrSys_ProcessAllRes()
             break;
 
         default:
+            result=NODE_RET_OK;
             break;
         };
 
@@ -534,7 +530,94 @@ MList *ScrSys_FindResAllBySlot(int32_t slot)
     return NULL;
 }
 
+int ScrSys_DeleteNode(struct_action_res *nod)
+{
+    switch (nod->node_type)
+        {
+        case NODE_TYPE_MUSIC:
+            return snd_DeleteWav(nod);
+            break;
+        case NODE_TYPE_TIMER:
+            return tmr_DeleteTimer(nod);
+            break;
+        case NODE_TYPE_ANIM:
+            return anim_DeleteAnimNod(nod);
+            break;
+        case NODE_TYPE_ANIMPRE:
+            return anim_DeleteAnimPreNod(nod);
+            break;
+        }
 
+    return NODE_RET_NO;
+}
+
+void ScrSys_DeleteAllRes()
+{
+    MList *all = GetAction_res_List();
+
+    StartMList(all);
+    while(!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
+
+        ScrSys_DeleteNode(nod);
+
+        NextMList(all);
+    }
+
+    FlushMList(all);
+
+}
+
+void ScrSys_FlushResourcesByOwner(pzllst *owner)
+{
+    MList *all = GetAction_res_List();
+    int result;
+
+    StartMList(all);
+    while(!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
+
+        if (nod->owner == owner)
+        {
+            result = NODE_RET_OK;
+
+            if (nod->node_type == NODE_TYPE_MUSIC)
+            {
+                if (nod->nodes.node_music->universe == false)
+                    result = snd_DeleteWav(nod);
+            }
+            else
+                result = ScrSys_DeleteNode(nod);
+
+
+            if (result == NODE_RET_DELETE)
+                DeleteCurrent(all);
+        }
+
+        NextMList(all);
+    }
+
+}
+
+void ScrSys_FlushResourcesByType(int type)
+{
+    MList *all = GetAction_res_List();
+
+    StartMList(all);
+    while(!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
+
+        if (nod->node_type == type)
+            if (ScrSys_DeleteNode(nod) == NODE_RET_DELETE)
+                DeleteCurrent(all);
+
+        NextMList(all);
+    }
+
+}
 
 ////Depricated
 

@@ -12,13 +12,7 @@ void tmr_DeleteTimers();
 void tmr_DeleteTimerByOwner(pzllst *owner);
 int  tmr_ProcessTimer(struct_action_res *nod);
 
-void tmr_InitTimerList();
-void tmr_DeleteTimerList();
-void tmr_AddToTimerList(void *item);
+int tmr_DeleteTimer(struct_action_res *nod);
 
-void tmr_DeleteTimer(struct_action_res *nod);
-
-
-MList *tmr_GetTimerList();
 
 #endif // TIMERS_H_INCLUDED

@@ -266,7 +266,7 @@ void ListDir(char *dir)
 
     int len=strlen(buf);
 
-    if (buf[len-1] == '/' && buf[len-1] == '\\')
+    if (buf[len-1] == '/' || buf[len-1] == '\\')
         {
             buf[len-1]=0;
             len--;

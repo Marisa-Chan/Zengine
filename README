@@ -1,5 +1,5 @@
-Progress: [###########-----------]
-         0%        53.5%         100%
+Progress: [#############---------]
+         0%          55%         100%
 
 
 All what's you need it's convert resources of zork by utils.
@@ -22,14 +22,10 @@ Thanks w8m (for "unraw" code reverse)
 ------------------TODO------------------
 
 [Script Functions]
-action_playpreload          :needs more parameters info
 action_streamvideo	    :needs more parameters info
-action_animplay		    :needs more parameters info
 action_syncsound	    :reverse it and replace dummy
-action_animunload	    :reverse it and write code
-action_stop		    :reverse true behavior
-action_kill		    :reverse true behavior
-action_rotate_to	    :reverse it and write code
+action_animunload	    :add deleter
+action_rotate_to	    :While it's work  block other processing functions
 action_dissolve		    :reverse true behavior
 action_save_game	    :reverse it and write code
 action_restore_game	    :reverse it and write code
@@ -41,12 +37,20 @@ action_clear_system_message :reverse it
 action_preferences	    :reverse it
 action_ttytext		    :reverse it
 
+Clean and test code:
+action_animplay
+action_playpreload
+
+Only test code:
+action_stop  :same code in action_kill
+action_kill  :same code in action_stop
+
 
 [Other]
 * Make graphics scaleable for other resolutions
 * Make menu items highlitable
 * Write subtitles code
-+/- Reverse what will happen with now-playing sound/anims/timers/etc while "change_location"
++/- Reverse what will happen with playing sound/anims/timers/etc while "change_location"
 * Clear code
 * Other little things...
 

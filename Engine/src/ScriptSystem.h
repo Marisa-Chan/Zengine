@@ -74,9 +74,12 @@
 #define NODE_TYPE_ROTATETO 6
 #define NODE_TYPE_SYNCSND  7
 #define NODE_TYPE_CROSSFAD 8
+#define NODE_TYPE_DISTORT  9
+#define NODE_TYPE_REGION  10
 
 #define NODE_RET_OK        0
 #define NODE_RET_DELETE    1
+#define NODE_RET_NO        2
 
 
 struct StateBoxEnt{
@@ -123,6 +126,8 @@ void    ScrSys_SetSystemClass(char World, char Room);
 uint8_t ScrSys_GetSystemWorld();
 uint8_t ScrSys_GetSystemRoom();
 
+void ScrSys_DeleteAllRes();
+
 uint8_t ScrSys_GetFlag(uint32_t indx);
 void    ScrSys_SetFlag(uint32_t indx, uint8_t newval);
 
@@ -143,8 +148,10 @@ void FillStateBoxFromList(pzllst *lst);
 void ScrSys_ChangeLocation(uint8_t w, uint8_t r, uint8_t v1, uint8_t v2, int32_t X);
 
 void ScrSys_exec_puzzle_list(pzllst *lst);
+int ScrSys_DeleteNode(struct_action_res *nod);
 
-
+void ScrSys_FlushResourcesByOwner(pzllst *owner);
+void ScrSys_FlushResourcesByType(int type);
 
 void ShakeStateBox(uint32_t indx);
 

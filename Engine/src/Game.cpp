@@ -142,8 +142,7 @@ void LoadGame(char *file)
     if (!fil)
         return;
 
-    snd_DeleteWavs();
-    tmr_DeleteTimers();
+    ScrSys_DeleteAllRes();
 
     fread(DGetGVars(),VAR_SLOTS_MAX,sizeof(void *),fil);
     fread(DGetFlags(),VAR_SLOTS_MAX,sizeof(uint8_t),fil);
