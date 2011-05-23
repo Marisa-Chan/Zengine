@@ -5,6 +5,8 @@
 
 int          gVars   [VAR_SLOTS_MAX];
 
+struct_action_res *gNodes [VAR_SLOTS_MAX];
+
 uint8_t      Flags   [VAR_SLOTS_MAX];
 
 StateBoxEnt *StateBox[VAR_SLOTS_MAX];
@@ -127,11 +129,52 @@ bool ScrSys_SlotIsOwned(uint32_t i)
     return false;
 }
 
+bool ScrSys_SlotIsOwned2(int32_t i)
+{
+    if (getGNode(i) != NULL)
+        return true;
+    return false;
+}
 
+void ScrSys_FlushGNodes()
+{
+    memset(gNodes,0x0,VAR_SLOTS_MAX * sizeof(struct_action_res *));
+}
+
+void ScrSys_RereadGNodes()
+{
+    ScrSys_FlushGNodes();
+
+    MList *all = GetAction_res_List();
+    StartMList(all);
+    while (!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
+
+        setGNode(nod->slot,nod);
+
+        NextMList(all);
+    }
+}
+
+struct_action_res *getGNode(int32_t indx)
+{
+    if (indx >= 0 && indx < VAR_SLOTS_MAX)
+        return gNodes[indx];
+    else
+        return NULL;
+}
+
+void setGNode(int32_t indx, struct_action_res *data)
+{
+    if (indx >= 0 && indx < VAR_SLOTS_MAX)
+        gNodes[indx] = data;
+}
 
 void InitScriptsEngine()
 {
-    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(void *));
+    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(int));
+    ScrSys_FlushGNodes();
 
     view  = CreatePzlLst();
     room  = CreatePzlLst();
@@ -482,7 +525,6 @@ void ScrSys_ProcessAllRes()
 
     int result=NODE_RET_OK;
 
-    pushMList(lst);
     StartMList(lst);
     while (!eofMList(lst))
     {
@@ -510,7 +552,6 @@ void ScrSys_ProcessAllRes()
 
         NextMList(lst);
     }
-    popMList(lst);
 }
 
 MList *ScrSys_FindResAllBySlot(int32_t slot)

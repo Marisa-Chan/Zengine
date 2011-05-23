@@ -45,7 +45,4 @@ int anim_ProcessAnim(struct_action_res *nod);
 int anim_DeleteAnimNod(struct_action_res *nod);
 int anim_DeleteAnimPreNod(struct_action_res *nod);
 
-void anim_FlushAnims();
-void anim_FlushPreload();
-
 #endif // ANIMS_H_INCLUDED

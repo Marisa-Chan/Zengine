@@ -112,6 +112,9 @@ int snd_DeleteWav(struct_action_res *nod)
     Mix_FreeChunk(nod->nodes.node_music->chunk);
     if (nod->slot != 0)
         SetgVarInt(nod->slot,2);
+
+    setGNode(nod->slot,NULL);
+
     delete nod->nodes.node_music;
     delete nod;
 

@@ -158,6 +158,13 @@ void ShakeStateBox(uint32_t indx);
 bool ScrSys_BreakExec();
 void ScrSys_SetBreak();
 
+
+bool ScrSys_SlotIsOwned2(int32_t i);
+void ScrSys_FlushGNodes();
+void ScrSys_RereadGNodes();
+struct_action_res *getGNode(int32_t indx);
+void setGNode(int32_t indx, struct_action_res *data);
+
 /////  Depricated
 int *DGetGVars();
 uint8_t *DGetFlags();

@@ -10,6 +10,8 @@ int tmr_DeleteTimer(struct_action_res *nod)
     else
         SetgVarInt(nod->slot, nod->nodes.node_timer->time);
 
+    setGNode(nod->slot, NULL);
+
     delete nod->nodes.node_timer;
     delete nod;
 

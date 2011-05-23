@@ -1,7 +1,7 @@
 #ifndef MYLIST_H_INCLUDED
 #define MYLIST_H_INCLUDED
 
-#define MLIST_STACK 0x100
+#define MLIST_STACK 0x10
 
 //node structure
 struct MList_node

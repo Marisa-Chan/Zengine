@@ -92,7 +92,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     char *s;
     sscanf(params,"%s",tmp2);
 
-    if (ScrSys_SlotIsOwned(aSlot))
+    if (getGNode(aSlot) != NULL)
     {
         //SetgVarInt(tmp1,1);
 //
@@ -108,6 +108,8 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     nod->slot = aSlot;
     nod->owner = owner;
     nod->node_type = NODE_TYPE_TIMER;
+
+    setGNode(aSlot, nod);
 
     s = PrepareString(tmp2);
     nod->nodes.node_timer->time = GetIntVal(s);
@@ -241,8 +243,10 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     char y[16];
     char w[16];
     char h[16];
-    char u1[16];
-    char u2[16];
+    char u1[16]; //bit-flags
+    // 0x1 - in original aspect ratio and size, without scale
+    // 0x2 - unknown
+    char u2[16]; // skipline 0-off any other - on
 
     int xx,yy,ww,hh,tmp;
 
@@ -281,12 +285,13 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     if (aud!=NULL)
     {
         tmp=GetFreeChannel();
+        Mix_UnregisterAllEffects(tmp);
         Mix_PlayChannel(tmp,aud,0);
-        if (u2 == 0)
-        {
-            SaveVol();
-            SilenceVol();
-        }
+        //if (u2 == 0)
+        //{
+        //    SaveVol();
+        //    SilenceVol();
+        //}
         Mix_Volume(tmp,127);
     }
 
@@ -301,8 +306,8 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     }
     if (aud!=NULL)
     {
-        if (u2 == 0)
-            RestoreVol();
+        //if (u2 == 0)
+         //   RestoreVol();
         Mix_HaltChannel(tmp);
         Mix_FreeChunk(aud);
     }
@@ -368,7 +373,7 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
 
 
-
+    setGNode(aSlot,glob);
 
     glob->slot  = aSlot;
     glob->owner = owner;
@@ -433,7 +438,7 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
     //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
-    if (ScrSys_SlotIsOwned(aSlot))
+    if (getGNode(aSlot) != NULL)
         return ACTION_NORMAL;
 
 
@@ -442,6 +447,8 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
     nod->slot = aSlot;
     nod->owner = owner;
+
+    setGNode(nod->slot, nod);
 
     char *filp=GetFilePath(file);
 
@@ -511,7 +518,20 @@ int action_universe_music(char *params, int aSlot , pzllst *owner)
 
 int action_syncsound(char *params, int aSlot , pzllst *owner)
 {
-    printf("PlayPreload \n");
+#ifdef TRACE
+    printf("        action:syncsound:%d(%s) (%s)\n",aSlot ,params,ScrSys_ReturnListName(owner));
+#endif
+
+//slot maybe 0
+//params:
+//1 - sync with
+//2 - type (0 - manual params, 1 from file)
+//3 - filename
+//4 - Freq
+//5 - bits
+//6 - 0 mono | 1 stereo
+//7 - unknown
+
 
     return ACTION_NORMAL;
 }
@@ -522,7 +542,7 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
     printf("        action:animpreload:%d(%s)\n",aSlot,params);
 #endif
 
-    if (ScrSys_SlotIsOwned(aSlot))
+    if (getGNode(aSlot) != NULL)
         return ACTION_NORMAL;
 
     char name[64];
@@ -551,6 +571,8 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
 
     SetgVarInt(pre->slot,2);
 
+    setGNode(aSlot,pre);
+
     //printf("AnimPreload \n");
 
     return ACTION_NORMAL;
@@ -570,22 +592,18 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
 
     char buff[255];
 
-    struct_action_res *pre;
-
     slot = GetIntVal(sl);
 
-    MList *pr = ScrSys_FindResAllBySlot(slot);
+    struct_action_res *pre = getGNode(slot);
 
 
-    if (pr == NULL)
+    if (pre == NULL)
     {
 #ifdef TRACE
         printf("        not found %d\n",slot);
 #endif
         return ACTION_NORMAL;
     }
-
-    pre = (struct_action_res *)DataMList(pr);
 
     if (pre->node_type != NODE_TYPE_ANIMPRE)
         return ACTION_NORMAL;
@@ -598,7 +616,6 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     else
         action_animplay(buff,aSlot,owner);
 
-    delete pr;
     //SetgVarInt(GetIntVal(chars),2);
 
     return ACTION_NORMAL;
@@ -685,16 +702,26 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
 
     slot = GetIntVal(chars);
 
-    MList *pr = ScrSys_FindResAllBySlot(slot);
-
-    if (pr == NULL)
+    if (getGNode(slot) == NULL)
         return ACTION_NOT_FOUND;
 
-    struct_action_res *nod = (struct_action_res *)DataMList(pr);
+    MList *all = GetAction_res_List();
 
-    ScrSys_DeleteNode(nod);
+    StartMList(all);
+    while(!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
 
-    delete pr;
+        if (nod->slot == slot)
+        {
+            ScrSys_DeleteNode(nod);
+
+            DeleteCurrent(all);
+            break;
+        }
+
+        NextMList(all);
+    }
 
     return ACTION_NORMAL;
 }
@@ -845,11 +872,11 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
 
     if (item > 0)
     {
-        MList *tmp = ScrSys_FindResAllBySlot(item);
+        struct_action_res *tmp = getGNode(item);
 
         if (tmp != NULL)
         {
-            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+            struct_action_res *tnod = tmp;
 
             tnod->nodes.node_music->crossfade = true;
 
@@ -862,17 +889,16 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
             if (Mix_Playing(tnod->nodes.node_music->chn))
                 Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
 
-            delete tmp;
         }
     }
 
     if (item2 > 0)
     {
-        MList *tmp = ScrSys_FindResAllBySlot(item2);
+        struct_action_res *tmp = getGNode(item2);
 
         if (tmp != NULL)
         {
-            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+            struct_action_res *tnod = tmp;
 
             tnod->nodes.node_music->crossfade = true;
 
@@ -885,7 +911,6 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
             if (Mix_Playing(tnod->nodes.node_music->chn))
                 Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
 
-            delete tmp;
         }
     }
 
@@ -952,16 +977,15 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
 
     if (slot > 0)
     {
-        MList *tmp = ScrSys_FindResAllBySlot(slot);
+        struct_action_res *tmp = getGNode(slot);
 
         if (tmp != NULL)
         {
-            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
+            struct_action_res *tnod = tmp;
 
             tnod->nodes.node_music->pantrack = true;
             tnod->nodes.node_music->pantrack_X = XX;
 
-            delete tmp;
         }
 
     }
@@ -985,17 +1009,15 @@ int action_attenuate(char *params, int aSlot , pzllst *owner)
 
     if (slot > 0)
     {
-        MList *tmp = ScrSys_FindResAllBySlot(slot);
+        struct_action_res *tmp = getGNode(slot);
 
         if (tmp != NULL)
         {
-            struct_action_res *tnod = (struct_action_res *)DataMList(tmp);
 
-            tnod->nodes.node_music->attenuate = att;
-            Mix_SetPosition(tnod->nodes.node_music->chn,
-                            tnod->nodes.node_music->pantrack_angle,
-                            tnod->nodes.node_music->attenuate);
-            delete tmp;
+            tmp->nodes.node_music->attenuate = att;
+            Mix_SetPosition(tmp->nodes.node_music->chn,
+                            tmp->nodes.node_music->pantrack_angle,
+                            tmp->nodes.node_music->attenuate);
         }
     }
 

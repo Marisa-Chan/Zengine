@@ -124,12 +124,15 @@ int anim_DeleteAnimNod(struct_action_res *nod)
         SDL_FreeSurface(nod-> nodes.node_anim-> anim.avi ->img);
         SMPEG_stop(     nod-> nodes.node_anim-> anim.avi ->mpg);
         SMPEG_delete(   nod-> nodes.node_anim-> anim.avi ->mpg);
+        delete nod->nodes.node_anim->anim.avi;
     }
     else
         FreeAnimImage(nod->nodes.node_anim->anim.rlf);
 
     if (nod->slot >= 0)
         SetgVarInt(nod->slot,2);
+
+    setGNode(nod->slot, NULL);
 
     delete nod->nodes.node_anim;
     delete nod;
@@ -142,51 +145,11 @@ int anim_DeleteAnimPreNod(struct_action_res *nod)
     if (nod->node_type != NODE_TYPE_ANIMPRE)
         return NODE_RET_NO;
 
+    setGNode(nod->slot, NULL);
+
     delete nod->nodes.node_animpre->fil;
     delete nod->nodes.node_animpre;
     delete nod;
 
     return NODE_RET_DELETE;
-}
-
-void anim_FlushAnims()
-{
-    MList *all = GetAction_res_List();
-    StartMList(all);
-    while (!eofMList(all))
-    {
-        struct_action_res *nod=(struct_action_res *)DataMList(all);
-
-        if (nod->node_type == NODE_TYPE_ANIM)
-        {
-            anim_DeleteAnimNod(nod);
-
-            DeleteCurrent(all);
-        }
-
-
-        NextMList(all);
-    }
-
-    //FlushMList(all);
-}
-
-void anim_FlushPreload()
-{
-    MList *all = GetAction_res_List();
-    StartMList(all);
-    while (!eofMList(all))
-    {
-        struct_action_res *nod=(struct_action_res *)DataMList(all);
-
-        if (nod->node_type == NODE_TYPE_ANIMPRE)
-        {
-            anim_DeleteAnimPreNod(nod);
-
-            DeleteCurrent(all);
-        }
-
-
-        NextMList(all);
-    }
 }

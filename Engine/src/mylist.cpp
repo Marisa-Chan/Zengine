@@ -199,7 +199,14 @@ void FlushMList(MList *lst)
 
 void DeleteCurrent(MList *lst)
 {
+
+    if (lst->stkpos != 0)
+        exit(1);
+
+
+
     lst->dontstp = false;
+
     if (lst->CurNode->next)
         lst->CurNode->next->prev = lst->CurNode->prev;
 
