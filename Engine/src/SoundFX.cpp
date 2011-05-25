@@ -125,9 +125,11 @@ struct_action_res *snd_CreateWavNode()
 {
     struct_action_res *tmp;
     tmp = new (struct_action_res);
+
     tmp->slot = 0;
     tmp->node_type = NODE_TYPE_MUSIC;
     tmp->owner = NULL;
+    tmp->need_delete     = false;
 
     tmp->nodes.node_music = new (musicnode);
     tmp->nodes.node_music->chn = 0;
@@ -146,4 +148,63 @@ struct_action_res *snd_CreateWavNode()
     return tmp;
 }
 
+
+/// SoundSync
+
+
+struct_action_res *snd_CreateSyncNode()
+{
+    struct_action_res *tmp;
+    tmp = new (struct_action_res);
+
+    tmp->slot = 0;
+    tmp->node_type = NODE_TYPE_SYNCSND;
+    tmp->owner = NULL;
+    tmp->need_delete     = false;
+
+    tmp->nodes.node_sync = new (struct_syncnode);
+    tmp->nodes.node_sync->chn    =  0;
+    tmp->nodes.node_sync->chunk  = NULL;
+    tmp->nodes.node_sync->syncto =  0;
+
+    return tmp;
+}
+
+
+int snd_DeleteSync(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_SYNCSND)
+        return NODE_RET_NO;
+
+    if (nod->nodes.node_sync->chn >= 0)
+    {
+        if (Mix_Playing(nod->nodes.node_sync->chn))
+            Mix_HaltChannel(nod->nodes.node_sync->chn);
+
+    Mix_UnregisterAllEffects(nod->nodes.node_sync->chn);
+    UnlockChan(nod->nodes.node_sync->chn);
+    }
+    Mix_FreeChunk(nod->nodes.node_sync->chunk);
+
+    delete nod->nodes.node_sync;
+    delete nod;
+
+    return NODE_RET_DELETE;
+}
+
+int snd_ProcessSync(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_SYNCSND)
+        return NODE_RET_OK;
+
+    struct_syncnode *mnod = nod->nodes.node_sync;
+
+        if (!Mix_Playing(mnod->chn) || getGNode(mnod->syncto) == NULL)
+        {
+            snd_DeleteSync(nod);
+            return NODE_RET_DELETE;
+        }
+
+    return NODE_RET_OK;
+}
 

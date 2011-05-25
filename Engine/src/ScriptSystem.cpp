@@ -530,22 +530,33 @@ void ScrSys_ProcessAllRes()
     {
         struct_action_res *nod = (struct_action_res *)DataMList(lst);
 
-        switch(nod->node_type)
+        if (!nod->need_delete)
         {
-        case NODE_TYPE_MUSIC:
-            result = snd_ProcessWav(nod);
-            break;
-        case NODE_TYPE_TIMER:
-            result = tmr_ProcessTimer(nod);
-            break;
-        case NODE_TYPE_ANIM:
-            result = anim_ProcessAnim(nod);
-            break;
+            switch(nod->node_type)
+            {
+            case NODE_TYPE_MUSIC:
+                result = snd_ProcessWav(nod);
+                break;
+            case NODE_TYPE_TIMER:
+                result = tmr_ProcessTimer(nod);
+                break;
+            case NODE_TYPE_ANIM:
+                result = anim_ProcessAnim(nod);
+                break;
+            case NODE_TYPE_SYNCSND:
+                result = snd_ProcessSync(nod);
+                break;
 
-        default:
-            result=NODE_RET_OK;
-            break;
-        };
+            default:
+                result=NODE_RET_OK;
+                break;
+            };
+        }
+        else
+        {
+            result=NODE_RET_DELETE;
+            ScrSys_DeleteNode(nod);
+        }
 
         if (result == NODE_RET_DELETE)
             DeleteCurrent(lst);
@@ -574,20 +585,23 @@ MList *ScrSys_FindResAllBySlot(int32_t slot)
 int ScrSys_DeleteNode(struct_action_res *nod)
 {
     switch (nod->node_type)
-        {
-        case NODE_TYPE_MUSIC:
-            return snd_DeleteWav(nod);
-            break;
-        case NODE_TYPE_TIMER:
-            return tmr_DeleteTimer(nod);
-            break;
-        case NODE_TYPE_ANIM:
-            return anim_DeleteAnimNod(nod);
-            break;
-        case NODE_TYPE_ANIMPRE:
-            return anim_DeleteAnimPreNod(nod);
-            break;
-        }
+    {
+    case NODE_TYPE_MUSIC:
+        return snd_DeleteWav(nod);
+        break;
+    case NODE_TYPE_TIMER:
+        return tmr_DeleteTimer(nod);
+        break;
+    case NODE_TYPE_ANIM:
+        return anim_DeleteAnimNod(nod);
+        break;
+    case NODE_TYPE_ANIMPRE:
+        return anim_DeleteAnimPreNod(nod);
+        break;
+    case NODE_TYPE_SYNCSND:
+        return snd_ProcessSync(nod);
+        break;
+    }
 
     return NODE_RET_NO;
 }

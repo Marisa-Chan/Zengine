@@ -108,6 +108,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     nod->slot = aSlot;
     nod->owner = owner;
     nod->node_type = NODE_TYPE_TIMER;
+    nod->need_delete     = false;
 
     setGNode(aSlot, nod);
 
@@ -532,6 +533,46 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 //6 - 0 mono | 1 stereo
 //7 - unknown
 
+    char a1[16];
+    char a2[16];
+    char a3[16];
+
+    //sscanf(params,"%s %s %s %s %s %s %s",)
+    sscanf(params,"%s %s %s",a1,a2,a3);
+
+    int syncto = GetIntVal(a1);
+
+    if (getGNode(syncto) == NULL)
+        return ACTION_NORMAL;
+
+    struct_action_res *tmp = snd_CreateSyncNode();
+
+    tmp->owner = owner;
+    tmp->slot  = -1;
+    //tmp->slot  = aSlot;
+
+    tmp->nodes.node_sync->chn = GetFreeChannel();
+
+
+
+    tmp->nodes.node_sync->syncto = syncto;
+
+    char *filp=GetFilePath(a3);
+
+    if (tmp->nodes.node_sync->chn == -1 || filp == NULL)
+    {
+        printf("ERROR, NO CHANNELS OR NO FILE!\n");
+        snd_DeleteSync(tmp);
+        return ACTION_NORMAL;
+    }
+
+    tmp->nodes.node_sync->chunk  = Mix_LoadWAV(filp);
+
+    Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
+
+    Mix_PlayChannel(tmp->nodes.node_sync->chn,tmp->nodes.node_sync->chunk,0);
+
+    ScrSys_AddToActResList(tmp);
 
     return ACTION_NORMAL;
 }
@@ -1041,3 +1082,23 @@ int action_cursor(char *params, int aSlot , pzllst *owner)
 
     return ACTION_NORMAL;
 }
+
+int action_animunload(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:animunload(%s)\n",params);
+#endif
+
+    int slot;
+
+    sscanf(params,"%d",&slot);
+
+    struct_action_res *nod = getGNode(slot);
+
+    if (nod != NULL )
+        if (nod->node_type == NODE_TYPE_ANIMPRE)
+            nod->need_delete = true;
+
+    return ACTION_NORMAL;
+}
+

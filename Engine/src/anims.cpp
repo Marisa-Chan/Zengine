@@ -10,6 +10,7 @@ struct_action_res *anim_CreateAnimNode()
     tmp->slot            = 0;
     tmp->node_type       = NODE_TYPE_ANIM;
     tmp->owner           = NULL;
+    tmp->need_delete     = false;
 
     tmp->nodes.node_anim = new (animnode);
     tmp->nodes.node_anim->anim.avi= NULL;
@@ -39,6 +40,7 @@ struct_action_res *anim_CreateAnimPreNode()
     tmp->slot            = 0;
     tmp->node_type       = NODE_TYPE_ANIMPRE;
     tmp->owner           = NULL;
+    tmp->need_delete     = false;
 
     tmp->nodes.node_animpre = new (animprenode);
     tmp->nodes.node_animpre->fil = NULL;

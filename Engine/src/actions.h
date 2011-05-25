@@ -36,5 +36,6 @@ int action_delay_render(char *params, int aSlot , pzllst *owner);
 int action_cursor(char *params, int aSlot , pzllst *owner);
 int action_attenuate(char *params, int aSlot , pzllst *owner);
 int action_pan_track(char *params, int aSlot , pzllst *owner);
+int action_animunload(char *params, int aSlot , pzllst *owner);
 
 #endif // ACTIONS_H_INCLUDED

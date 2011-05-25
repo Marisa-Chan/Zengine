@@ -9,5 +9,5 @@ struct timernode;
 struct animprenode;
 struct animnode;
 struct struct_action_res;
-
+struct struct_syncnode;
 #endif

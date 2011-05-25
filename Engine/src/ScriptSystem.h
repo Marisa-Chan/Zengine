@@ -104,7 +104,9 @@ struct struct_action_res
         timernode   *node_timer;
         animnode    *node_anim;
         animprenode *node_animpre;
+        struct_syncnode *node_sync;
     } nodes;
+    bool       need_delete;
 };
 
 pzllst *GetUni();
