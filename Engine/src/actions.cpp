@@ -103,7 +103,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     }
 
     struct_action_res *nod = new (struct_action_res);
-    nod->nodes.node_timer = new (timernode);
+    nod->nodes.node_timer = 0;
 
     nod->slot = aSlot;
     nod->owner = owner;
@@ -113,7 +113,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     setGNode(aSlot, nod);
 
     s = PrepareString(tmp2);
-    nod->nodes.node_timer->time = GetIntVal(s);
+    nod->nodes.node_timer = GetIntVal(s);
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
@@ -1011,13 +1011,23 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
         printf("        action:pan_track:%d(%s)\n",aSlot,params);
     #endif
 
+    if (Rend_GetRenderer() != RENDER_PANA)
+        return ACTION_NORMAL;
+
     int slot;
     int XX = 0;
 
     sscanf(params,"%d %d",&slot,&XX);
 
+
+
+
     if (slot > 0)
     {
+        struct_action_res *nod = snd_CreatePanTrack();
+        nod->nodes.node_pantracking = slot;
+        ScrSys_AddToActResList(nod);
+
         struct_action_res *tmp = getGNode(slot);
 
         if (tmp != NULL)
@@ -1026,7 +1036,6 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
 
             tnod->nodes.node_music->pantrack = true;
             tnod->nodes.node_music->pantrack_X = XX;
-
         }
 
     }

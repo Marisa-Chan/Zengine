@@ -674,6 +674,20 @@ void ScrSys_FlushResourcesByType(int type)
 
 }
 
+struct_action_res *ScrSys_CreateActRes(int type)
+{
+    struct_action_res *tmp = new(struct_action_res);
+
+    tmp->nodes.node_unknow = NULL;
+    tmp->node_type         = type;
+    tmp->owner             = NULL;
+    tmp->slot              = 0;
+    tmp->need_delete       = false;
+
+    return tmp;
+}
+
+
 ////Depricated
 
 int *DGetGVars()

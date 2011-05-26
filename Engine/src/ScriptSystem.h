@@ -73,9 +73,8 @@
 #define NODE_TYPE_TTYTEXT  5
 #define NODE_TYPE_ROTATETO 6
 #define NODE_TYPE_SYNCSND  7
-#define NODE_TYPE_CROSSFAD 8
-#define NODE_TYPE_DISTORT  9
-#define NODE_TYPE_REGION  10
+#define NODE_TYPE_DISTORT  8
+#define NODE_TYPE_REGION   9
 
 #define NODE_RET_OK        0
 #define NODE_RET_DELETE    1
@@ -101,10 +100,13 @@ struct struct_action_res
     int8_t     node_type;
     union nodes{
         musicnode   *node_music;
-        timernode   *node_timer;
         animnode    *node_anim;
         animprenode *node_animpre;
         struct_syncnode *node_sync;
+
+        int          node_timer;
+        int          node_pantracking;
+        void        *node_unknow;
     } nodes;
     bool       need_delete;
 };
@@ -166,6 +168,8 @@ void ScrSys_FlushGNodes();
 void ScrSys_RereadGNodes();
 struct_action_res *getGNode(int32_t indx);
 void setGNode(int32_t indx, struct_action_res *data);
+
+struct_action_res *ScrSys_CreateActRes(int type);
 
 /////  Depricated
 int *DGetGVars();

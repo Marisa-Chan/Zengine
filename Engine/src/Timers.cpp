@@ -5,14 +5,13 @@ int tmr_DeleteTimer(struct_action_res *nod)
     if (nod->node_type != NODE_TYPE_TIMER)
         return NODE_RET_NO;
 
-    if (nod->nodes.node_timer->time < 0)
+    if (nod->nodes.node_timer < 0)
         SetgVarInt(nod->slot,2);
     else
-        SetgVarInt(nod->slot, nod->nodes.node_timer->time);
+        SetgVarInt(nod->slot, nod->nodes.node_timer);
 
     setGNode(nod->slot, NULL);
 
-    delete nod->nodes.node_timer;
     delete nod;
 
     return NODE_RET_DELETE;
@@ -42,7 +41,7 @@ int tmr_ProcessTimer(struct_action_res *nod)
     if (nod->node_type != NODE_TYPE_TIMER)
         return NODE_RET_OK;
 
-    if (nod->nodes.node_timer->time < 0)
+    if (nod->nodes.node_timer < 0)
     {
 #ifdef TRACE
         printf ("Timer #%d End's\n",nod->slot);
@@ -53,7 +52,7 @@ int tmr_ProcessTimer(struct_action_res *nod)
     }
 
     if (GetBeat())
-        nod->nodes.node_timer->time--;
+        nod->nodes.node_timer--;
 
 return NODE_RET_OK;
 }

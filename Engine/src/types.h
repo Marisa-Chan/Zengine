@@ -5,9 +5,9 @@ struct puzzlenode;
 struct pzllst;
 struct StateBoxEnt;
 struct musicnode;
-struct timernode;
 struct animprenode;
 struct animnode;
 struct struct_action_res;
 struct struct_syncnode;
+struct struct_pantrack;
 #endif

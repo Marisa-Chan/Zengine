@@ -50,4 +50,10 @@ int snd_ProcessSync(struct_action_res *nod);
 int snd_DeleteSync(struct_action_res *nod);
 struct_action_res *snd_CreateSyncNode();
 
+
+
+
+struct_action_res *snd_CreatePanTrack();
+int snd_DeletePanTrack(struct_action_res *nod);
+
 #endif // SOUNDFX_H_INCLUDED

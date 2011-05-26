@@ -124,12 +124,7 @@ int snd_DeleteWav(struct_action_res *nod)
 struct_action_res *snd_CreateWavNode()
 {
     struct_action_res *tmp;
-    tmp = new (struct_action_res);
-
-    tmp->slot = 0;
-    tmp->node_type = NODE_TYPE_MUSIC;
-    tmp->owner = NULL;
-    tmp->need_delete     = false;
+    tmp = ScrSys_CreateActRes(NODE_TYPE_MUSIC);
 
     tmp->nodes.node_music = new (musicnode);
     tmp->nodes.node_music->chn = 0;
@@ -155,12 +150,7 @@ struct_action_res *snd_CreateWavNode()
 struct_action_res *snd_CreateSyncNode()
 {
     struct_action_res *tmp;
-    tmp = new (struct_action_res);
-
-    tmp->slot = 0;
-    tmp->node_type = NODE_TYPE_SYNCSND;
-    tmp->owner = NULL;
-    tmp->need_delete     = false;
+    tmp = ScrSys_CreateActRes(NODE_TYPE_SYNCSND);
 
     tmp->nodes.node_sync = new (struct_syncnode);
     tmp->nodes.node_sync->chn    =  0;
@@ -208,3 +198,31 @@ int snd_ProcessSync(struct_action_res *nod)
     return NODE_RET_OK;
 }
 
+
+
+//// Pantracking
+struct_action_res *snd_CreatePanTrack()
+{
+    struct_action_res *tmp;
+    tmp = ScrSys_CreateActRes(NODE_TYPE_PANTRACK);
+
+    tmp->nodes.node_pantracking = 0;
+}
+
+int snd_DeletePanTrack(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_PANTRACK)
+        return NODE_RET_NO;
+
+    struct_action_res *tr_nod = getGNode(nod->nodes.node_pantracking);
+    if ( tr_nod != NULL)
+        if (tr_nod->node_type == NODE_TYPE_MUSIC)
+        {
+            tr_nod->nodes.node_music->pantrack = false;
+            Mix_SetPosition(tr_nod->nodes.node_music->chn, 0, tr_nod->nodes.node_music->attenuate);
+        }
+
+    delete nod;
+
+    return NODE_RET_DELETE;
+}
