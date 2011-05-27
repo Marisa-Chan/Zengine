@@ -1,9 +1,22 @@
 #ifndef RENDER_H_INCLUDED
 #define RENDER_H_INCLUDED
 
+#include "Subtitles.h"
 
 #define RENDER_FLAT 0
 #define RENDER_PANA 1
+
+
+struct struct_SubRect
+{
+    int x;
+    int y;
+    int w;
+    int h;
+    SDL_Surface *img;
+    int id;
+    bool todelete;
+};
 
 void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y);
 
@@ -31,6 +44,14 @@ void Rend_RenderFunc();
 void Rend_InitGraphics(bool fullscreen);
 
 void Rend_SetDelay(int delay);
+
+
+struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h);
+void Rend_DeleteSubRect(struct_SubRect *erect);
+void Rend_ClearSubs();
+void Rend_InitSubList();
+void Rend_ProcessSubs();
+struct_SubRect *Rend_GetSubById( int id);
 
 #define GAMESCREEN_W 640
 #define GAMESCREEN_P 20

@@ -12,6 +12,10 @@ int GAME_H=GAMESCREEN_H;
 //18 default cursors
 
 
+MList *sublist = NULL;
+int subid=0;
+
+
 SDL_Surface *screen;
 SDL_Surface *scrbuf=NULL;
 SDL_Surface *fish, *tempbuf;
@@ -79,6 +83,7 @@ void Rend_InitGraphics(bool fullscreen)
     screen=InitGraphicAndSound(640,480,32,fullscreen);
 
 
+    Rend_InitSubList();
 
     tempbuf=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
     fish=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
@@ -325,6 +330,8 @@ void Rend_RenderFunc()
 
     Ctrl_DrawSlots();
 
+    Rend_ProcessSubs();
+
     menu_UpdateMenuBar();
 
     Rend_ProcessCursor();
@@ -332,3 +339,88 @@ void Rend_RenderFunc()
     //SDL_Flip(screen);
 }
 
+
+
+
+struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h)
+{
+    struct_SubRect *tmp = new(struct_SubRect);
+
+    tmp->h = h;
+    tmp->w = w;
+    tmp->x = x;
+    tmp->y = y;
+    tmp->todelete = false;
+    tmp->id       = subid;
+
+    subid++;
+
+    tmp->img = CreateSurface(w,h);
+
+    AddToMList(sublist,tmp);
+
+    return tmp;
+}
+
+void Rend_DeleteSubRect(struct_SubRect *erect)
+{
+    SDL_FreeSurface(erect->img);
+    delete erect;
+}
+
+void Rend_ClearSubs()
+{
+    StartMList(sublist);
+    while(!eofMList(sublist))
+    {
+        struct_SubRect *subrec = (struct_SubRect *)DataMList(sublist);
+        Rend_DeleteSubRect(subrec);
+        NextMList(sublist);
+    }
+    FlushMList(sublist);
+}
+
+void Rend_InitSubList()
+{
+    if (sublist == NULL)
+        sublist = CreateMList();
+    else
+        Rend_ClearSubs();
+    subid = 0;
+}
+
+void Rend_ProcessSubs()
+{
+    StartMList(sublist);
+    while(!eofMList(sublist))
+    {
+        struct_SubRect *subrec = (struct_SubRect *)DataMList(sublist);
+
+        if (subrec->todelete)
+        {
+            Rend_DeleteSubRect(subrec);
+            DeleteCurrent(sublist);
+        }
+        else
+            DrawImage(subrec->img,subrec->x,subrec->y);
+
+        NextMList(sublist);
+    }
+}
+
+struct_SubRect *Rend_GetSubById( int id)
+{
+    StartMList(sublist);
+    while(!eofMList(sublist))
+    {
+        struct_SubRect *subrec = (struct_SubRect *)DataMList(sublist);
+        if (subrec->id == id)
+        {
+            return subrec;
+            break;
+        }
+        NextMList(sublist);
+    }
+
+    return NULL;
+}
