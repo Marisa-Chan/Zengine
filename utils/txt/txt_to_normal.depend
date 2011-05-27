@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1306479259 source:/home/marisa/work/txt_to_normal/main.c
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<iconv.h>
+
