@@ -320,9 +320,6 @@ void InitGameLoop()
     SetDirectgVarInt(48,'y');
     SetDirectgVarInt(53,250);
     //\Hack
-
-    struct_SubRect *tmp=Rend_CreateSubRect(50,420,200,50);
-    stringRGBA(tmp->img,10,10,"ASSSSSS",255,255,255,255);
 }
 
 
@@ -429,10 +426,6 @@ void GameLoop()
             Need_Locate.View2 = 'M';
             Need_Locate.X     =  0;
         }
-
-    if (KeyHit(SDLK_SPACE))
-        if (Rend_GetSubById(0)!=NULL)
-            Rend_GetSubById(0)->todelete=true;
 
     stringColor(screen,0,470,savefile,0xFFFFFFFF);
 

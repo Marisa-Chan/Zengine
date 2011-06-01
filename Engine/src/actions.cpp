@@ -457,6 +457,14 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
     nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
 
+    int st = strlen(file);
+
+    file[st-1] = 'b';
+    file[st-2] = 'u';
+    file[st-3] = 's';
+
+    nod->nodes.node_music->sub = sub_LoadSubtitles(file);
+
     nod->nodes.node_music->chn = GetFreeChannel();
     if (nod->nodes.node_music->chn == -1)
     {

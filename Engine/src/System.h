@@ -8,6 +8,7 @@
 
 #include <inttypes.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 #include <errno.h>
 
 #include "mylist.h"
@@ -17,6 +18,7 @@
 
 #include "Graph.h"
 #include "Render.h"
+#include "Subtitles.h"
 #include "Sound.h"
 #include "Mouse.h"
 #include "Manage.h"
@@ -86,8 +88,9 @@ bool FileExist(char * fil);
 
 
 
-#define FILE_LN_BUF 0x400
+
 char * PrepareString(char *buf);
+char * TrimLeft(char *buf);
 char * GetParams(char *str);
 int GetIntVal(char *chr);
 

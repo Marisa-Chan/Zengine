@@ -92,6 +92,9 @@ int snd_ProcessWav(struct_action_res *nod)
 
         }
 
+        if (mnod->sub != NULL)
+            sub_ProcessSub(mnod->sub);
+
 
     return NODE_RET_OK;
 }
@@ -139,6 +142,7 @@ struct_action_res *snd_CreateWavNode()
     tmp->nodes.node_music->pantrack_angle = 0;
     tmp->nodes.node_music->attenuate  = 0;
     tmp->nodes.node_music->universe   = false;
+    tmp->nodes.node_music->sub        = NULL;
 
     return tmp;
 }
@@ -156,6 +160,7 @@ struct_action_res *snd_CreateSyncNode()
     tmp->nodes.node_sync->chn    =  0;
     tmp->nodes.node_sync->chunk  = NULL;
     tmp->nodes.node_sync->syncto =  0;
+    tmp->nodes.node_music->sub        = NULL;
 
     return tmp;
 }

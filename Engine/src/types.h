@@ -10,4 +10,8 @@ struct animnode;
 struct struct_action_res;
 struct struct_syncnode;
 struct struct_pantrack;
+struct struct_SubRect;
+
+struct struct_one_subtitle;
+struct struct_subtitles;
 #endif

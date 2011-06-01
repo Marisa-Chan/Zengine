@@ -368,6 +368,21 @@ bool FileExist(char * fil)
     return false;
 }
 
+char * TrimLeft(char *buf)
+{
+    int len = strlen(buf);
+
+    char *str=buf;
+
+    for (int i=0; i<len; i++)
+        if (buf[i]!=0x20 && buf[i]!=0x09)
+        {
+            str=buf + i;
+            break;
+        }
+    return str;
+}
+
 
 char * PrepareString(char *buf)
 {

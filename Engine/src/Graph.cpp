@@ -19,6 +19,7 @@ bpp;
 
 SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful)
 {
+
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
     {
         printf( "Unable to init SDL: %s\n", SDL_GetError() );
@@ -35,7 +36,7 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful)
         screen=SDL_SetVideoMode(wi, he, b, SFTYPE);
 
     InitMusic();
-
+    TTF_Init();
     return screen;
 }
 

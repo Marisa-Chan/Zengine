@@ -12,4 +12,6 @@
 
 #define TRY_CHANNELS 16
 
+#define FILE_LN_BUF 0x400
+
 #endif // CONFIG_H_INCLUDED
