@@ -116,6 +116,9 @@ int snd_DeleteWav(struct_action_res *nod)
     if (nod->slot != 0)
         SetgVarInt(nod->slot,2);
 
+    if (nod->nodes.node_music->sub != NULL)
+            sub_DeleteSub(nod->nodes.node_music->sub);
+
     setGNode(nod->slot,NULL);
 
     delete nod->nodes.node_music;

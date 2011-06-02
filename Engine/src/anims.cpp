@@ -50,7 +50,7 @@ int anim_ProcessAnim(struct_action_res *nod)
     animnode *mnod = nod->nodes.node_anim;
 
     if (mnod)
-        if (GetBeat())
+        if (Get2thBeat())
         {
             mnod->nexttick--;
 

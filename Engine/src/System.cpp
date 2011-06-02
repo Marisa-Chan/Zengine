@@ -208,11 +208,11 @@ int     tofps=0;
 #endif
 
 //Resets game timer and set next realtime point to incriment game timer
-void InitMTime(int fps)
+void InitMTime(float fps)
 {
     mtime=0;
     btime=false;
-    tofps=(1000-(DELAY<<1))/(fps);
+    tofps=ceil((1000.0-(float)(DELAY<<1))/(fps));
     reltime=millisec() + tofps;
 }
 
@@ -236,6 +236,21 @@ void ProcMTime()
 bool GetBeat()
 {
     return btime;
+}
+
+bool Get2thBeat()
+{
+    return ((mtime & 0x1) == 0x1) & btime;
+}
+
+bool Get4thBeat()
+{
+    return ((mtime & 0x3) == 0x3) & btime;
+}
+
+bool GetNBeat(int n)
+{
+    return ((mtime % n) == 0) & btime;
 }
 
 //Return count of game timer ticks
@@ -383,6 +398,21 @@ char * TrimLeft(char *buf)
     return str;
 }
 
+char * TrimRight(char *buf)
+{
+    int len = strlen(buf);
+
+    char *str=buf;
+
+    for (int i=len-1; i>=0; i--)
+        if (buf[i]==0x20 || buf[i]==0x09 ||
+            buf[i]==0x0A || buf[i]==0x0D)
+
+            buf[i] = 0x0;
+        else
+            break;
+    return str;
+}
 
 char * PrepareString(char *buf)
 {

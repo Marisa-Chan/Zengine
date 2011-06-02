@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
     int bl=0;
 
-    InitMTime(15);
+    InitMTime(35.0);
 
 
     while (!done )

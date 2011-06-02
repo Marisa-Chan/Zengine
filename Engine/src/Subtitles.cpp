@@ -57,7 +57,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
                 int x2;
                 int y2;
                 sscanf(str2,"%d %d %d %d",&x,&y,&x2,&y2);
-                tmp->SubRect = Rend_CreateSubRect(x,y+48,x2-x,y2-y);
+                tmp->SubRect = Rend_CreateSubRect(x,y+68,x2-x,y2-y);
             }
         else if (strCMP(str1,"TextFile") == 0)
         {
@@ -68,17 +68,16 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
                     return NULL;
                 }
             FILE *f2 = fopen(fil2,"rb");
-            int subscount = 0;
             while (!feof(f2))
             {
                 fgets(buf2,FILE_LN_BUF,f2);
+                TrimRight(buf2);
                 subs[subscount] = (char *)malloc(strlen(buf2)+1);
                 strcpy(subs[subscount],buf2);
                 subscount++;
             }
             fclose(f2);
             tmp->subs = (struct_one_subtitle *)calloc(subscount,sizeof(struct_one_subtitle));
-            tmp->subscount = subscount;
         }
         else//it's must be sub info
         {
@@ -86,15 +85,16 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
             int en;
             int sb;
             sscanf(str2,"(%d,%d)=%d",&st,&en,&sb);
-            if (subscount = 0 || sb >= tmp->subscount)
+            if (subscount == 0 || sb > subscount)
                 {
                     printf("Error in subs %s\n",filename);
                     exit(-1);
                 }
-            tmp->subs[sb].start = st*1.5;
-            tmp->subs[sb].stop  = en*1.5;
-            tmp->subs[sb].text  = subs[sb];
+            tmp->subs[tmp->subscount].start = st;
+            tmp->subs[tmp->subscount].stop  = en;
+            tmp->subs[tmp->subscount].text  = subs[sb];
             subs[sb] = NULL;
+            tmp->subscount++;
 
         }
 
@@ -118,6 +118,12 @@ int sub_ProcessSub(struct_subtitles *sub)
                 j=i;
                 break;
             }
+
+    if (j == -1 && sub->currentsub!= -1)
+    {
+        SDL_FillRect(sub->SubRect->img,NULL,0);
+        sub->currentsub = -1;
+    }
 
     if (j!=-1 && j!=sub->currentsub)
         {
@@ -143,13 +149,24 @@ int sub_ProcessSub(struct_subtitles *sub)
             SDL_Color clr={255,255,255};
 
             SDL_Surface *aaa= TTF_RenderUTF8_Solid(temp_font,sss,clr);
-            SDL_FreeSurface(aaa);
+
             DrawImageToSurf(aaa,0,0,sub->SubRect->img);
+            SDL_FreeSurface(aaa);
             TTF_CloseFont(temp_font);
             }
             sub->currentsub = j;
         }
 
-    if (GetBeat())
+    if (GetNBeat(3))
         sub->subtime++;
+}
+
+void sub_DeleteSub(struct_subtitles *sub)
+{
+    sub->SubRect->todelete = true;
+
+    for (int i=0; i<sub->subscount; i++)
+        delete sub->subs[i].text;
+    delete [] sub->subs;
+    delete sub;
 }

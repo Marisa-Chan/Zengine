@@ -932,7 +932,7 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
             if (GetIntVal(frVol1)>=0)
                 tnod->nodes.node_music->volume = GetIntVal(frVol1);
 
-            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 66.6) ;
+            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
             tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
 
             if (Mix_Playing(tnod->nodes.node_music->chn))
@@ -954,7 +954,7 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
             if (GetIntVal(frVol2)>=0)
                 tnod->nodes.node_music->volume = GetIntVal(frVol2);
 
-            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 66.6) ;
+            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
             tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol2) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
 
             if (Mix_Playing(tnod->nodes.node_music->chn))

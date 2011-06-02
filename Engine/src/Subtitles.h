@@ -22,5 +22,6 @@ struct struct_subtitles{
 
 struct_subtitles *sub_LoadSubtitles(char *filename);
 int sub_ProcessSub(struct_subtitles *sub);
+void sub_DeleteSub(struct_subtitles *sub);
 
 #endif // SUBTITLES_H_INCLUDED

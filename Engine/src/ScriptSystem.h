@@ -83,7 +83,7 @@
 
 struct StateBoxEnt{
     puzzlenode * nod[MaxStateBoxEnts];
-    uint32_t     cnt;
+    int32_t     cnt;
 };
 
 struct pzllst{

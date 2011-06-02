@@ -40,9 +40,12 @@ void __END();
 #define millisec SDL_GetTicks
 
 //Game timer functions
-void InitMTime(int fps);
+void InitMTime(float fps);
 void ProcMTime();
 bool GetBeat();
+bool GetNBeat(int n);
+bool Get2thBeat();
+bool Get4thBeat();
 uint64_t GetBeatCount();
 
 //Keyboard functions
@@ -91,6 +94,7 @@ bool FileExist(char * fil);
 
 char * PrepareString(char *buf);
 char * TrimLeft(char *buf);
+char * TrimRight(char *buf);
 char * GetParams(char *str);
 int GetIntVal(char *chr);
 

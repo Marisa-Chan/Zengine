@@ -51,7 +51,7 @@ int tmr_ProcessTimer(struct_action_res *nod)
         return NODE_RET_DELETE;
     }
 
-    if (GetBeat())
+    if (GetNBeat(3))
         nod->nodes.node_timer--;
 
 return NODE_RET_OK;

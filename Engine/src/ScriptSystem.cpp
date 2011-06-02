@@ -238,10 +238,11 @@ void ScrSys_ClearStateBox()
     for (int i=0; i<VAR_SLOTS_MAX; i++)
     {
         if (StateBox[i] != NULL)
-            delete StateBox[i];
+            delete[] StateBox[i];
+        StateBox[i] = NULL;
     }
 
-    memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
+    //memset(StateBox,0,VAR_SLOTS_MAX * sizeof(StateBoxEnt *));
     StateBoxStkSz=0;
 }
 
@@ -374,7 +375,8 @@ void AddPuzzleToStateBox(int slot, puzzlenode *pzlnd)
 
     if (ent == NULL)
     {
-        StateBox[slot] = ent = new (StateBoxEnt);
+        ent = new (StateBoxEnt);
+        StateBox[slot] = ent;
         ent->cnt = 0;
     }
     if (ent->cnt < MaxStateBoxEnts)
