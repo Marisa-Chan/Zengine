@@ -405,9 +405,7 @@ char * TrimRight(char *buf)
     char *str=buf;
 
     for (int i=len-1; i>=0; i--)
-        if (buf[i]==0x20 || buf[i]==0x09 ||
-            buf[i]==0x0A || buf[i]==0x0D)
-
+        if (buf[i]==0x20 || buf[i]==0x09 || buf[i]==0x0A || buf[i]==0x0D)
             buf[i] = 0x0;
         else
             break;

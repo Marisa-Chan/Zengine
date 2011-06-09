@@ -37,6 +37,7 @@ int *PanaX;
 
 
 
+
 void Rend_SetDelay(int delay)
 {
     RenderDelay = delay;
@@ -78,9 +79,9 @@ void Rend_SetFishTable(double angl, double k)
     }
 }
 
-void Rend_InitGraphics(bool fullscreen)
+void Rend_InitGraphics(bool fullscreen, char *fontsdir)
 {
-    screen=InitGraphicAndSound(640,480,32,fullscreen);
+    screen=InitGraphicAndSound(640,480,32,fullscreen,fontsdir);
 
 
     Rend_InitSubList();

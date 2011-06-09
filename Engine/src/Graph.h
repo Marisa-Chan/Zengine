@@ -9,7 +9,7 @@
 #include <smpeg/smpeg.h>
 extern const int FiveBitToEightBitLookupTable [32];
 
-SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp,bool ful);
+SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp,bool ful, char *fontsdir);
 void ConvertImage(SDL_Surface **tmp);
 SDL_Surface *CreateSurface(uint16_t w,uint16_t h);
 
@@ -40,6 +40,12 @@ struct anim_avi
     bool        loop;
 };
 
+struct struct_graph_font
+{
+    char Name[64];
+    char path[255];
+};
+
 anim_surf *LoadAnimImage(char *file,int mask);
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame);
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf);
@@ -49,5 +55,6 @@ void FreeAnimImage(anim_surf *anim);
 SDL_Surface *LoadConvertImg(char *file);
 SDL_Surface *LoadConvertImg(char *file,uint32_t key);
 
+TTF_Font *GetFontByName(char *name,int size);
 
 #endif // GRAPH_H_INCLUDED

@@ -1,7 +1,7 @@
 #include "Graph.h"
 #include "System.h"
 #include "Sound.h"
-
+#include <dirent.h>
 
 const int FiveBitToEightBitLookupTable [32] =
 {
@@ -17,7 +17,71 @@ bpp;
 
 #define SFTYPE  SDL_SWSURFACE
 
-SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful)
+
+MList *FontList = NULL;
+
+
+
+
+void LoadFonts(char *fontsdir)
+{
+    FontList = CreateMList();
+
+    DIR *dr=opendir(fontsdir);
+
+    if (dr == NULL)
+    {
+        printf( "Unable to open folder %s\n",fontsdir);
+        exit(1);
+    }
+
+
+    char buf[255];
+
+    dirent *de=readdir(dr);
+    while (de)
+    {
+        if (de->d_type==DT_REG)
+            if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
+            {
+                sprintf(buf,"%s/%s",fontsdir,de->d_name);
+                TTF_Font *fnt = TTF_OpenFont(buf,10);
+                if (fnt != NULL)
+                {
+                    struct_graph_font *tmpfnt = new(struct_graph_font);
+                    strncpy(tmpfnt->Name,TTF_FontFaceFamilyName(fnt),63);
+                    strncpy(tmpfnt->path,buf,255);
+                    AddToMList(FontList,tmpfnt);
+                    TTF_CloseFont(fnt);
+                }
+
+            }
+        de=readdir(dr);
+    }
+    closedir(dr);
+}
+
+TTF_Font *GetFontByName(char *name,int size)
+{
+    struct_graph_font *fnt = NULL;
+
+    StartMList(FontList);
+    while (!eofMList(FontList))
+    {
+        fnt = (struct_graph_font *)DataMList(FontList);
+        if(strCMP(fnt->Name,name)==0)
+            break;
+
+        NextMList(FontList);
+    }
+
+    if (fnt == NULL)
+        return NULL;
+
+    return TTF_OpenFont(fnt->path,size);
+}
+
+SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful, char *fontsdir)
 {
 
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
@@ -37,6 +101,9 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful)
 
     InitMusic();
     TTF_Init();
+
+    LoadFonts(fontsdir);
+
     return screen;
 }
 

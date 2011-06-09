@@ -66,7 +66,8 @@ int main(int argc, char **argv)
 
     InitVkKeys();
 
-    Rend_InitGraphics(fullscreen);
+    sprintf(buf,"%s/%s",pa,"FONTS");
+    Rend_InitGraphics(fullscreen,buf);
 
     menu_LoadGraphics();
 
