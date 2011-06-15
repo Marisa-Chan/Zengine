@@ -26,6 +26,7 @@ struct musicnode
     bool        universe; //universe_music or music
 
     struct_subtitles *sub;
+    int         subtime;
 };
 
 void snd_DeleteLoopedWavsByOwner(pzllst *owner);
@@ -46,7 +47,9 @@ struct struct_syncnode
     int         syncto;
     Mix_Chunk  *chunk;
     int         chn;
+
     struct_subtitles *sub;
+    int         subtime;
 };
 
 int snd_ProcessSync(struct_action_res *nod);

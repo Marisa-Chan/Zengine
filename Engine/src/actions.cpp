@@ -278,11 +278,22 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         aud = Mix_LoadWAV(fil);
     }
 
+    file[tmp-1]='b';
+    file[tmp-2]='u';
+    file[tmp-3]='s';
+
+    struct_subtitles *subs=NULL;
+    if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+        subs = sub_LoadSubtitles(file);
+
+    int subtime = 0;
+
 
     SMPEG_setdisplay(anm->mpg,anm->img,0,0);
     SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
     SMPEG_renderFrame(anm->mpg,1);
     SMPEG_play(anm->mpg);
+
     if (aud!=NULL)
     {
         tmp=GetFreeChannel();
@@ -302,6 +313,15 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         SDL_PollEvent(&event);
         UpdateKeyboard();
         DrawImage(anm->img,xx,GAME_Y+yy);
+
+        if (subs != NULL)
+        {
+            SMPEG_getinfo(anm->mpg,&anm->inf);
+            sub_ProcessSub(subs,anm->inf.current_frame/2);
+        }
+
+        Rend_ProcessSubs();
+
         SDL_Flip(screen);
         SDL_Delay(1000/anm->inf.current_fps);
     }
@@ -312,6 +332,9 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         Mix_HaltChannel(tmp);
         Mix_FreeChunk(aud);
     }
+
+    if (subs != NULL)
+        sub_DeleteSub(subs);
 
     SMPEG_stop(anm->mpg);
     SMPEG_delete(anm->mpg);
@@ -463,7 +486,8 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
     file[st-2] = 'u';
     file[st-3] = 's';
 
-    nod->nodes.node_music->sub = sub_LoadSubtitles(file);
+    if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+        nod->nodes.node_music->sub = sub_LoadSubtitles(file);
 
     nod->nodes.node_music->chn = GetFreeChannel();
     if (nod->nodes.node_music->chn == -1)
@@ -574,6 +598,16 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
         return ACTION_NORMAL;
     }
 
+    int st = strlen(a3);
+
+    a3[st-1] = 'b';
+    a3[st-2] = 'u';
+    a3[st-3] = 's';
+
+    if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+        tmp->nodes.node_sync->sub = sub_LoadSubtitles(a3);
+
+
     tmp->nodes.node_sync->chunk  = Mix_LoadWAV(filp);
 
     Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
@@ -673,19 +707,9 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
 int action_ttytext(char *params, int aSlot , pzllst *owner)
 {
     char chars[16];
-    //sscanf(params,"%s",chars);
-
-    /*  timernode *nod = new (timernode);
-      nod->slot = aSlot;
-
-      nod->owner = owner;
-
-
-      nod->time = 15;
-
-      tmr_AddToTimerList(nod);
-
-      SetgVarInt(GetIntVal(chars), 1);*/
+    sscanf(params,"%s",chars);
+    printf("STUB     action:ttytext:%d(%s) \n>>>   ",aSlot,params);
+    action_timer("15",aSlot,owner);
 
     return ACTION_NORMAL;
 }

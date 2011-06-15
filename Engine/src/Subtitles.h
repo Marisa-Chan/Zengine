@@ -9,6 +9,13 @@ struct struct_one_subtitle{
     int sub;
 };
 
+#define SUB_STYLE_ON     1
+#define SUB_STYLE_OFF    0
+
+#define SUB_JUSTIFY_CENTER 0
+#define SUB_JUSTIFY_LEFT   1
+#define SUB_JUSTIFY_RIGHT  2
+
 struct struct_font_style{
     char    fontname[64];
     int8_t  justify;  //0 - center, 1-left, 2-right
@@ -41,13 +48,12 @@ struct struct_subtitles{
     struct_one_subtitle *subs;
     struct_textfile *txt;    //array
 
-    int subtime; //total time
     int currentsub;
 };
 
 
 struct_subtitles *sub_LoadSubtitles(char *filename);
-int sub_ProcessSub(struct_subtitles *sub);
+int sub_ProcessSub(struct_subtitles *sub, int subtime);
 void sub_DeleteSub(struct_subtitles *sub);
 
 #endif // SUBTITLES_H_INCLUDED

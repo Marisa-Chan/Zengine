@@ -1,5 +1,5 @@
 Progress: [#############---------]
-         0%          58%         100%
+         0%          60%         100%
 
 
 All what's you need it's convert resources of zork by utils.
@@ -48,8 +48,6 @@ action_animunload
 
 [Other]
 * Make graphics scaleable for other resolutions
-* Make menu items highlitable
-* Write subtitles code
 +/- Reverse what will happen with playing sound/anims/timers/etc while "change_location"
 * Clear code
 * Other little things...

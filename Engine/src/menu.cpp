@@ -28,7 +28,7 @@ int16_t menu_ScrollPos[3] = {0,0,0};
 
 SDL_Surface *menubar[4][2];
 SDL_Surface *menuback[3][2];
-SDL_Surface *menupicto[256];
+SDL_Surface *menupicto[256][2];
 
 
 int menu_MAIN_X = (640-580)/2;
@@ -67,7 +67,11 @@ void menu_LoadGraphics()
     }
 
     for (int i=0; i<256; i++)
-        menupicto[i] = NULL;
+    {
+        menupicto[i][0] = NULL;
+        menupicto[i][1] = NULL;
+    }
+
 }
 
 void menu_UpdateMenuBar()
@@ -107,7 +111,12 @@ void menu_UpdateMenuBar()
 
                     int itemspace = (600-menu_ITEM_SPACE) / item_count;
 
+                    bool inrect = false;
+
                     if (MouseInRect(menu_ScrollPos[menu_ITEM] + itemspace * i,0,28,32))
+                    {
+                        inrect = true;
+
                         if (MouseUp(SDL_BUTTON_LEFT))
                             if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
                             {
@@ -120,19 +129,26 @@ void menu_UpdateMenuBar()
                                 SetgVarInt(SLOT_START_SLOT + i,GetgVarInt(SLOT_INVENTORY_MOUSE));
                                 SetgVarInt(SLOT_INVENTORY_MOUSE,te);
                             }
-
+                    }
 
                     if (GetgVarInt(SLOT_START_SLOT + i) != 0)
                     {
                         int itemnum = GetgVarInt(SLOT_START_SLOT + i);
 
-                        if (menupicto[itemnum] == NULL)
+                        if (menupicto[itemnum][0] == NULL)
                         {
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
-                            menupicto[itemnum] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][0] = LoadConvertImg(GetFilePath(buf),0);
                         }
-
-                        DrawImage(menupicto[itemnum],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
+                        if (menupicto[itemnum][1] == NULL)
+                        {
+                            sprintf(buf,"gmzxu%2.2x1.tga",itemnum);
+                            menupicto[itemnum][1] = LoadConvertImg(GetFilePath(buf),0);
+                        }
+                        if (inrect)
+                            DrawImage(menupicto[itemnum][1],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
+                        else
+                            DrawImage(menupicto[itemnum][0],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
                     }
                 }
 
@@ -165,22 +181,35 @@ void menu_UpdateMenuBar()
                     else
                         itemnum = 0xE0 + i;
 
+                    bool inrect = false;
+
                     if (MouseInRect(640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,28,32))
+                    {
+                        inrect = true;
                         if (MouseUp(SDL_BUTTON_LEFT))
                             if (GetgVarInt(SLOT_INVENTORY_MOUSE) == 0 || GetgVarInt(SLOT_INVENTORY_MOUSE) >= 0xE0)
                                 if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
                                     SetgVarInt(SLOT_USER_CHOSE_THIS_SPELL,itemnum);
+                    }
 
                     if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
                     {
 
-                        if (menupicto[itemnum] == NULL)
+                        if (menupicto[itemnum][0] == NULL)
                         {
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
-                            menupicto[itemnum] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][0] = LoadConvertImg(GetFilePath(buf),0);
                         }
+                        if (menupicto[itemnum][1] == NULL)
+                        {
+                            sprintf(buf,"gmzxu%2.2x1.tga",itemnum);
+                            menupicto[itemnum][1] = LoadConvertImg(GetFilePath(buf),0);
+                        }
+                        if (inrect)
+                            DrawImage(menupicto[itemnum][1],640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
+                        else
+                            DrawImage(menupicto[itemnum][0],640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
 
-                        DrawImage(menupicto[itemnum],640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
                     }
                 }
 
