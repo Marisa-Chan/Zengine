@@ -263,7 +263,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','p','e',0);
+                        SetNeedLocate('g','j','p','e',0,true);
 
                 }
                 else
@@ -283,7 +283,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','r','e',0);
+                        SetNeedLocate('g','j','r','e',0,true);
 
                 }
                 else
@@ -303,7 +303,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','s','e',0);
+                        SetNeedLocate('g','j','s','e',0,true);
 
                 }
                 else

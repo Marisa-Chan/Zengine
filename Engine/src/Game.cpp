@@ -16,7 +16,7 @@ int32_t View_start_Loops = 0;
 int8_t  SaveSlot = 0;
 
 
-void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
+void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X, bool menu)
 {
     NeedToLoadScript  = true;
     Need_Locate.World = tolower(w);
@@ -25,6 +25,7 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
     Need_Locate.View2 = tolower(v2);
     Need_Locate.X     = X;
 
+    if (!menu)
     if (Need_Locate.World == '0')
     {
         if (GetgVarInt(3) == tolower(SystemWorld) &&

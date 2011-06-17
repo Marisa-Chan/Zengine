@@ -139,7 +139,7 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
     char tmp4[16];
     sscanf(params,"%c, %c, %c%c, %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
 
-    SetNeedLocate(tolower(tmp[0]),tolower(tmp2[0]),tolower(tmp3[0]), tolower(tmp3[1]), GetIntVal(tmp4));
+    SetNeedLocate(tolower(tmp[0]),tolower(tmp2[0]),tolower(tmp3[0]), tolower(tmp3[1]), GetIntVal(tmp4), false);
 
     //depricated
     Rend_SetDelay(2);
