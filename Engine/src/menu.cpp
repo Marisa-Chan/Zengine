@@ -263,7 +263,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','p','e',0,true);
+                        SetNeedLocate(PrefWorld,PrefRoom,PrefNode,PrefView,0);
 
                 }
                 else
@@ -283,7 +283,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','r','e',0,true);
+                        SetNeedLocate(LoadWorld,LoadRoom,LoadNode,LoadView,0);
 
                 }
                 else
@@ -303,7 +303,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate('g','j','s','e',0,true);
+                        SetNeedLocate(SaveWorld,SaveRoom,SaveNode,SaveView,0);
 
                 }
                 else

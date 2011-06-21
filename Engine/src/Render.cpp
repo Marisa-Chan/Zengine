@@ -96,7 +96,7 @@ void Rend_InitGraphics(bool fullscreen, char *fontsdir)
 
     SDL_ShowCursor(SDL_DISABLE);
 
-    PanaX = getdirectvar(SLOT_LOCATION_CUR_X);
+    PanaX = getdirectvar(SLOT_VIEW_POS);
 
 }
 

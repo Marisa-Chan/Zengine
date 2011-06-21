@@ -72,7 +72,7 @@ int snd_ProcessWav(struct_action_res *nod)
 
         if (mnod->pantrack)
         {
-            int PlX = GetgVarInt(SLOT_LOCATION_CUR_X);
+            int PlX = GetgVarInt(SLOT_VIEW_POS);
             float pixangle = (360.0 / Rend_GetPanaWidth());
             int soundpos   = floor((PlX - mnod->pantrack_X) * pixangle);
             if (soundpos < 0)

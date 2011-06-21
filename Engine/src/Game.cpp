@@ -16,34 +16,33 @@ int32_t View_start_Loops = 0;
 int8_t  SaveSlot = 0;
 
 
-void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X, bool menu)
+void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 {
     NeedToLoadScript  = true;
     Need_Locate.World = tolower(w);
     Need_Locate.Room  = tolower(r);
-    Need_Locate.View1 = tolower(v1);
-    Need_Locate.View2 = tolower(v2);
+    Need_Locate.Node  = tolower(v1);
+    Need_Locate.View  = tolower(v2);
     Need_Locate.X     = X;
 
-    if (!menu)
     if (Need_Locate.World == '0')
     {
-        if (GetgVarInt(3) == tolower(SystemWorld) &&
-            GetgVarInt(4) == tolower(SystemRoom))
+        if (GetgVarInt(SLOT_WORLD) == tolower(SystemWorld) &&
+            GetgVarInt(SLOT_ROOM) == tolower(SystemRoom))
         {
-            Need_Locate.World = GetgVarInt(45);
-            Need_Locate.Room  = GetgVarInt(46);
-            Need_Locate.View1 = GetgVarInt(47);
-            Need_Locate.View2 = GetgVarInt(48);
-            Need_Locate.X     = GetgVarInt(49);
+            Need_Locate.World = GetgVarInt(SLOT_MENU_LASTWORLD);
+            Need_Locate.Room  = GetgVarInt(SLOT_MENU_LASTROOM);
+            Need_Locate.Node  = GetgVarInt(SLOT_MENU_LASTNODE);
+            Need_Locate.View  = GetgVarInt(SLOT_MENU_LASTVIEW);
+            Need_Locate.X     = GetgVarInt(SLOT_MENU_LASTVIEW_POS);
         }
         else
         {
-            Need_Locate.World = GetgVarInt(40);
-            Need_Locate.Room  = GetgVarInt(41);
-            Need_Locate.View1 = GetgVarInt(42);
-            Need_Locate.View2 = GetgVarInt(43);
-            Need_Locate.X     = GetgVarInt(44);
+            Need_Locate.World = GetgVarInt(SLOT_LASTWORLD);
+            Need_Locate.Room  = GetgVarInt(SLOT_LASTROOM);
+            Need_Locate.Node  = GetgVarInt(SLOT_LASTNODE);
+            Need_Locate.View  = GetgVarInt(SLOT_LASTVIEW);
+            Need_Locate.X     = GetgVarInt(SLOT_LASTVIEW_POS);
         }
     }
 
@@ -308,17 +307,17 @@ void InitGameLoop()
     pzllst *uni = GetUni();
     LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
 
-    ScrSys_ChangeLocation('g','a','r','y',0);
+    ScrSys_ChangeLocation(InitWorld,InitRoom,InitNode,InitView,0);
 
     //Hack
-    SetDirectgVarInt(40,'g');
-    SetDirectgVarInt(41,'a');
-    SetDirectgVarInt(42,'r');
-    SetDirectgVarInt(43,'y');
-    SetDirectgVarInt(45,'g');
-    SetDirectgVarInt(46,'a');
-    SetDirectgVarInt(47,'r');
-    SetDirectgVarInt(48,'y');
+    SetDirectgVarInt(SLOT_LASTWORLD, InitWorld);
+    SetDirectgVarInt(SLOT_LASTROOM , InitRoom);
+    SetDirectgVarInt(SLOT_LASTNODE , InitNode);
+    SetDirectgVarInt(SLOT_LASTVIEW , InitView);
+    SetDirectgVarInt(SLOT_MENU_LASTWORLD, InitWorld);
+    SetDirectgVarInt(SLOT_MENU_LASTROOM , InitRoom);
+    SetDirectgVarInt(SLOT_MENU_LASTNODE , InitNode);
+    SetDirectgVarInt(SLOT_MENU_LASTVIEW , InitView);
     SetDirectgVarInt(53,250);
     //\Hack
 }
@@ -390,7 +389,7 @@ void GameLoop()
     if (NeedToLoadScript)
     {
         NeedToLoadScript=false;
-        ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.View1,Need_Locate.View2,Need_Locate.X);
+        ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.Node,Need_Locate.View,Need_Locate.X);
     }
 
 
@@ -409,23 +408,24 @@ void GameLoop()
         SaveSlot = 40;
 
     if (KeyHit(SDLK_F5))
-        SaveGame(savefile);
+        {
+            ScrSys_PrepareSaveBuffer();
+            ScrSys_SaveGame(SaveSlot);
+        }
     if (KeyHit(SDLK_F8))
-        LoadGame(savefile);
+        {
+            ScrSys_LoadGame(SaveSlot);
+        }
 
 
-    if (GetgVarInt(SLOT_LOCATION_CUR_WO) == 'G' &&
-        GetgVarInt(SLOT_LOCATION_CUR_RO) == 'A' &&
-        GetgVarInt(SLOT_LOCATION_CUR_V1) == 'R' &&
-        GetgVarInt(SLOT_LOCATION_CUR_V2) == 'Y' &&
+    if (GetgVarInt(SLOT_WORLD) == InitWorld &&
+        GetgVarInt(SLOT_ROOM)  == InitRoom &&
+        GetgVarInt(SLOT_NODE)  == InitNode &&
+        GetgVarInt(SLOT_VIEW)  == InitView &&
         KeyDown(SDLK_RCTRL) && KeyDown(SDLK_F12))
         {
             NeedToLoadScript  = true;
-            Need_Locate.World = 'G';
-            Need_Locate.Room  = 'J';
-            Need_Locate.View1 = 'T';
-            Need_Locate.View2 = 'M';
-            Need_Locate.X     =  0;
+            SetNeedLocate('g', 'j', 't', 'm', 0);
         }
 
     stringColor(screen,0,470,savefile,0xFFFFFFFF);

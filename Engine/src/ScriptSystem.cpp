@@ -17,6 +17,7 @@ uint32_t     StateBoxStkSz = 0;
 bool BreakExecute = false;
 
 
+
 pzllst   *uni    =NULL; //universe script
 pzllst   *world  =NULL; //world script
 pzllst   *room   =NULL; //room script
@@ -25,6 +26,9 @@ pzllst   *view   =NULL; //view script
 MList    *ctrl   =NULL; //contorls
 
 MList    *actres =NULL; //sounds, animations, ttytexts and other.
+
+uint8_t  *SaveBuffer = NULL;
+uint32_t SaveCurrentSize=0;
 
 
 char * ScrSys_ReturnListName(pzllst *lst)
@@ -246,39 +250,263 @@ void ScrSys_ClearStateBox()
     StateBoxStkSz=0;
 }
 
+void ScrSys_PrepareSaveBuffer()
+{
+    if (SaveBuffer == NULL)
+            SaveBuffer = (uint8_t *)malloc(SAVEBUFFER_SIZE);
+
+        int buffpos=0;
+
+        SaveBuffer[0] = 'Z';
+        SaveBuffer[1] = 'N';
+        SaveBuffer[2] = 'S';
+        SaveBuffer[3] = 'G';
+        SaveBuffer[4] =  4;
+        SaveBuffer[5] =  0;
+        SaveBuffer[6] =  0;
+        SaveBuffer[7] =  0;
+        SaveBuffer[12]= 'L';
+        SaveBuffer[13]= 'O';
+        SaveBuffer[14]= 'C';
+        SaveBuffer[15]= ' ';
+        SaveBuffer[16] =  8;
+        SaveBuffer[17] =  0;
+        SaveBuffer[18] =  0;
+        SaveBuffer[19] =  0;
+        SaveBuffer[20] =  tolower(GetgVarInt(SLOT_WORLD));
+        SaveBuffer[21] =  tolower(GetgVarInt(SLOT_ROOM));
+        SaveBuffer[22] =  tolower(GetgVarInt(SLOT_NODE));
+        SaveBuffer[23] =  tolower(GetgVarInt(SLOT_VIEW));
+
+        int16_t *tmp2 = (int16_t *)&SaveBuffer[24];
+        *tmp2 = GetgVarInt(SLOT_VIEW_POS);
+
+        buffpos=28;
+
+        MList *lst = GetAction_res_List();
+        StartMList(lst);
+        while(!eofMList(lst))
+        {
+            struct_action_res *nod = (struct_action_res *)DataMList(lst);
+            if (nod->node_type == NODE_TYPE_TIMER)
+            {
+                SaveBuffer[buffpos]   = 'T';
+                SaveBuffer[buffpos+1] = 'I';
+                SaveBuffer[buffpos+2] = 'M';
+                SaveBuffer[buffpos+3] = 'R';
+                SaveBuffer[buffpos+4] =  8;
+                SaveBuffer[buffpos+5] =  0;
+                SaveBuffer[buffpos+6] =  0;
+                SaveBuffer[buffpos+7] =  0;
+
+                int32_t *tmp = (int32_t *)&SaveBuffer[buffpos+8];
+                *tmp = nod->slot;
+
+                tmp = (int32_t *)&SaveBuffer[buffpos+12];
+
+                *tmp = nod->nodes.node_timer * 100;
+
+                buffpos+=16;
+            }
+
+            NextMList(lst);
+        }
+
+        SaveBuffer[buffpos]   = 'F';
+        SaveBuffer[buffpos+1] = 'L';
+        SaveBuffer[buffpos+2] = 'A';
+        SaveBuffer[buffpos+3] = 'G';
+
+        buffpos+=4;
+
+        int32_t *tmp = (int32_t *)&SaveBuffer[buffpos];
+
+        *tmp = VAR_SLOTS_MAX * 2; //16bits
+
+        buffpos+=4;
+
+        tmp2 = (int16_t *)&SaveBuffer[buffpos];
+
+        for (int i=0; i<VAR_SLOTS_MAX; i++)
+            tmp2[i] = ScrSys_GetFlag(i);
+
+        buffpos+=VAR_SLOTS_MAX*2;
+
+
+
+        SaveBuffer[buffpos]   = 'P';
+        SaveBuffer[buffpos+1] = 'U';
+        SaveBuffer[buffpos+2] = 'Z';
+        SaveBuffer[buffpos+3] = 'Z';
+
+        buffpos+=4;
+
+        tmp = (int32_t *)&SaveBuffer[buffpos];
+
+        *tmp = VAR_SLOTS_MAX * 2; //16bits
+
+        buffpos+=4;
+
+        tmp2 = (int16_t *)&SaveBuffer[buffpos];
+
+        for (int i=0; i<VAR_SLOTS_MAX; i++)
+            tmp2[i] = GetgVarInt(i);
+
+        buffpos+=VAR_SLOTS_MAX*2;
+
+        SaveCurrentSize = buffpos;
+}
+
+void ScrSys_SaveGame(int savenumb)
+{
+    if (SaveBuffer == NULL)
+        return;
+
+    char buf[32];
+
+    sprintf(buf,"inqsav%d.sav",savenumb);
+
+    FILE *f = fopen(buf,"wb");
+
+    fwrite(SaveBuffer,SaveCurrentSize,1,f);
+
+    fclose(f);
+}
+
+void ScrSys_LoadGame(int savenumb)
+{
+    char buf[32];
+
+    sprintf(buf,"inqsav%d.sav",savenumb);
+
+    FILE *f = fopen(buf,"rb");
+
+    if (!f)
+        return;
+
+    ScrSys_DeleteAllRes();
+
+    uint32_t tmp;
+    fread(&tmp,4,1,f);
+    if (tmp != 0x47534E5A)
+    {
+        printf("Error in save file %d\n",savenumb);
+        exit(-1);
+    }
+
+    fread(&tmp,4,1,f);
+    fread(&tmp,4,1,f);
+    fread(&tmp,4,1,f);
+    fread(&tmp,4,1,f);
+
+    uint8_t w,r,n,v;
+    int16_t pos;
+
+    fread(&w,1,1,f);
+    fread(&r,1,1,f);
+    fread(&n,1,1,f);
+    fread(&v,1,1,f);
+
+    fread(&pos,2,1,f);
+
+    SetDirectgVarInt(SLOT_WORLD,'0');
+
+    ScrSys_ChangeLocation(w,r,n,v,pos);
+
+    fread(&pos,2,1,f);
+
+    while(!feof(f))
+    {
+        fread(&tmp,4,1,f);
+        if (tmp != 0x524D4954)
+            break;
+
+        fread(&tmp,4,1,f);
+
+        int slot,time;
+        fread(&slot,4,1,f);
+        fread(&time,4,1,f);
+
+        char buf[32];
+        sprintf(buf,"%d",time/100);
+        action_timer(buf,slot,view);
+    }
+
+    fread(&tmp,4,1,f);
+
+    if (tmp != VAR_SLOTS_MAX*2)
+    {
+        printf("Error in save file %d (FLAGS VAR_SLOTS_MAX)\n",savenumb);
+        exit(-1);
+    }
+    for (int i=0; i<VAR_SLOTS_MAX;i++)
+    {
+        int16_t tmp2;
+        fread(&tmp2,2,1,f);
+        ScrSys_SetFlag(i,tmp2);
+    }
+
+    fread(&tmp,4,1,f);
+    fread(&tmp,4,1,f);
+    if (tmp != VAR_SLOTS_MAX*2)
+    {
+        printf("Error in save file %d (PUZZLE VAR_SLOTS_MAX)\n",savenumb);
+        exit(-1);
+    }
+    for (int i=0; i<VAR_SLOTS_MAX;i++)
+    {
+        int16_t tmp2;
+        fread(&tmp2,2,1,f);
+        ScrSys_SetFlag(i,tmp2);
+    }
+
+    fclose(f);
+}
+
 void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
 {
-    //Needed reverse from 0x004246C7
+    //reversed from 0x004246C7
 
-    if (tolower(GetgVarInt(3)) != tolower(SystemWorld) &&
-            tolower(GetgVarInt(4)) != tolower(SystemRoom)  )
+    Locate temp;
+    temp.World = w;
+    temp.Room  = r;
+    temp.Node  = v1;
+    temp.View  = v2;
+    temp.X     = X;
+
+
+    if (GetgVarInt(SLOT_WORLD)!= SystemWorld &&
+        GetgVarInt(SLOT_ROOM) != SystemRoom  )
     {
-        if (tolower(w) == tolower(SystemWorld) &&
-                tolower(r) == tolower(SystemRoom)  )
+        if (temp.World == SystemWorld &&
+            temp.Room  == SystemRoom)
         {
-            SetDirectgVarInt(45,GetgVarInt(3));
-            SetDirectgVarInt(46,GetgVarInt(4));
-            SetDirectgVarInt(47,GetgVarInt(5));
-            SetDirectgVarInt(48,GetgVarInt(6));
-            SetDirectgVarInt(49,GetgVarInt(7));
+            SetDirectgVarInt(SLOT_MENU_LASTWORLD    , GetgVarInt(SLOT_WORLD));
+            SetDirectgVarInt(SLOT_MENU_LASTROOM     , GetgVarInt(SLOT_ROOM));
+            SetDirectgVarInt(SLOT_MENU_LASTNODE     , GetgVarInt(SLOT_NODE));
+            SetDirectgVarInt(SLOT_MENU_LASTVIEW     , GetgVarInt(SLOT_VIEW));
+            SetDirectgVarInt(SLOT_MENU_LASTVIEW_POS , GetgVarInt(SLOT_VIEW_POS));
         }
         else
         {
-            SetDirectgVarInt(40,GetgVarInt(3));
-            SetDirectgVarInt(41,GetgVarInt(4));
-            SetDirectgVarInt(42,GetgVarInt(5));
-            SetDirectgVarInt(43,GetgVarInt(6));
-            SetDirectgVarInt(44,GetgVarInt(7));
+            SetDirectgVarInt(SLOT_LASTWORLD    , GetgVarInt(SLOT_WORLD));
+            SetDirectgVarInt(SLOT_LASTROOM     , GetgVarInt(SLOT_ROOM));
+            SetDirectgVarInt(SLOT_LASTNODE     , GetgVarInt(SLOT_NODE));
+            SetDirectgVarInt(SLOT_LASTVIEW     , GetgVarInt(SLOT_VIEW));
+            SetDirectgVarInt(SLOT_LASTVIEW_POS , GetgVarInt(SLOT_VIEW_POS));
         }
     }
 
 
-    Locate temp;
-    temp.World =w;
-    temp.Room  =r;
-    temp.View1 =v1;
-    temp.View2 =v2;
-    temp.X     =X;
+
+
+
+    if (temp.World == SaveWorld && temp.Room  == SaveRoom  &&
+        temp.Node  == SaveNode  && temp.View  == SaveView)
+    {
+        //Save all to buffer
+        ScrSys_PrepareSaveBuffer();
+    }
 
 
     ScrSys_ClearStateBox();
@@ -287,23 +515,22 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     char tm[5];
 
 
-//    RenderDelay = 2;
-//    View_start_Loops = 1;
-
-    if (temp.View1 != GetgVarInt(6) || temp.View2 != GetgVarInt(5) || temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || view == NULL)
+    if (temp.View  != GetgVarInt(SLOT_VIEW)  ||
+        temp.Node  != GetgVarInt(SLOT_NODE)  ||
+        temp.Room  != GetgVarInt(SLOT_ROOM)  ||
+        temp.World != GetgVarInt(SLOT_WORLD) ||
+        view == NULL)
     {
 
         ScrSys_FlushResourcesByOwner(view);
 
-
         FlushPuzzleList(view);
         FlushControlList(ctrl);
 
-
         tm[0]=temp.World;
         tm[1]=temp.Room;
-        tm[2]=temp.View1;
-        tm[3]=temp.View2;
+        tm[2]=temp.Node;
+        tm[3]=temp.View;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
 
@@ -311,17 +538,13 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 
     }
 
-    if (temp.Room != GetgVarInt(4) || temp.World != GetgVarInt(3) || room == NULL)
+    if (temp.Room  != GetgVarInt(SLOT_ROOM)   ||
+        temp.World != GetgVarInt(SLOT_WORLD) ||
+        room == NULL)
     {
-        //if (room->_list->count > 0)
-        //{
-        //snd_DeleteLoopedWavsByOwner(room);
         ScrSys_FlushResourcesByOwner(room);
-        //snd_DeleteNoUniverse(room);
 
         FlushPuzzleList(room);
-        //}
-        //room->exec_times = 0;
 
         tm[0]=temp.World;
         tm[1]=temp.Room;
@@ -331,17 +554,13 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         LoadScriptFile(room,GetExactFilePath(buf),false,NULL);
     }
 
-    if (temp.World != GetgVarInt(3) || world == NULL)
+
+    if (temp.World != GetgVarInt(SLOT_WORLD) ||
+        world == NULL)
     {
-        //if (world->_list->count > 0)
-        //{
-        //snd_DeleteLoopedWavsByOwner(world);
         ScrSys_FlushResourcesByOwner(world);
-        //snd_DeleteNoUniverse(world);
 
         FlushPuzzleList(world);
-        //}
-        //world->exec_times = 0;
 
         tm[0]=temp.World;
         tm[1]=0;
@@ -357,11 +576,11 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     FillStateBoxFromList(room);
     FillStateBoxFromList(world);
 
-    SetgVarInt(3,tolower(w));
-    SetgVarInt(4,tolower(r));
-    SetgVarInt(5,tolower(v1));
-    SetgVarInt(6,tolower(v2));
-    SetgVarInt(7,X);
+    SetgVarInt(SLOT_WORLD    , w);
+    SetgVarInt(SLOT_ROOM     , r);
+    SetgVarInt(SLOT_NODE     , v1);
+    SetgVarInt(SLOT_VIEW     , v2);
+    SetgVarInt(SLOT_VIEW_POS , X);
 
     menu_SetMenuBarVal(0xFFFF);
 

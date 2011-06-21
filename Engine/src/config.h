@@ -1,8 +1,8 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#define SystemWorld 'g'
-#define SystemRoom  'j'
+
+
 
 #define VAR_SLOTS_MAX      20000
 #define STATEBOX_STACK_MAX 1024
@@ -13,5 +13,36 @@
 #define TRY_CHANNELS 16
 
 #define FILE_LN_BUF 0x400
+
+
+
+//Script names
+#define SystemWorld 'g'
+#define SystemRoom  'j'
+
+#define SaveWorld   SystemWorld
+#define SaveRoom    SystemRoom
+#define SaveNode    's'
+#define SaveView    'e'
+
+#define LoadWorld   SystemWorld
+#define LoadRoom    SystemRoom
+#define LoadNode    'r'
+#define LoadView    'e'
+
+#define PrefWorld   SystemWorld
+#define PrefRoom    SystemRoom
+#define PrefNode    'p'
+#define PrefView    'e'
+
+#define InitWorld   SystemWorld
+#define InitRoom    'a'
+#define InitNode    'r'
+#define InitView    'y'
+
+
+//Save
+#define SAVEBUFFER_SIZE VAR_SLOTS_MAX*4+12+16+8+8+100*16
+
 
 #endif // CONFIG_H_INCLUDED

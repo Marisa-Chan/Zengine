@@ -7,22 +7,27 @@
 #include "Puzzle.h"
 
 
-#define SLOT_LOCATION_CUR_WO    3
-#define SLOT_LOCATION_CUR_RO    4
-#define SLOT_LOCATION_CUR_V1    5
-#define SLOT_LOCATION_CUR_V2    6
-#define SLOT_LOCATION_CUR_X     7
+#define SLOT_WORLD              3
+#define SLOT_ROOM               4
+#define SLOT_NODE               5
+#define SLOT_VIEW               6
+#define SLOT_VIEW_POS           7
 #define SLOT_KEY_PRESS          8 //keycode in slot
 #define SLOT_INVENTORY_MOUSE    9 //code of item in slot
 #define SLOT_MOUSE_DOWN        10 //1 if clicked
 #define SLOT_MOUSE_RIGHT_CLICK 18 //1 if right button of mouse
 #define SLOT_MENU_STATE        19
 #define SLOT_JUST_RESTORED     20
-#define SLOT_KLASTWORLD        45
-#define SLOT_KLASTROOM         46
-#define SLOT_KLASTNODE         47
-#define SLOT_KLASTVIEW         48
-#define SLOT_KLASTPOS          49
+#define SLOT_LASTWORLD         40
+#define SLOT_LASTROOM          41
+#define SLOT_LASTNODE          42
+#define SLOT_LASTVIEW          43
+#define SLOT_LASTVIEW_POS      44
+#define SLOT_MENU_LASTWORLD    45
+#define SLOT_MENU_LASTROOM     46
+#define SLOT_MENU_LASTNODE     47
+#define SLOT_MENU_LASTVIEW     48
+#define SLOT_MENU_LASTVIEW_POS 49
 #define SLOT_SUBTITLE_FLAG     51
 #define SLOT_PANAROTATE_SPEED  53
 #define SLOT_QSOUND_ENABLE     57
@@ -103,8 +108,8 @@ struct struct_action_res
         animnode    *node_anim;
         animprenode *node_animpre;
         struct_syncnode *node_sync;
-
         int          node_timer;
+
         int          node_pantracking;
         void        *node_unknow;
     } nodes;
@@ -168,6 +173,10 @@ void ScrSys_FlushGNodes();
 void ScrSys_RereadGNodes();
 struct_action_res *getGNode(int32_t indx);
 void setGNode(int32_t indx, struct_action_res *data);
+
+void ScrSys_SaveGame(int savenumb);
+void ScrSys_LoadGame(int savenumb);
+void ScrSys_PrepareSaveBuffer();
 
 struct_action_res *ScrSys_CreateActRes(int type);
 
