@@ -409,11 +409,11 @@ void ScrSys_LoadGame(int savenumb)
 
     fread(&pos,2,1,f);
 
-    SetDirectgVarInt(SLOT_WORLD,'0');
 
-    ScrSys_ChangeLocation(w,r,n,v,pos);
 
-    fread(&pos,2,1,f);
+
+
+    fread(&tmp,2,1,f);
 
     while(!feof(f))
     {
@@ -457,8 +457,12 @@ void ScrSys_LoadGame(int savenumb)
     {
         int16_t tmp2;
         fread(&tmp2,2,1,f);
-        ScrSys_SetFlag(i,tmp2);
+        SetDirectgVarInt(i,tmp2);
     }
+
+    SetDirectgVarInt(SLOT_WORLD,'0');
+
+    ScrSys_ChangeLocation(w,r,n,v,pos);
 
     fclose(f);
 }
