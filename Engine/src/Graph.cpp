@@ -99,6 +99,8 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful, 
     else
         screen=SDL_SetVideoMode(wi, he, b, SFTYPE);
 
+    SDL_WM_SetCaption(TITLE,NULL);
+
     InitMusic();
     TTF_Init();
 

@@ -460,14 +460,14 @@ void ScrSys_LoadGame(int savenumb)
         SetDirectgVarInt(i,tmp2);
     }
 
-    SetDirectgVarInt(SLOT_WORLD,'0');
+    ScrSys_ChangeLocation(w,r,n,v,pos,true);
 
-    ScrSys_ChangeLocation(w,r,n,v,pos);
+    SetgVarInt(SLOT_JUST_RESTORED, 1);
 
     fclose(f);
 }
 
-void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X) // world / room / view
+void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X, bool force_all) // world / room / view
 {
     //reversed from 0x004246C7
 
@@ -502,9 +502,6 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     }
 
 
-
-
-
     if (temp.World == SaveWorld && temp.Room  == SaveRoom  &&
         temp.Node  == SaveNode  && temp.View  == SaveView)
     {
@@ -523,7 +520,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         temp.Node  != GetgVarInt(SLOT_NODE)  ||
         temp.Room  != GetgVarInt(SLOT_ROOM)  ||
         temp.World != GetgVarInt(SLOT_WORLD) ||
-        view == NULL)
+        force_all  || view == NULL)
     {
 
         ScrSys_FlushResourcesByOwner(view);
@@ -543,8 +540,8 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     }
 
     if (temp.Room  != GetgVarInt(SLOT_ROOM)   ||
-        temp.World != GetgVarInt(SLOT_WORLD) ||
-        room == NULL)
+        temp.World != GetgVarInt(SLOT_WORLD)  ||
+        force_all  || room == NULL)
     {
         ScrSys_FlushResourcesByOwner(room);
 
@@ -560,7 +557,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
 
 
     if (temp.World != GetgVarInt(SLOT_WORLD) ||
-        world == NULL)
+        force_all  || world == NULL)
     {
         ScrSys_FlushResourcesByOwner(world);
 

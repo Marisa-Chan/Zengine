@@ -154,7 +154,7 @@ void InitScriptsEngine();
 
 void FillStateBoxFromList(pzllst *lst);
 
-void ScrSys_ChangeLocation(uint8_t w, uint8_t r, uint8_t v1, uint8_t v2, int32_t X);
+void ScrSys_ChangeLocation(uint8_t w, uint8_t r, uint8_t v1, uint8_t v2, int32_t X,bool force_all);
 
 void ScrSys_exec_puzzle_list(pzllst *lst);
 int ScrSys_DeleteNode(struct_action_res *nod);

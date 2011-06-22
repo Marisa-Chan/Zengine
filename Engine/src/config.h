@@ -2,6 +2,9 @@
 #define CONFIG_H_INCLUDED
 
 
+//// TITLE
+#define TITLE       "Z-Engine: Zork Grand Inquisitor (pre-beta)"
+////
 
 
 #define VAR_SLOTS_MAX      20000
