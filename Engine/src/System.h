@@ -87,6 +87,9 @@ char *GetFilePath(char *chr);
 char *GetExactFilePath(char *chr);
 void AddReplacer(char *ext, char *ext2);
 
+int GetKeyBuffered(int indx);
+bool CheckKeyboardMessage(char *msg, int len);
+
 bool FileExist(char * fil);
 
 

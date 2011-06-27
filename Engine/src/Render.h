@@ -32,6 +32,7 @@ int  Rend_GetMouseGameY();
 bool Rend_MouseInGamescr();
 
 int Rend_GetPanaWidth();
+void Rend_SetReversePana(bool pana);
 
 void Rend_SetRenderer(int meth);
 void Rend_SetFishTable(double angl, double k);

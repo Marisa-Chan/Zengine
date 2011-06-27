@@ -28,7 +28,7 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
     if (Need_Locate.World == '0')
     {
         if (GetgVarInt(SLOT_WORLD) == tolower(SystemWorld) &&
-            GetgVarInt(SLOT_ROOM) == tolower(SystemRoom))
+                GetgVarInt(SLOT_ROOM) == tolower(SystemRoom))
         {
             Need_Locate.World = GetgVarInt(SLOT_MENU_LASTWORLD);
             Need_Locate.Room  = GetgVarInt(SLOT_MENU_LASTROOM);
@@ -328,6 +328,61 @@ void InitGameLoop()
 
 
 
+void EasterEggsAndDebug()
+{
+    if (KeyAnyHit())
+    {
+        if (GetgVarInt(SLOT_DBG_GOTO_LOCATION) == 1)
+            if (CheckKeyboardMessage("GO????",6))
+            {
+                NeedToLoadScript = true;
+                SetNeedLocate(GetKeyBuffered(3),
+                              GetKeyBuffered(2),
+                              GetKeyBuffered(1),
+                              GetKeyBuffered(0),0);
+            }
+
+        if (CheckKeyboardMessage("DBGONOFF",8))
+            SetDirectgVarInt(SLOT_DBG_GOTO_LOCATION, 1 - GetgVarInt(SLOT_DBG_GOTO_LOCATION));
+
+        if (CheckKeyboardMessage("COMPUTERARCH",12))
+            {
+                //TODO: var-watcher
+            }
+
+        if (CheckKeyboardMessage("FFRAME",6))
+            {
+                //TODO: print current fps
+            }
+
+        if (CheckKeyboardMessage("IMNOTDEAFF",10))
+            {
+                //TODO: unknown
+            }
+
+        if (CheckKeyboardMessage("3100OPB",7))
+                printf("Current Location: %c%c%c%c\n",GetgVarInt(SLOT_WORLD),
+                                                      GetgVarInt(SLOT_ROOM),
+                                                      GetgVarInt(SLOT_NODE),
+                                                      GetgVarInt(SLOT_VIEW));
+
+
+        if (CheckKeyboardMessage("KILLMENOW",9))
+            {
+                //TODO: go to hell :3
+                NeedToLoadScript  = true;
+                SetNeedLocate('g', 'j', 'd', 'e', 0);
+                SetgVarInt(2201,35);
+            }
+
+
+        if (CheckKeyboardMessage("MIKESPANTS",10) )
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('g', 'j', 't', 'm', 0);
+        }
+    }
+}
 
 
 void GameLoop()
@@ -408,25 +463,16 @@ void GameLoop()
         SaveSlot = 40;
 
     if (KeyHit(SDLK_F5))
-        {
-            ScrSys_PrepareSaveBuffer();
-            ScrSys_SaveGame(SaveSlot);
-        }
+    {
+        ScrSys_PrepareSaveBuffer();
+        ScrSys_SaveGame(SaveSlot);
+    }
     if (KeyHit(SDLK_F8))
-        {
-            ScrSys_LoadGame(SaveSlot);
-        }
+    {
+        ScrSys_LoadGame(SaveSlot);
+    }
 
-
-    if (GetgVarInt(SLOT_WORLD) == InitWorld &&
-        GetgVarInt(SLOT_ROOM)  == InitRoom &&
-        GetgVarInt(SLOT_NODE)  == InitNode &&
-        GetgVarInt(SLOT_VIEW)  == InitView &&
-        KeyDown(SDLK_RCTRL) && KeyDown(SDLK_F12))
-        {
-            NeedToLoadScript  = true;
-            SetNeedLocate('g', 'j', 't', 'm', 0);
-        }
+    EasterEggsAndDebug();
 
     stringColor(screen,0,470,savefile,0xFFFFFFFF);
 

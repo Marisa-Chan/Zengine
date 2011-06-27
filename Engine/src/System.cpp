@@ -19,7 +19,7 @@
 }
 */
 
-
+#define KEYBUFLEN  14
 
 
 
@@ -31,6 +31,7 @@ uint8_t KeyHits[512]; //Array with hitted keys (once per press)
 bool AnyHit=false;    //it's indicate what any key was pressed
 uint8_t *Keys;        //Array with pressed keys (while pressed)
 SDLKey lastkey;
+int keybbuf[KEYBUFLEN]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 int Mx, My;
 uint8_t LMstate,Mstate;
@@ -50,6 +51,32 @@ void SetHit(SDLKey key)
     AnyHit=true;
     KeyHits[key]=1;
     lastkey=key;
+    for (int i=0;i<KEYBUFLEN-1;i++)
+        keybbuf[i]=keybbuf[i+1];
+    keybbuf[KEYBUFLEN-1] = key;
+}
+
+int GetKeyBuffered(int indx)
+{
+    if (indx>KEYBUFLEN)
+        return 0;
+    else
+        return keybbuf[KEYBUFLEN-indx-1];
+}
+
+bool CheckKeyboardMessage(char *msg, int len)
+{
+    if (len > KEYBUFLEN)
+        return false;
+    for (int i=0; i<len; i++)
+        {
+            int ki=GetWinKey((SDLKey)keybbuf[KEYBUFLEN-i-1]);
+            if (msg[len-i-1] != ki   &&   msg[len-i-1] != '?')
+                return false;
+        }
+
+
+    return true;
 }
 
 SDLKey GetLastKey()

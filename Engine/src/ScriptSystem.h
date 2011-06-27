@@ -36,6 +36,8 @@
 #define SLOT_INSTALL_LEVEL     67
 #define SLOT_COUNTRY_CODE      68
 #define SLOT_TURN_OFF_ANIM     71
+#define SLOT_DBG_GOTO_LOCATION 74 //if set to 1, we may type GOXXXX while game, and it will be changed location to XXXX
+                                    //To change - type DBGONOFF
 #define SLOT_INV_STORAGE_1    102
 #define SLOT_INV_STORAGE_2    103
 #define SLOT_INV_STORAGE_3    104

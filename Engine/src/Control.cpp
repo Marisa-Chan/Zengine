@@ -153,7 +153,7 @@ void control_push(ctrlnode *ct)
 
 int Parse_Control_Flat()
 {
-
+    Rend_SetRenderer (RENDER_FLAT);
 }
 
 
@@ -166,7 +166,9 @@ int Parse_Control_Panorama(FILE *fl)
 
     double angle = 27.0;
     double     k = 0.55;
+    int      tmp = 0;
 
+    Rend_SetRenderer (RENDER_PANA);
 
     while (!feof(fl))
     {
@@ -187,6 +189,14 @@ int Parse_Control_Panorama(FILE *fl)
         {
             str   = GetParams(str);
             k = atof(str);
+        }
+        else if (strCMP(str,"reversepana")==0)
+        {
+            str   = GetParams(str);
+            tmp = atoi(str);
+            printf("%d\n",tmp);
+            if (tmp == 1)
+                Rend_SetReversePana(true);
         }
 
     }
@@ -372,25 +382,29 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 
     if (strCMP(ctrltp,"flat")==0)
     {
-        Rend_SetRenderer (RENDER_FLAT);
 #ifdef FULLTRACE
         printf("    Flat Rendere\n");
 #endif
+
+        Parse_Control_Flat();
     }
     else if (strCMP(ctrltp,"pana")==0)
     {
 #ifdef FULLTRACE
         printf("    Panorama Rendere\n");
 #endif
+
         Parse_Control_Panorama(fl);
-        Rend_SetRenderer (RENDER_PANA);
-//        Location.X -= 320;
     }
     else if (strCMP(ctrltp,"push_toggle")==0)
     {
         Parse_Control_PushTgl(controlst,fl,slot);
     }
     else if (strCMP(ctrltp,"input")==0)
+    {
+
+    }
+    else if (strCMP(ctrltp,"save")==0)
     {
 
     }

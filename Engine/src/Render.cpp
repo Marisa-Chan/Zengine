@@ -33,6 +33,7 @@ xy fishtable[GAMESCREEN_W][GAMESCREEN_H];
 
 int PanaWidth=1800;
 int *PanaX;
+bool ReversePana = false;
 
 
 
@@ -245,6 +246,12 @@ int Rend_GetMouseGameY()
 void Rend_SetRenderer(int meth)
 {
     Renderer = meth;
+    ReversePana = false;
+}
+
+void Rend_SetReversePana(bool pana)
+{
+    ReversePana = pana;
 }
 
 int Rend_GetRenderer()
@@ -290,12 +297,25 @@ void Rend_DrawPanorama()
 void Rend_PanaRender()
 {
     if (Rend_MouseInGamescr())
-        if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-            *PanaX +=GetgVarInt(53)/20;
+    {
+        if (ReversePana == false)
+        {
+            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
+                *PanaX +=GetgVarInt(53)/20;
+            if (MouseX() < GAMESCREEN_P)
+                *PanaX -=GetgVarInt(53)/20;
+        }
+        else
+        {
+            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
+                *PanaX -=GetgVarInt(53)/20;
+            if (MouseX() < GAMESCREEN_P)
+                *PanaX +=GetgVarInt(53)/20;
+        }
+    }
 
-    if (Rend_MouseInGamescr())
-        if (MouseX() < GAMESCREEN_P)
-            *PanaX -=GetgVarInt(53)/20;
+
+
 
     if (*PanaX >= scrbuf->w)
         *PanaX %= scrbuf->w;
