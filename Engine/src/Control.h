@@ -2,12 +2,13 @@
 #define CONTROL_H_INCLUDED
 
 
-
-#define CTRL_PUSH     0
-#define CTRL_INPUT    1
-#define CTRL_SLOT     2
-#define CTRL_PANA     3
-#define CTRL_FLAT     4
+#define CTRL_UNKN     0
+#define CTRL_PUSH     1
+#define CTRL_INPUT    2
+#define CTRL_SLOT     3
+#define CTRL_SAVE     4
+#define CTRL_PANA    10
+#define CTRL_FLAT    11
 
 
 struct Rect
@@ -26,7 +27,7 @@ struct pushnode
     int y;
     int w;
     int h;
-    uint16_t cursor;
+    int16_t cursor;
 };
 
 struct slotnode
@@ -39,23 +40,37 @@ struct slotnode
     //int do_skip;
     int *eligible_objects;
     int eligable_cnt;
-    uint16_t cursor;
+    int16_t cursor;
     SDL_Surface *srf;
+};
+
+struct inputnode
+{
+    Rect rectangle;
+    Rect hotspot;
+    int next_tab;
+    char *text;
+    anim_surf *cursor;
+    int  frames;
 };
 
 struct ctrlnode
 {
-    uint32_t slot;
-    uint8_t  type;
-    union
+    int32_t slot;
+    int8_t  type;
+    union node
     {
         slotnode *slot;
         pushnode *push;
+        inputnode *inp;
+
+        void  *unknown;
     } node;
     void   (*func)(ctrlnode *);
 };
 
 
+ctrlnode *Ctrl_CreateNode(int type);
 
 int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
 
@@ -66,4 +81,7 @@ void DeleteControlList(MList *lst);
 void FlushControlList(MList *lst);
 
 
+void control_slot(ctrlnode *ct);
+void control_push(ctrlnode *ct);
+void control_input(ctrlnode *ct);
 #endif // CONTROL_H_INCLUDED

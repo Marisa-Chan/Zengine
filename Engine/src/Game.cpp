@@ -49,138 +49,6 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 }
 
 
-void SetgVarInt(void **Vars, int indx, int var)
-{
-    Vars[indx]=NULL;
-    Vars[indx]=(void *)var;
-}
-
-int GetgVarInt(void **Vars, int indx)
-{
-    return (int)Vars[indx];
-}
-
-//void SaveGame(char *file)
-//{
-//    void *tmpVars[VAR_SLOTS_MAX];
-//    memcpy(tmpVars,DGetGVars(),VAR_SLOTS_MAX*sizeof(void *));
-//
-//    MList *allres = GetAction_res_List();
-//    StartMList(allres);
-//    while (!eofMList(allres))
-//    {
-//        struct_action_res *nod=(struct_action_res *)DataMList(allres);
-//
-//        if (nod->node_type == NODE_TYPE_MUSIC)
-//            SetgVarInt(tmpVars,nod->slot,2);
-//
-//        if (nod->node_type == NODE_TYPE_TIMER)
-//            SetgVarInt(tmpVars,nod->slot,2);
-//
-//        if (nod->node_type == NODE_TYPE_ANIM)
-//            SetgVarInt(tmpVars,nod->slot,2);
-//
-//        NextMList(allres);
-//    }
-//
-//
-//    pzllst *room = Getroom();
-//    StartMList(room->_list);
-//    while (!eofMList(room->_list))
-//    {
-//        puzzlenode *nod=(puzzlenode *)DataMList(room->_list);
-//        SetgVarInt(tmpVars,nod->slot,0);
-//        NextMList(room->_list);
-//    }
-//
-//    pzllst *view = Getview();
-//    StartMList(view->_list);
-//    while (!eofMList(view->_list))
-//    {
-//        puzzlenode *nod=(puzzlenode *)DataMList(view->_list);
-//        SetgVarInt(tmpVars,nod->slot,0);
-//        NextMList(view->_list);
-//    }
-//
-//    pzllst *world = Getworld();
-//    StartMList(world->_list);
-//    while (!eofMList(world->_list))
-//    {
-//        puzzlenode *nod=(puzzlenode *)DataMList(world->_list);
-//        SetgVarInt(tmpVars,nod->slot,0);
-//        NextMList(world->_list);
-//    }
-//
-//    pzllst *uni = GetUni();
-//    StartMList(uni->_list);
-//    while (!eofMList(uni->_list))
-//    {
-//        puzzlenode *nod=(puzzlenode *)DataMList(uni->_list);
-//        SetgVarInt(tmpVars,nod->slot,0);
-//        NextMList(uni->_list);
-//    }
-//
-//    FILE *fil=fopen(file, "wb");
-//
-////    fwrite(Previos_Locate,PREV_STACK_MAX,sizeof(Locate),fil);
-////    fwrite(&PrevCount,1,sizeof(PrevCount),fil);
-////    fwrite(&Location,1,sizeof(Location),fil);
-////    fwrite(&Current_Locate,1,sizeof(Locate),fil);
-//
-//
-//    fwrite(tmpVars,VAR_SLOTS_MAX,sizeof(void *),fil);
-//    fwrite(DGetFlags(),VAR_SLOTS_MAX,sizeof(uint8_t),fil);
-//
-//    fclose(fil);
-//}
-//
-//
-//void LoadGame(char *file)
-//{
-//
-//    FILE *fil=fopen(file, "rb");
-//    if (!fil)
-//        return;
-//
-//    ScrSys_DeleteAllRes();
-//
-//    fread(DGetGVars(),VAR_SLOTS_MAX,sizeof(void *),fil);
-//    fread(DGetFlags(),VAR_SLOTS_MAX,sizeof(uint8_t),fil);
-//
-//    fclose(fil);
-//
-//    ScrSys_ChangeLocation(GetgVarInt(3),GetgVarInt(4),GetgVarInt(5),GetgVarInt(6),GetgVarInt(7));
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -273,35 +141,6 @@ bool ProcessCriteries(MList *lst)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void InitGameLoop()
 {
     pzllst *uni = GetUni();
@@ -321,8 +160,6 @@ void InitGameLoop()
     SetDirectgVarInt(53,250);
     //\Hack
 }
-
-
 
 
 

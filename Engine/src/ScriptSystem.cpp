@@ -3,7 +3,7 @@
 
 
 
-int          gVars   [VAR_SLOTS_MAX];
+int32_t      gVars   [VAR_SLOTS_MAX];
 
 struct_action_res *gNodes [VAR_SLOTS_MAX];
 

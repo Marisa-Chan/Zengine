@@ -1,8 +1,42 @@
 
 #include "System.h"
 
+int FocusInput=0;
 
+ctrlnode *Ctrl_CreateNode(int type)
+{
+    ctrlnode *tmp;
+    tmp = new(ctrlnode);
+    tmp->node.unknown = NULL;
+    tmp->slot = 0;
+    tmp->type = CTRL_UNKN;
+    tmp->func = NULL;
 
+    switch(type)
+    {
+        case CTRL_PUSH:
+            tmp->type = CTRL_PUSH;
+            tmp->node.push = new(pushnode);
+            tmp->func = control_push;
+        break;
+
+        case CTRL_INPUT:
+            tmp->type = CTRL_INPUT;
+            tmp->node.inp = new(inputnode);
+            tmp->func = control_input;
+            tmp->node.inp->cursor = NULL;
+        break;
+
+        case CTRL_SLOT:
+            tmp->type = CTRL_SLOT;
+            tmp->node.slot = new(slotnode);
+            tmp->func = control_slot;
+            tmp->node.slot->srf = NULL;
+        break;
+
+    };
+    return tmp;
+}
 
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut)
@@ -67,7 +101,24 @@ void Ctrl_DrawSlots()
 }
 
 
+void control_input(ctrlnode *ct)
+{
+    inputnode *inp = ct->node.inp;
+    bool mousein = false;
 
+    if ( inp->hotspot.x <= Rend_GetMouseGameX() &&\
+         inp->hotspot.w >= Rend_GetMouseGameX() &&\
+         inp->hotspot.y <= Rend_GetMouseGameY() &&\
+         inp->hotspot.h >= Rend_GetMouseGameY() )
+        mousein = true;
+
+    if (mousein)
+    {
+       // if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(CURSOR_ACTIVE);
+
+    }
+}
 
 void control_slot(ctrlnode *ct)
 {
@@ -106,8 +157,8 @@ void control_slot(ctrlnode *ct)
 #ifdef TRACE
             printf("Pushed\n");
             printf("Slot #%d to 1\n",ct->slot);
-            FlushMouseBtn(SDL_BUTTON_LEFT);
 #endif
+            FlushMouseBtn(SDL_BUTTON_LEFT);
 
         }
 
@@ -208,8 +259,63 @@ int Parse_Control_Panorama(FILE *fl)
 
 }
 
-int Parse_Control_Input()
+int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
 {
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_INPUT);
+    inputnode *inp = ctnode->node.inp;
+
+    AddToMList(controlst,ctnode);
+
+    ctnode->slot      = slot;
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"rectangle")==0)
+        {
+            str=GetParams(str);
+            sscanf(str,"%d %d %d %d",\
+                   &inp->rectangle.x,\
+                   &inp->rectangle.y,\
+                   &inp->rectangle.w,\
+                   &inp->rectangle.h);
+        }
+        else if (strCMP(str,"aux_hotspot")==0)
+        {
+            str=GetParams(str);
+            sscanf(str,"%d %d %d %d",\
+                   &inp->hotspot.x,\
+                   &inp->hotspot.y,\
+                   &inp->hotspot.w,\
+                   &inp->hotspot.h);
+        }
+        else if (strCMP(str,"cursor_animation")==0)
+        {
+            str=GetParams(str);
+            char file[16];
+            sscanf(str,"%s",file);
+            str = GetFilePath(file);
+            if (str!=NULL)
+                inp->cursor = LoadAnimImage(str,0x00);
+        }
+        else if (strCMP(str,"cursor_animation_frames")==0)
+        {
+            str=GetParams(str);
+            inp->frames = atoi(str);
+        }//if (str[0] == '}')
+    }//while (!feof(fl))
 
 }
 
@@ -220,14 +326,11 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
     char *str;
 
 
-    ctrlnode *ctnode = new (ctrlnode);
-    slotnode *slut = new (slotnode);
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_SLOT);
+    slotnode *slut = ctnode->node.slot;
 
     AddToMList(controlst,ctnode);
-    ctnode->type      = CTRL_SLOT;
-    ctnode->node.slot = slut;
     ctnode->slot      = slot;
-    ctnode->func      = control_slot;
     slut->srf         = NULL;
 
     while (!feof(fl))
@@ -311,12 +414,11 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
 
     SetgVarInt(slot,0);
 
-    ctrlnode *ctnode  = new (ctrlnode);
-    pushnode *psh     = new (pushnode);
-    ctnode->type      = CTRL_PUSH;
-    ctnode->node.push = psh;
+
+
+    ctrlnode *ctnode  = Ctrl_CreateNode(CTRL_PUSH);
+    pushnode *psh     = ctnode->node.push;
     ctnode->slot      = slot;
-    ctnode->func      = control_push;
 
     psh->cursor       = CURSOR_IDLE;
 
@@ -402,7 +504,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     }
     else if (strCMP(ctrltp,"input")==0)
     {
-
+        Parse_Control_Input(controlst,fl,slot);
     }
     else if (strCMP(ctrltp,"save")==0)
     {
@@ -442,35 +544,32 @@ void ProcessControls(MList *ctrlst)
     }
 }
 
+void DeleteSelControl(ctrlnode *nod)
+{
+    switch (nod->type)
+        {
+        case CTRL_PUSH:
+            delete nod->node.push;
+        break;
+        case CTRL_SLOT:
+            if (nod->node.slot->srf)
+                SDL_FreeSurface(nod->node.slot->srf);
+            delete nod->node.slot;
+        break;
+        }
 
+    delete nod;
+}
 
 void DeleteControlList(MList *lst)
 {
-    pushnode *psh;
-    slotnode *slt;
 
     StartMList(lst);
     while (!eofMList(lst))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(lst);
 
-
-        switch (nod->type)
-        {
-        case CTRL_PUSH:
-            psh=nod->node.push;
-            delete psh;
-            break;
-        case CTRL_SLOT:
-            slt=nod->node.slot;
-            if (slt->srf)
-                SDL_FreeSurface(slt->srf);
-            delete slt;
-            break;
-        }
-
-
-        delete nod;
+        DeleteSelControl(nod);
 
         NextMList(lst);
     }
@@ -489,22 +588,7 @@ void FlushControlList(MList *lst)
         ctrlnode *nod=(ctrlnode *)DataMList(lst);
 
 
-        switch (nod->type)
-        {
-        case CTRL_PUSH:
-            psh=nod->node.push;
-            delete psh;
-            break;
-        case CTRL_SLOT:
-            slt=nod->node.slot;
-            if (slt->srf)
-                SDL_FreeSurface(slt->srf);
-            delete slt;
-            break;
-        }
-
-
-        delete nod;
+        DeleteSelControl(nod);
 
         NextMList(lst);
     }
