@@ -365,7 +365,6 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
 
 
-
     MList *all = GetAction_res_List();
     StartMList(all);
     while (!eofMList(all))
@@ -411,9 +410,9 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     nod->framerate = GetIntVal(framerate);
 
     if (nod->framerate != 0)
-        nod->framerate = ceil(15.0 / float(nod->framerate));
+        nod->framerate = ceil(30.0 / float(nod->framerate));
 
-    nod->nexttick = nod->framerate;
+    nod->nexttick = 0;//nod->framerate;
     nod->loops=0;
 
     if (strcasestr(file,"avi")!=NULL)
@@ -430,6 +429,11 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
         nod->end= GetIntVal(en) *2;
 
         SMPEG_renderFrame(nod->anim.avi->mpg,nod->start+1);
+        SMPEG_Info inf;
+        SMPEG_getinfo(nod->anim.avi->mpg,&inf);
+
+        if (nod->framerate == 0)
+            nod->framerate = ceil(30.0*(inf.current_fps/ 10000.0))+1;
 
     }
     else
@@ -444,6 +448,9 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
         nod->start= GetIntVal(st);
         nod->end= GetIntVal(en);
+
+        if (nod->framerate == 0)
+            nod->framerate = ceil(30.0*(nod->anim.rlf->info.frames / 10000.0))+1;
 
     }
 

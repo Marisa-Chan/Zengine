@@ -25,6 +25,7 @@ ctrlnode *Ctrl_CreateNode(int type)
             tmp->node.inp = new(inputnode);
             tmp->func = control_input;
             tmp->node.inp->cursor = NULL;
+            tmp->node.inp->text   = NULL;
         break;
 
         case CTRL_SLOT:
@@ -115,8 +116,12 @@ void control_input(ctrlnode *ct)
     if (mousein)
     {
        // if (Mouse_IsCurrentCur(CURSOR_IDLE))
-                Mouse_SetCursor(CURSOR_ACTIVE);
-
+        Mouse_SetCursor(CURSOR_ACTIVE);
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+            FocusInput = ct->slot;
+            FlushMouseBtn(SDL_BUTTON_LEFT);
+        }
     }
 }
 
