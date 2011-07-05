@@ -597,6 +597,11 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     tmp->nodes.node_sync->syncto = syncto;
 
+    if (getGNode(syncto)->node_type == NODE_TYPE_ANIMPRE)
+    {
+        getGNode(syncto)->nodes.node_animpre->framerate=0;
+    }
+
     char *filp=GetFilePath(a3);
 
     if (tmp->nodes.node_sync->chn == -1 || filp == NULL)
