@@ -285,7 +285,7 @@ void GameLoop()
     }
 
 
-    char savefile[16];
+    /*char savefile[16];
 
     sprintf(savefile,"Save%d.sav",SaveSlot);
 
@@ -302,16 +302,16 @@ void GameLoop()
     if (KeyHit(SDLK_F5))
     {
         ScrSys_PrepareSaveBuffer();
-        ScrSys_SaveGame(SaveSlot);
+//        ScrSys_SaveGame(SaveSlot);
     }
     if (KeyHit(SDLK_F8))
     {
-        ScrSys_LoadGame(SaveSlot);
-    }
+//        ScrSys_LoadGame(SaveSlot);
+    }*/
 
     EasterEggsAndDebug();
 
-    stringColor(screen,0,470,savefile,0xFFFFFFFF);
+    //stringColor(screen,0,470,savefile,0xFFFFFFFF);
 
     SDL_Flip(screen);
 }

@@ -115,8 +115,14 @@ void Rend_DrawImageToGamescr(anim_surf *scr,int x, int y, int frame)
 
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y)
 {
-    if (scrbuf)
+    if (screen)
         DrawImageToSurf(scr,x,y+GAME_Y,screen);
+}
+
+void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame)
+{
+    if (screen)
+        DrawAnimImageToSurf(scr,x,y+GAME_Y,frame,screen);
 }
 
 void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y)
@@ -349,7 +355,7 @@ void Rend_RenderFunc()
         Rend_PanaRender();
 
 
-    Ctrl_DrawSlots();
+    Ctrl_DrawControls();
 
     Rend_ProcessSubs();
 
@@ -444,4 +450,9 @@ struct_SubRect *Rend_GetSubById( int id)
     }
 
     return NULL;
+}
+
+SDL_Surface **Rend_GetGameScreen()
+{
+    return &scrbuf;
 }

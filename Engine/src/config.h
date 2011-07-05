@@ -45,7 +45,8 @@
 
 
 //Save
-#define SAVEBUFFER_SIZE VAR_SLOTS_MAX*4+12+16+8+8+100*16
-
+#define SAVEBUFFER_SIZE     VAR_SLOTS_MAX*4+12+16+8+8+100*16
+#define MAX_SAVES           100
+#define SAVE_NAME_MAX_LEN   20
 
 #endif // CONFIG_H_INCLUDED

@@ -1,4 +1,3 @@
-
 #include "System.h"
 
 int FocusInput=0;
@@ -14,25 +13,45 @@ ctrlnode *Ctrl_CreateNode(int type)
 
     switch(type)
     {
-        case CTRL_PUSH:
-            tmp->type = CTRL_PUSH;
-            tmp->node.push = new(pushnode);
-            tmp->func = control_push;
+    case CTRL_PUSH:
+        tmp->type = CTRL_PUSH;
+        tmp->node.push = new(pushnode);
+        tmp->func = control_push;
         break;
 
-        case CTRL_INPUT:
-            tmp->type = CTRL_INPUT;
-            tmp->node.inp = new(inputnode);
-            tmp->func = control_input;
-            tmp->node.inp->cursor = NULL;
-            tmp->node.inp->text   = NULL;
+    case CTRL_INPUT:
+        tmp->type = CTRL_INPUT;
+        tmp->node.inp = new(inputnode);
+        tmp->func = control_input;
+        tmp->node.inp->rect = NULL;
+        tmp->node.inp->cursor = NULL;
+        tmp->node.inp->frame = 0;
+        tmp->node.inp->readonly = false;
+        tmp->node.inp->textwidth = 0;
+        tmp->node.inp->textchanged = true;
+        tmp->node.inp->enterkey  = false;
+        memset(tmp->node.inp->text,0,SAVE_NAME_MAX_LEN+1);
         break;
 
-        case CTRL_SLOT:
-            tmp->type = CTRL_SLOT;
-            tmp->node.slot = new(slotnode);
-            tmp->func = control_slot;
-            tmp->node.slot->srf = NULL;
+    case CTRL_SLOT:
+        tmp->type = CTRL_SLOT;
+        tmp->node.slot = new(slotnode);
+        tmp->func = control_slot;
+        tmp->node.slot->srf = NULL;
+        break;
+
+    case CTRL_SAVE:
+        tmp->type = CTRL_SAVE;
+        tmp->node.svld = new(saveloadnode);
+        tmp->func = control_save;
+        for (int i=0; i<MAX_SAVES; i++)
+        {
+            tmp->node.svld->inputslot[i] = -1;
+            tmp->node.svld->input_nodes[i] = NULL;
+            memset(tmp->node.svld->Names[i],0,SAVE_NAME_MAX_LEN+1);
+        }
+
+
         break;
 
     };
@@ -53,8 +72,100 @@ bool Ctrl_Eligeblity(int obj, slotnode *slut)
     return eli;
 }
 
+void control_slot_draw(ctrlnode *nod)
+{
+    slotnode *slut = nod->node.slot;
 
-void Ctrl_DrawSlots()
+    //rectangleRGBA(screen,slut->hotspot.x,slut->hotspot.y+GAME_Y,slut->hotspot.w,slut->hotspot.h+GAME_Y,255,0,0,255);
+
+
+    int tmp1 = GetgVarInt(nod->slot);
+    //printf("%d %d\n",nod->slot,tmp1);
+    bool in = Ctrl_Eligeblity(tmp1,slut);
+
+    if (in && tmp1!=GetgVarInt(9))
+    {
+        if (slut->srf==NULL)
+        {
+            char bff[16];
+            sprintf(bff,"G0ZYU%2.2x1.tga",tmp1);
+            slut->srf=IMG_Load(GetFilePath(bff));
+            ConvertImage(&slut->srf);
+            SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
+        }
+
+        Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
+    }
+    else
+    {
+        if (slut->srf != NULL)
+        {
+            SDL_FreeSurface(slut->srf);
+            slut->srf=NULL;
+        }
+
+    }
+
+}
+
+void control_input_draw(ctrlnode *ct)
+{
+    inputnode *inp = ct->node.inp;
+
+    if (strlen(inp->text))
+    {
+        if (inp->textchanged)
+        {
+            SDL_FillRect(inp->rect,NULL,0);
+
+            struct_font_style style;
+            style.blue  = 255;
+            style.green = 255;
+            style.red   = 255;
+            strcpy(style.fontname,"Courier New");
+            style.bold       = SUB_STYLE_OFF;
+            style.escapement = 0;
+            style.italic     = SUB_STYLE_OFF;
+            style.justify    = SUB_JUSTIFY_LEFT;
+            style.newline    = 0;
+            style.size       = 14;
+            style.skipcolor  = SUB_STYLE_OFF;
+            style.strikeout  = SUB_STYLE_OFF;
+            style.underline  = SUB_STYLE_OFF;
+
+            inp->textwidth = sub_DrawTextToRect(inp->text,&style,inp->rect);
+            inp->textchanged = false;
+        }
+        Rend_DrawImageUpGamescr(inp->rect,inp->rectangle.x,inp->rectangle.y);
+    }
+    else
+        inp->textwidth = 0;
+
+
+    if (FocusInput == ct->slot)
+    {
+
+        if (inp->readonly)
+        {
+
+        }
+        else
+        {
+
+            if (inp->cursor != NULL)
+            {
+                Rend_DrawImageUpGamescr(inp->cursor,inp->rectangle.x + inp->textwidth,inp->rectangle.y,inp->frame);
+                if (Get2thBeat())
+                    inp->frame++;
+                if (inp->frame >= inp->cursor->info.frames)
+                    inp->frame = 0;
+            }
+        }
+
+    }
+}
+
+void Ctrl_DrawControls()
 {
     MList *ctrl = Getctrl();
     StartMList(ctrl);
@@ -63,40 +174,11 @@ void Ctrl_DrawSlots()
     {
         ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
         if (nod->type == CTRL_SLOT)
-        {
-            slotnode *slut = nod->node.slot;
+            control_slot_draw(nod);
+        else if (nod->type == CTRL_INPUT)
+            control_input_draw(nod);
 
-            //rectangleRGBA(screen,slut->hotspot.x,slut->hotspot.y+GAME_Y,slut->hotspot.w,slut->hotspot.h+GAME_Y,255,0,0,255);
 
-
-            int tmp1 = GetgVarInt(nod->slot);
-            //printf("%d %d\n",nod->slot,tmp1);
-            bool in = Ctrl_Eligeblity(tmp1,slut);
-
-            if (in && tmp1!=GetgVarInt(9))
-            {
-                if (slut->srf==NULL)
-                {
-                    char bff[16];
-                    sprintf(bff,"G0ZYU%2.2x1.tga",tmp1);
-                    slut->srf=IMG_Load(GetFilePath(bff));
-                    ConvertImage(&slut->srf);
-                    SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
-                }
-
-                Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
-            }
-            else
-            {
-                if (slut->srf != NULL)
-                {
-                    SDL_FreeSurface(slut->srf);
-                    slut->srf=NULL;
-                }
-
-            }
-
-        }
         NextMList(ctrl);
     }
 }
@@ -107,16 +189,72 @@ void control_input(ctrlnode *ct)
     inputnode *inp = ct->node.inp;
     bool mousein = false;
 
-    if ( inp->hotspot.x <= Rend_GetMouseGameX() &&\
-         inp->hotspot.w >= Rend_GetMouseGameX() &&\
-         inp->hotspot.y <= Rend_GetMouseGameY() &&\
-         inp->hotspot.h >= Rend_GetMouseGameY() )
-        mousein = true;
+    if (inp->readonly)
+    {
+        if ( inp->rectangle.x <= Rend_GetMouseGameX() &&\
+                inp->rectangle.w >= Rend_GetMouseGameX() &&\
+                inp->rectangle.y <= Rend_GetMouseGameY() &&\
+                inp->rectangle.h >= Rend_GetMouseGameY() )
+            mousein = true;
+    }
+    else
+    {
+        if ( inp->hotspot.x <= Rend_GetMouseGameX() &&\
+                inp->hotspot.w >= Rend_GetMouseGameX() &&\
+                inp->hotspot.y <= Rend_GetMouseGameY() &&\
+                inp->hotspot.h >= Rend_GetMouseGameY() )
+            mousein = true;
+    }
+
+    if (FocusInput == ct->slot)
+        if (!inp->readonly)
+        {
+            if (KeyAnyHit())
+            {
+                SDLKey key = GetLastKey();
+                int tmplen = strlen(inp->text);
+
+                if (key>=SDLK_0 && key<=SDLK_9 ||
+                        key>=SDLK_a && key<=SDLK_z ||
+                        key==SDLK_SPACE)
+                {
+                    if (tmplen < SAVE_NAME_MAX_LEN)
+                    {
+                        inp->text[tmplen] = key;
+                        inp->textchanged  = true;
+                    }
+                }
+                else if(key == SDLK_BACKSPACE)
+                {
+                    if (tmplen > 0)
+                    {
+                        inp->text[tmplen-1] = 0x0;
+                        inp->textchanged  = true;
+                    }
+                }
+                else if(key == SDLK_RETURN)
+                {
+                    if (tmplen > 0)
+                        inp->enterkey = true;
+                }
+                else if(key == SDLK_TAB)
+                {
+
+                }
+
+            }
+        }
+        else
+        {
+            SDL_Delay(200);
+            FocusInput=0;
+            inp->enterkey = true;
+        }
 
     if (mousein)
     {
-       // if (Mouse_IsCurrentCur(CURSOR_IDLE))
-        Mouse_SetCursor(CURSOR_ACTIVE);
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(CURSOR_ACTIVE);
         if (MouseUp(SDL_BUTTON_LEFT))
         {
             FocusInput = ct->slot;
@@ -131,9 +269,9 @@ void control_slot(ctrlnode *ct)
     bool mousein = false;
 
     if ( slut->hotspot.x <= Rend_GetMouseGameX() &&\
-         slut->hotspot.w >= Rend_GetMouseGameX() &&\
-         slut->hotspot.y <= Rend_GetMouseGameY() &&\
-         slut->hotspot.h >= Rend_GetMouseGameY() )
+            slut->hotspot.w >= Rend_GetMouseGameX() &&\
+            slut->hotspot.y <= Rend_GetMouseGameY() &&\
+            slut->hotspot.h >= Rend_GetMouseGameY() )
         mousein = true;
 
     if (mousein)
@@ -181,10 +319,10 @@ void control_push(ctrlnode *ct)
     pushnode *psh = ct->node.push;
 
     if ( psh->x          <= Rend_GetMouseGameX() &&\
-         psh->x+psh->w   >= Rend_GetMouseGameX() &&\
-         psh->y          <= Rend_GetMouseGameY() &&\
-         psh->y+psh->h   >= Rend_GetMouseGameY() )
-            mousein = true;
+            psh->x+psh->w   >= Rend_GetMouseGameX() &&\
+            psh->y          <= Rend_GetMouseGameY() &&\
+            psh->y+psh->h   >= Rend_GetMouseGameY() )
+        mousein = true;
 
     if (mousein)
     {
@@ -205,6 +343,44 @@ void control_push(ctrlnode *ct)
     }
 }
 
+
+void control_save(ctrlnode *ct)
+{
+    saveloadnode *sv = ct->node.svld;
+    for (int i=0; i<MAX_SAVES; i++)
+        if (sv->inputslot[i] != -1)
+            if (sv->input_nodes[i]->node.inp->enterkey)
+                if(sv->forsaving)
+                {
+                    FILE *f = fopen("inquis.sav","wb");
+
+                    for (int j=0; j<MAX_SAVES; j++)
+                        if (j!=i)
+                            fprintf(f,"%s\r\n",sv->Names[j]);
+                        else
+                            fprintf(f,"%s\r\n",sv->input_nodes[i]->node.inp->text);
+
+                    fclose(f);
+
+                    char fln[32];
+
+                    sprintf(fln,"inqsav%d.sav",i+1);
+
+                    ScrSys_SaveGame(fln);
+                    SetNeedLocate('0','0','0','0',0);
+                    break;
+                }
+                else
+                {
+                    char fln[32];
+
+                    sprintf(fln,"inqsav%d.sav",i+1);
+
+                    ScrSys_LoadGame(fln);
+                    break;
+                }
+
+}
 
 
 int Parse_Control_Flat()
@@ -257,10 +433,114 @@ int Parse_Control_Panorama(FILE *fl)
 
     }
 
-  //  printf("%f\n",angle);
-  //  printf("%f\n",k);
+    //  printf("%f\n",angle);
+    //  printf("%f\n",k);
 
     Rend_SetFishTable(angle,k);
+
+}
+
+int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
+{
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_SAVE);
+    saveloadnode *sv = ctnode->node.svld;
+
+    AddToMList(controlst,ctnode);
+
+    ctnode->slot      = slot;
+    SetDirectgVarInt(slot,0);
+
+    FILE *f = fopen("inquis.sav","rb");
+    if (f == NULL)
+    {
+        f = fopen("inquis.sav","wb");
+        for(int i=0; i< MAX_SAVES; i++)
+            fprintf(f,"\r\n");
+        fseek(f,0,SEEK_SET);
+    }
+
+    for (int i=0; i<MAX_SAVES; i++)
+    {
+        fgets(buf,FILE_LN_BUF,f);
+        memset(sv->Names[i],0,SAVE_NAME_MAX_LEN+1);
+        str = TrimRight(buf);
+        if (strlen(str)>0)
+        {
+            char fln[32];
+            sprintf(fln,"inqsav%d.sav",i+1);
+            FILE *d = fopen(fln,"rb");
+            if (d!= NULL)
+            {
+                strcpy(sv->Names[i],str);
+                fclose(d);
+            }
+        }
+    }
+
+    fclose(f);
+
+
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"savebox")==0)
+        {
+            str=GetParams(str);
+            int ctrlslot, saveslot;
+            sscanf(str,"%d %d",&saveslot,&ctrlslot);
+
+            saveslot--;
+
+            ctrlnode *nd = GetControlByID(ctrlslot);
+            if (nd != NULL)
+                if (nd->type == CTRL_INPUT)
+                {
+                    strcpy(nd->node.inp->text,sv->Names[saveslot]);
+                    nd->node.inp->textchanged = true;
+                    sv->inputslot[saveslot] = ctrlslot;
+                    sv->input_nodes[saveslot] = nd;
+                }
+
+
+        }
+        else if (strCMP(str,"control_type")==0)
+        {
+            str=GetParams(str);
+            if (strCMP(str,"save") == 0)
+                sv->forsaving = true;
+            else if (strCMP(str,"restore") == 0)
+                sv->forsaving = false;
+            else
+                printf("Unknown control_type: %s\n",str);
+
+        }
+        else
+        {
+            printf("Unknown parameter for save control: %s\n",str);
+        }
+
+    }//while (!feof(fl))
+
+    for (int i=0; i< MAX_SAVES; i++)
+        if (sv->inputslot[i] != -1)
+        {
+            ctrlnode *nd = sv->input_nodes[i];
+            if (nd != NULL)
+                if (nd->type == CTRL_INPUT)
+                    nd->node.inp->readonly = !sv->forsaving;
+        }
 
 }
 
@@ -270,6 +550,7 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
     char buf[FILE_LN_BUF];
     char *str;
 
+    FocusInput = 0;
 
     ctrlnode *ctnode = Ctrl_CreateNode(CTRL_INPUT);
     inputnode *inp = ctnode->node.inp;
@@ -277,6 +558,7 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
     AddToMList(controlst,ctnode);
 
     ctnode->slot      = slot;
+    SetDirectgVarInt(slot,0);
 
     while (!feof(fl))
     {
@@ -296,6 +578,8 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
                    &inp->rectangle.y,\
                    &inp->rectangle.w,\
                    &inp->rectangle.h);
+
+            inp->rect = CreateSurface(inp->rectangle.w-inp->rectangle.x,inp->rectangle.h-inp->rectangle.y);
         }
         else if (strCMP(str,"aux_hotspot")==0)
         {
@@ -306,20 +590,20 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
                    &inp->hotspot.w,\
                    &inp->hotspot.h);
         }
+        else if (strCMP(str,"cursor_animation_frames")==0)
+        {
+            // str=GetParams(str);
+            //  inp->frame = atoi(str);
+        }//if (str[0] == '}')
         else if (strCMP(str,"cursor_animation")==0)
         {
             str=GetParams(str);
             char file[16];
+
             sscanf(str,"%s",file);
-            str = GetFilePath(file);
-            if (str!=NULL)
-                inp->cursor = LoadAnimImage(str,0x00);
+            inp->cursor = LoadAnimImage(file,0);
         }
-        else if (strCMP(str,"cursor_animation_frames")==0)
-        {
-            str=GetParams(str);
-            inp->frames = atoi(str);
-        }//if (str[0] == '}')
+
     }//while (!feof(fl))
 
 }
@@ -513,7 +797,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     }
     else if (strCMP(ctrltp,"save")==0)
     {
-
+        Parse_Control_Save(controlst,fl,slot);
     }
     else if (strCMP(ctrltp,"slot")==0)
     {
@@ -542,8 +826,8 @@ void ProcessControls(MList *ctrlst)
 #endif
 
         if (!(ScrSys_GetFlag(nod->slot) & FLAG_DISABLED))  //(nod->enable)
-          if (nod->func != NULL)
-             nod->func(nod);
+            if (nod->func != NULL)
+                nod->func(nod);
 
         PrevMList(ctrlst);
     }
@@ -552,16 +836,26 @@ void ProcessControls(MList *ctrlst)
 void DeleteSelControl(ctrlnode *nod)
 {
     switch (nod->type)
-        {
-        case CTRL_PUSH:
-            delete nod->node.push;
+    {
+    case CTRL_PUSH:
+        delete nod->node.push;
         break;
-        case CTRL_SLOT:
-            if (nod->node.slot->srf)
-                SDL_FreeSurface(nod->node.slot->srf);
-            delete nod->node.slot;
+    case CTRL_SLOT:
+        if (nod->node.slot->srf)
+            SDL_FreeSurface(nod->node.slot->srf);
+        delete nod->node.slot;
         break;
-        }
+    case CTRL_INPUT:
+        if (nod->node.inp->cursor)
+            FreeAnimImage(nod->node.inp->cursor);
+        if (nod->node.inp->rect)
+            SDL_FreeSurface(nod->node.inp->rect);
+        delete nod->node.inp;
+        break;
+    case CTRL_SAVE:
+        delete nod->node.svld;
+        break;
+    }
 
     delete nod;
 }
@@ -584,9 +878,6 @@ void DeleteControlList(MList *lst)
 
 void FlushControlList(MList *lst)
 {
-    pushnode *psh;
-    slotnode *slt;
-
     StartMList(lst);
     while (!eofMList(lst))
     {
@@ -599,4 +890,22 @@ void FlushControlList(MList *lst)
     }
 
     FlushMList(lst);
+}
+
+ctrlnode *GetControlByID(int32_t id)
+{
+    MList *lst = Getctrl();
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        ctrlnode *nod=(ctrlnode *)DataMList(lst);
+
+        if (nod->slot == id)
+            return nod;
+
+        NextMList(lst);
+    }
+
+    return NULL;
+
 }

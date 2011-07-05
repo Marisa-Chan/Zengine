@@ -176,8 +176,8 @@ void ScrSys_RereadGNodes();
 struct_action_res *getGNode(int32_t indx);
 void setGNode(int32_t indx, struct_action_res *data);
 
-void ScrSys_SaveGame(int savenumb);
-void ScrSys_LoadGame(int savenumb);
+void ScrSys_SaveGame(char *file);
+void ScrSys_LoadGame(char *file);
 void ScrSys_PrepareSaveBuffer();
 
 struct_action_res *ScrSys_CreateActRes(int type);

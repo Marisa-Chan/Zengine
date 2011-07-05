@@ -357,29 +357,22 @@ void ScrSys_PrepareSaveBuffer()
         SaveCurrentSize = buffpos;
 }
 
-void ScrSys_SaveGame(int savenumb)
+void ScrSys_SaveGame(char *file)
 {
     if (SaveBuffer == NULL)
         return;
 
-    char buf[32];
-
-    sprintf(buf,"inqsav%d.sav",savenumb);
-
-    FILE *f = fopen(buf,"wb");
+    FILE *f = fopen(file,"wb");
 
     fwrite(SaveBuffer,SaveCurrentSize,1,f);
 
     fclose(f);
 }
 
-void ScrSys_LoadGame(int savenumb)
+void ScrSys_LoadGame(char *file)
 {
-    char buf[32];
 
-    sprintf(buf,"inqsav%d.sav",savenumb);
-
-    FILE *f = fopen(buf,"rb");
+    FILE *f = fopen(file,"rb");
 
     if (!f)
         return;
@@ -390,7 +383,7 @@ void ScrSys_LoadGame(int savenumb)
     fread(&tmp,4,1,f);
     if (tmp != 0x47534E5A)
     {
-        printf("Error in save file %d\n",savenumb);
+        printf("Error in save file %s\n",file);
         exit(-1);
     }
 
@@ -436,7 +429,7 @@ void ScrSys_LoadGame(int savenumb)
 
     if (tmp != VAR_SLOTS_MAX*2)
     {
-        printf("Error in save file %d (FLAGS VAR_SLOTS_MAX)\n",savenumb);
+        printf("Error in save file %s (FLAGS VAR_SLOTS_MAX)\n",file);
         exit(-1);
     }
     for (int i=0; i<VAR_SLOTS_MAX;i++)
@@ -450,7 +443,7 @@ void ScrSys_LoadGame(int savenumb)
     fread(&tmp,4,1,f);
     if (tmp != VAR_SLOTS_MAX*2)
     {
-        printf("Error in save file %d (PUZZLE VAR_SLOTS_MAX)\n",savenumb);
+        printf("Error in save file %s (PUZZLE VAR_SLOTS_MAX)\n",file);
         exit(-1);
     }
     for (int i=0; i<VAR_SLOTS_MAX;i++)
@@ -459,6 +452,8 @@ void ScrSys_LoadGame(int savenumb)
         fread(&tmp2,2,1,f);
         SetDirectgVarInt(i,tmp2);
     }
+
+    Rend_SetDelay(2);
 
     ScrSys_ChangeLocation(w,r,n,v,pos,true);
 
@@ -613,7 +608,7 @@ void FillStateBoxFromList(pzllst *lst)
     {
         puzzlenode *pzlnod=(puzzlenode *)DataMList(lst->_list);
 
-        if (pzlnod->flags & FLAG_ONCE_PER_I)
+        if (ScrSys_GetFlag(pzlnod->slot) & FLAG_ONCE_PER_I)
             AddPuzzleToStateBox(pzlnod->slot,pzlnod);
 
         StartMList(pzlnod->CritList);
@@ -650,7 +645,7 @@ void ClearUsedOnOPIPuzz(MList *lst)
     while (!eofMList(lst))
     {
         puzzlenode *nod=(puzzlenode *)DataMList(lst);
-        if (nod->flags & FLAG_ONCE_PER_I)
+        if (ScrSys_GetFlag(nod->slot) & FLAG_ONCE_PER_I)
             SetgVarInt(nod->slot,0);
         NextMList(lst);
     }

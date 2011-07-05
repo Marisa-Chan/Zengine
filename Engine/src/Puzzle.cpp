@@ -399,15 +399,15 @@ int Parse_Puzzle_Flags(puzzlenode *pzl,FILE *fl)
         }
         else if (strCMP(str,"once_per_inst")==0)
         {
-            pzl->flags |= FLAG_ONCE_PER_I;
+            ScrSys_SetFlag(pzl->slot, ScrSys_GetFlag(pzl->slot) | FLAG_ONCE_PER_I);
         }
         else if (strCMP(str,"do_me_now")==0)
         {
-            pzl->flags |= FLAG_DO_ME_NOW;
+            ScrSys_SetFlag(pzl->slot, ScrSys_GetFlag(pzl->slot) | FLAG_DO_ME_NOW);
         }
         else if (strCMP(str,"disabled")==0)
         {
-            pzl->flags |= FLAG_DISABLED;
+            ScrSys_SetFlag(pzl->slot, ScrSys_GetFlag(pzl->slot) | FLAG_DISABLED);
         }
     }
 
@@ -539,7 +539,8 @@ int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr)
     pzl->slot     = slot;
     pzl->CritList = CreateMList();
     pzl->ResList  = CreateMList();
-    pzl->flags    = 0;
+
+    ScrSys_SetFlag(pzl->slot,0);
 
     while (!feof(fl))
     {
@@ -575,7 +576,7 @@ int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr)
 
     }
 
-    if ((pzl->flags & FLAG_ONCE_PER_I ))
+    if ((ScrSys_GetFlag(pzl->slot) & FLAG_ONCE_PER_I ))
         SetgVarInt(slot,0);
 
     if (good == 1)  //All ok? then, adds this puzzle to list
@@ -729,13 +730,13 @@ int execute_puzzle_node(puzzlenode *nod)
 
 int Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
 {
-    if (pzlnod->flags & FLAG_DISABLED)
+    if (ScrSys_GetFlag(pzlnod->slot) & FLAG_DISABLED)
         return ACTION_NORMAL;
 
     if (GetgVarInt(pzlnod->slot) != 1)
     {
         if (pzlnod->owner->exec_times == 0)
-            if (! pzlnod->flags & FLAG_DO_ME_NOW)
+            if (! ScrSys_GetFlag(pzlnod->slot) & FLAG_DO_ME_NOW)
                 return ACTION_NORMAL;
         if (examine_criterias(pzlnod))
         {

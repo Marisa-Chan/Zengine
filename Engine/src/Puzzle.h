@@ -11,7 +11,6 @@ struct puzzlenode
     uint16_t    slot; //puzzle slot
     MList  *CritList; //Criteria list of lists criteria
     MList   *ResList; //results list
-    uint8_t    flags; //flags
     pzllst    *owner;
 };
 

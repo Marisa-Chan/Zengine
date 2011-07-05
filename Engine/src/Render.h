@@ -37,6 +37,7 @@ void Rend_SetReversePana(bool pana);
 void Rend_SetRenderer(int meth);
 void Rend_SetFishTable(double angl, double k);
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
+void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame);
 
 int  Rend_GetRenderer();
 void Rend_ProcessCursor();
@@ -53,6 +54,8 @@ void Rend_ClearSubs();
 void Rend_InitSubList();
 void Rend_ProcessSubs();
 struct_SubRect *Rend_GetSubById( int id);
+
+SDL_Surface **Rend_GetGameScreen();
 
 #define GAMESCREEN_W 640
 #define GAMESCREEN_P 20

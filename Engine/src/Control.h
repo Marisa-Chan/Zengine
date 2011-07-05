@@ -48,10 +48,25 @@ struct inputnode
 {
     Rect rectangle;
     Rect hotspot;
+    SDL_Surface *rect;
     int next_tab;
-    char *text;
+
+    char text[SAVE_NAME_MAX_LEN+1];
+    int16_t textwidth;
+    bool textchanged;
+
     anim_surf *cursor;
-    int  frames;
+    int  frame;
+    bool readonly;
+    bool enterkey;
+};
+
+struct saveloadnode
+{
+    bool forsaving;
+    int32_t  inputslot[MAX_SAVES];
+    ctrlnode *input_nodes[MAX_SAVES];
+    char     Names[MAX_SAVES][SAVE_NAME_MAX_LEN+1];
 };
 
 struct ctrlnode
@@ -60,9 +75,10 @@ struct ctrlnode
     int8_t  type;
     union node
     {
-        slotnode *slot;
-        pushnode *push;
-        inputnode *inp;
+        slotnode     *slot;
+        pushnode     *push;
+        inputnode    *inp;
+        saveloadnode *svld;
 
         void  *unknown;
     } node;
@@ -75,7 +91,7 @@ ctrlnode *Ctrl_CreateNode(int type);
 int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut);
-void Ctrl_DrawSlots();
+void Ctrl_DrawControls();
 
 void DeleteControlList(MList *lst);
 void FlushControlList(MList *lst);
@@ -84,4 +100,8 @@ void FlushControlList(MList *lst);
 void control_slot(ctrlnode *ct);
 void control_push(ctrlnode *ct);
 void control_input(ctrlnode *ct);
+void control_save(ctrlnode *ct);
+
+ctrlnode *GetControlByID(int32_t id);
+
 #endif // CONTROL_H_INCLUDED

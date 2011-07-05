@@ -395,7 +395,7 @@ void sub_DrawSubWithJustify(char *txt, TTF_Font *fnt, SDL_Color clr, SDL_Surface
     SDL_FreeSurface(aaa);
 }
 
-void sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
+int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
 {
 
     TTF_Font *temp_font = GetFontByName(fnt_stl->fontname, fnt_stl->size);
@@ -426,9 +426,11 @@ void sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
     SDL_Color clr= {fnt_stl->red,fnt_stl->green,fnt_stl->blue};
 
 
-    int w,h;
+    int w,h,ww;
 
     TTF_SizeUTF8(temp_font,txt,&w,&h);
+
+    ww=w;
 
     if (w < dst->w)
         sub_DrawSubWithJustify(txt,temp_font,clr,dst,0,fnt_stl->justify);
@@ -484,6 +486,7 @@ void sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
 
 
     }
+    return ww;
 
     TTF_CloseFont(temp_font);
 }

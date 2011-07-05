@@ -1,6 +1,5 @@
 #include "System.h"
 
-extern SDL_Surface *scrbuf;
 extern SDL_Surface *screen;
 
 extern int GAME_Y;
@@ -11,15 +10,17 @@ int action_set_screen(char *params, int aSlot , pzllst *owner)
     printf("        action:set_screen  %s\n",params);
 #endif
 
-    if (scrbuf)
-        SDL_FreeSurface(scrbuf);
+    SDL_Surface **scrbuf = Rend_GetGameScreen();
 
-    scrbuf=IMG_Load(GetFilePath(params));
-    if (!scrbuf)
+    if (*scrbuf)
+        SDL_FreeSurface(*scrbuf);
+
+    *scrbuf=IMG_Load(GetFilePath(params));
+    if (!*scrbuf)
         printf("ERROR:  IMG_Load(%s): %s\n\n",params, IMG_GetError());
     else
     {
-        ConvertImage(&scrbuf);
+        ConvertImage(scrbuf);
     }
 
     return ACTION_NORMAL;
@@ -62,7 +63,7 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
         }
 
         //if (tmp1==0)
-        DrawImageToSurf(tmp,x,y,scrbuf);
+        Rend_DrawImageToGamescr(tmp,x,y);
         //else if (tmp1==1)
         //    DrawImageToSurf(tmp,x-tmp->w/2,y-tmp->h/2,scrbuf);
         SDL_FreeSurface(tmp);

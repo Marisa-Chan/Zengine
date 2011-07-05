@@ -3,11 +3,7 @@
 
 #include "Render.h"
 
-struct struct_one_subtitle{
-    int start;
-    int stop;
-    int sub;
-};
+
 
 #define SUB_STYLE_ON     1
 #define SUB_STYLE_OFF    0
@@ -34,6 +30,12 @@ struct struct_font_style{
     //int statebox O__o
 };
 
+struct struct_one_subtitle{
+    int start;
+    int stop;
+    int sub;
+};
+
 struct struct_textfile{
     int count;
     char *buffer; //for all subs
@@ -55,5 +57,6 @@ struct struct_subtitles{
 struct_subtitles *sub_LoadSubtitles(char *filename);
 int sub_ProcessSub(struct_subtitles *sub, int subtime);
 void sub_DeleteSub(struct_subtitles *sub);
+int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst);
 
 #endif // SUBTITLES_H_INCLUDED
