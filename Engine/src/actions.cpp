@@ -725,6 +725,7 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
         if (strcasecmp(chars,"\"anim\"")==0)
         {
             ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPLAY);
+            ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPRPL);
             ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPRE);
             return ACTION_NORMAL;
         }
