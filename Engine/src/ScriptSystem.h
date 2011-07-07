@@ -74,14 +74,15 @@
 
 #define NODE_TYPE_MUSIC    0
 #define NODE_TYPE_TIMER    1
-#define NODE_TYPE_ANIM     2
+#define NODE_TYPE_ANIMPLAY 2
 #define NODE_TYPE_ANIMPRE  3
-#define NODE_TYPE_PANTRACK 4
-#define NODE_TYPE_TTYTEXT  5
-#define NODE_TYPE_ROTATETO 6
-#define NODE_TYPE_SYNCSND  7
-#define NODE_TYPE_DISTORT  8
-#define NODE_TYPE_REGION   9
+#define NODE_TYPE_ANIMPRPL 4
+#define NODE_TYPE_PANTRACK 5
+#define NODE_TYPE_TTYTEXT  6
+#define NODE_TYPE_ROTATETO 7
+#define NODE_TYPE_SYNCSND  8
+#define NODE_TYPE_DISTORT  9
+#define NODE_TYPE_REGION   10
 
 #define NODE_RET_OK        0
 #define NODE_RET_DELETE    1
@@ -106,9 +107,10 @@ struct struct_action_res
     pzllst     *owner;
     int8_t     node_type;
     union nodes{
-        musicnode   *node_music;
-        animnode    *node_anim;
-        animprenode *node_animpre;
+        musicnode       *node_music;
+        animnode        *node_anim;
+        animnode        *node_animpre;
+        anim_preplay_node *node_animpreplay;
         struct_syncnode *node_sync;
         int          node_timer;
 

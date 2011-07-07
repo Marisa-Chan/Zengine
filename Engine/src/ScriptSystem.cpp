@@ -757,8 +757,14 @@ void ScrSys_ProcessAllRes()
             case NODE_TYPE_TIMER:
                 result = tmr_ProcessTimer(nod);
                 break;
-            case NODE_TYPE_ANIM:
-                result = anim_ProcessAnim(nod);
+            case NODE_TYPE_ANIMPLAY:
+                result = anim_ProcessAnimPlayNode(nod);
+                break;
+            case NODE_TYPE_ANIMPRE:
+                result = anim_ProcessAnimPreNode(nod);
+                break;
+            case NODE_TYPE_ANIMPRPL:
+                result = anim_ProcessAnimPrePlayNode(nod);
                 break;
             case NODE_TYPE_SYNCSND:
                 result = snd_ProcessSync(nod);
@@ -809,11 +815,14 @@ int ScrSys_DeleteNode(struct_action_res *nod)
     case NODE_TYPE_TIMER:
         return tmr_DeleteTimer(nod);
         break;
-    case NODE_TYPE_ANIM:
-        return anim_DeleteAnimNod(nod);
+    case NODE_TYPE_ANIMPLAY:
+        return anim_DeleteAnimPlay(nod);
         break;
     case NODE_TYPE_ANIMPRE:
         return anim_DeleteAnimPreNod(nod);
+        break;
+    case NODE_TYPE_ANIMPRPL:
+        return anim_DeleteAnimPrePlayNode(nod);
         break;
     case NODE_TYPE_SYNCSND:
         return snd_ProcessSync(nod);

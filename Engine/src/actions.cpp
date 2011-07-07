@@ -373,89 +373,51 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
         struct_action_res *nd = (struct_action_res *)DataMList(all);
 
-        if (nd->node_type == NODE_TYPE_ANIM)
+        if (nd->node_type == NODE_TYPE_ANIMPLAY)
             if (nd->slot == aSlot)
             {
-                anim_DeleteAnimNod(nd);
+                anim_DeleteAnimPlay(nd);
                 DeleteCurrent(all);
             }
 
         NextMList(all);
     }
 
-
-
-    SetgVarInt(aSlot, 1);
-
-
-
-    struct_action_res *glob = anim_CreateAnimNode();
+    struct_action_res *glob = anim_CreateAnimPlayNode();
 
     animnode *nod = glob->nodes.node_anim;
 
     ScrSys_AddToActResList(glob);
 
 
+    if (aSlot>0)
+    {
+        SetgVarInt(aSlot, 1);
+        setGNode(aSlot,glob);
+    }
 
-    setGNode(aSlot,glob);
 
     glob->slot  = aSlot;
     glob->owner = owner;
 
-    nod->x = GetIntVal(x);
-    nod->y = GetIntVal(y);
-    nod->w = GetIntVal(w) - nod->x +1;
-    nod->h = GetIntVal(h) - nod->y +1;
-    nod->mask = GetIntVal(mask);
-    nod->loopcnt   = GetIntVal(loop);
-    nod->framerate = GetIntVal(framerate);
+    int mask2,r,g,b;
+    r=GetIntVal(mask);
+    b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
+    g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
+    r=FiveBitToEightBitLookupTable[(r & 0x1F)];
+    mask2=r | g<<8 | b<<16;
 
-    if (nod->framerate != 0)
-        nod->framerate = ceil(30.0 / float(nod->framerate));
+    anim_LoadAnim(nod,file,0,0,mask2,GetIntVal(framerate));
 
-    nod->nexttick = 0;//nod->framerate;
-    nod->loops=0;
+    anim_PlayAnim(nod,GetIntVal(x),
+                      GetIntVal(y),
+                      GetIntVal(w) - GetIntVal(x) +1,
+                      GetIntVal(h) - GetIntVal(y) +1,
+                      GetIntVal(st),
+                      GetIntVal(en),
+                      GetIntVal(loop));
 
-    if (strcasestr(file,"avi")!=NULL)
-    {
-        nod->anim.avi = new(anim_avi);
-        nod->vid=true;
 
-        nod->anim.avi->mpg=SMPEG_new(GetFilePath(file),&nod->anim.avi->inf,0);
-        nod->anim.avi->img = CreateSurface(nod->w,nod->h);
-        SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
-        SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
-
-        nod->start= GetIntVal(st) *2;
-        nod->end= GetIntVal(en) *2;
-
-        SMPEG_renderFrame(nod->anim.avi->mpg,nod->start+1);
-        SMPEG_Info inf;
-        SMPEG_getinfo(nod->anim.avi->mpg,&inf);
-
-        if (nod->framerate == 0)
-            nod->framerate = ceil(30.0*(inf.current_fps/ 10000.0))+1;
-
-    }
-    else
-    {
-        int r=GetIntVal(mask),g,b;
-        b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
-        g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
-        r=FiveBitToEightBitLookupTable[(r & 0x1F)];
-
-        nod->anim.rlf = LoadAnimImage(file,r | g<<8 | b<<16);
-        nod->vid=false;
-
-        nod->start= GetIntVal(st);
-        nod->end= GetIntVal(en);
-
-        if (nod->framerate == 0)
-            nod->framerate = ceil(30.0*(nod->anim.rlf->info.frames / 10000.0))+1;
-
-    }
-
-    nod->CurFr = nod->start;
 
     return ACTION_NORMAL;
 }
@@ -599,7 +561,7 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     if (getGNode(syncto)->node_type == NODE_TYPE_ANIMPRE)
     {
-        //getGNode(syncto)->nodes.node_animpre->framerate=0;
+        getGNode(syncto)->nodes.node_animpre->framerate=2; //~15fps hack
     }
 
     char *filp=GetFilePath(a3);
@@ -652,16 +614,18 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
     struct_action_res *pre = anim_CreateAnimPreNode();
 
     //%s %d %d %d %f
-    //name     ? ? ?   framerate
+    //name     ? ? mask framerate
     //in zgi   0 0 0
     sscanf(params,"%s %s %s %s %s", name,u1,u2,u3,u4);
 
-    pre->nodes.node_animpre->fil = (char *)malloc(255);
+    anim_LoadAnim(pre->nodes.node_animpre,
+                        name,
+                        0,0,
+                        GetIntVal(u3),
+                        GetIntVal(u4));
 
-    strcpy(pre->nodes.node_animpre->fil,name);
     pre->slot = aSlot;
-
-    pre->nodes.node_animpre->framerate = GetIntVal(u4);
+    pre->owner = owner;
 
     ScrSys_AddToActResList(pre);
 
@@ -704,13 +668,30 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     if (pre->node_type != NODE_TYPE_ANIMPRE)
         return ACTION_NORMAL;
 
-    sprintf(buff,"%s %d %d %d %d %d %d %d %d %d %d %d" ,pre->nodes.node_animpre->fil,\
-            x, y, w, h, start, end, loop, 0, 0, 0, pre->nodes.node_animpre->framerate);
+    struct_action_res *nod = anim_CreateAnimPlayPreNode();
 
-    if (aSlot == 0)
-        action_animplay(buff,slot,owner);
-    else
-        action_animplay(buff,aSlot,owner);
+    anim_preplay_node *tmp = nod->nodes.node_animpreplay;
+
+    tmp->playerid = 0;
+    tmp->point = pre->nodes.node_animpre;
+    tmp->x = x;
+    tmp->y = y;
+    tmp->w = w-x;
+    tmp->h = h-y;
+    tmp->start = start;
+    tmp->end = end;
+    tmp->loop = loop;
+    tmp->pointingslot = slot;
+
+    nod->slot = aSlot;
+    nod->owner = owner;
+
+    ScrSys_AddToActResList(nod);
+
+    if (aSlot>0)
+    {
+        setGNode(aSlot,nod);
+    }
 
     //SetgVarInt(GetIntVal(chars),2);
 
@@ -743,7 +724,7 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
 
         if (strcasecmp(chars,"\"anim\"")==0)
         {
-            ScrSys_FlushResourcesByType(NODE_TYPE_ANIM);
+            ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPLAY);
             ScrSys_FlushResourcesByType(NODE_TYPE_ANIMPRE);
             return ACTION_NORMAL;
         }
