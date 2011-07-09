@@ -93,12 +93,8 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int mask, int fr
     }
     else
     {
-        int r=mask,g,b;
-        b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
-        g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
-        r=FiveBitToEightBitLookupTable[(r & 0x1F)];
 
-        nod->anim.rlf = LoadAnimImage(filename,r | g<<8 | b<<16);
+        nod->anim.rlf = LoadAnimImage(filename,mask);
         nod->vid=false;
 
         if (nod->framerate == 0)
