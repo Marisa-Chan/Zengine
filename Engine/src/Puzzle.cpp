@@ -510,9 +510,15 @@ int Parse_Puzzle_Results(puzzlenode *pzl,FILE *fl)
             good = 1;
             break;
         }
-        else if (strCMP(str,"action:") == 0)
+        else if (strlen(str)>0)
         {
-            Parse_Puzzle_Results_Action(str+7,pzl->ResList);
+            char *str2 = strchr(str,':'); //action: background: event: other
+            if (str2 != NULL)
+                Parse_Puzzle_Results_Action(str2+1,pzl->ResList);
+#ifdef TRACE
+            else
+                printf("Unknown result action: %s\n",str);
+#endif
         }
 
     }
