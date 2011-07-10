@@ -7,7 +7,7 @@
 ////
 
 
-#define VAR_SLOTS_MAX      20000
+#define VAR_SLOTS_MAX      20000 //For nemesis 22320
 #define STATEBOX_STACK_MAX 1024
 #define MaxStateBoxEnts    0x400 //0xFF is very small
 
