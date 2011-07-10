@@ -71,6 +71,28 @@ action_display_message	:reverse it                    [Not used in ZGI]
 action_set_venus	:reverse it                    [Not used in ZGI]
 action_disable_venus	:no comments %)                [Not used in ZGI]
 
+
+------------------FOR NEMESIS--------------------
+Recode "action" to "anything:" because it's decorative construction for script-reading. Nemesis use "action:", "background:" and "event:", but all of them is same.
+Mouse cursors and menu-bar(with animation?) code for nemesis
+
+Controls:
+titler
+fist
+lever
+paint
+hotmovie
+tilt
+safe
+push_toggle (venus_id !)
+
+Actions:
+region
+distort
+display_message
+
+
+
 ------------------License--------------------
 You may use this sources how you want, but must include author name or "based on:%Project name%" text or other link to this project.
 
