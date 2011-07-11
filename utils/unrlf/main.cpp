@@ -174,6 +174,12 @@ void Transpose(uint16_t *src, uint16_t *dst, int width, int height) //width and 
 
 int main(int argc, char *argv[])
 {
+    if (argc < 3)
+    {
+        printf("Usage:\n\nunrlf rotate infile.rlf outfile.tga outfile.anm\n\nrotate\n1 - rotate image\n0 - don't rotate\n");
+        return 0;
+    }
+
     FILE *f=fopen(argv[2],"rb");
     Header hd;
     fread(&hd,1,sizeof(Header),f);

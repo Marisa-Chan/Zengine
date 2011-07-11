@@ -134,6 +134,7 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:change_location(%s)\n",params);
 #endif
+    printf("        action:change_location(%s)\n",params);
     char tmp[4];
     char tmp2[4];
     char tmp3[4];

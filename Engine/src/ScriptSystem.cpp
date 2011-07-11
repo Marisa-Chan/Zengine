@@ -473,8 +473,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     temp.View  = v2;
     temp.X     = X;
 
-
-    if (GetgVarInt(SLOT_WORLD)!= SystemWorld &&
+    if (GetgVarInt(SLOT_WORLD)!= SystemWorld ||
         GetgVarInt(SLOT_ROOM) != SystemRoom  )
     {
         if (temp.World == SystemWorld &&
