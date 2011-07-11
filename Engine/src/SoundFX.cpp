@@ -179,8 +179,8 @@ int snd_DeleteSync(struct_action_res *nod)
         if (Mix_Playing(nod->nodes.node_sync->chn))
             Mix_HaltChannel(nod->nodes.node_sync->chn);
 
-    Mix_UnregisterAllEffects(nod->nodes.node_sync->chn);
-    UnlockChan(nod->nodes.node_sync->chn);
+        Mix_UnregisterAllEffects(nod->nodes.node_sync->chn);
+        UnlockChan(nod->nodes.node_sync->chn);
     }
     Mix_FreeChunk(nod->nodes.node_sync->chunk);
 
@@ -204,8 +204,12 @@ int snd_ProcessSync(struct_action_res *nod)
     if (mnod->sub != NULL)
         sub_ProcessSub(mnod->sub,GetChanTime(mnod->chn) / 100);
 
-        if (!Mix_Playing(mnod->chn) || getGNode(mnod->syncto) == NULL)
+    if (!Mix_Playing(mnod->chn) || getGNode(mnod->syncto) == NULL)
         {
+            if (!Mix_Playing(mnod->chn))
+                printf("Not Played \n");
+            else
+                printf("NULL \n");
             snd_DeleteSync(nod);
             return NODE_RET_DELETE;
         }
@@ -235,6 +239,7 @@ int snd_DeletePanTrack(struct_action_res *nod)
         {
             tr_nod->nodes.node_music->pantrack = false;
             Mix_SetPosition(tr_nod->nodes.node_music->chn, 0, tr_nod->nodes.node_music->attenuate);
+            tr_nod->need_delete = true;
         }
 
     delete nod;

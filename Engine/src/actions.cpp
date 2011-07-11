@@ -324,7 +324,15 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         Rend_ProcessSubs();
 
         SDL_Flip(screen);
-        SDL_Delay(1000/anm->inf.current_fps);
+
+
+        int delay = 15;
+        if (anm->inf.current_fps != 0)
+            delay = 1000/anm->inf.current_fps;
+        if (delay > 200 || delay < 0)
+            SDL_Delay(15);
+        else
+            SDL_Delay(delay);
     }
     if (aud!=NULL)
     {
@@ -588,6 +596,7 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
     Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
 
     Mix_PlayChannel(tmp->nodes.node_sync->chn,tmp->nodes.node_sync->chunk,0);
+    LockChan(tmp->nodes.node_sync->chn);
 
     ScrSys_AddToActResList(tmp);
 
@@ -1053,6 +1062,10 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
     {
         struct_action_res *nod = snd_CreatePanTrack();
         nod->nodes.node_pantracking = slot;
+
+        nod->owner = owner;
+        nod->slot  = aSlot;
+
         ScrSys_AddToActResList(nod);
 
         struct_action_res *tmp = getGNode(slot);

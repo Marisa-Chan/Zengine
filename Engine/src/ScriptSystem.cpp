@@ -770,6 +770,7 @@ void ScrSys_ProcessAllRes()
                 result = snd_ProcessSync(nod);
                 break;
 
+            case NODE_TYPE_PANTRACK:
             default:
                 result=NODE_RET_OK;
                 break;
@@ -825,7 +826,10 @@ int ScrSys_DeleteNode(struct_action_res *nod)
         return anim_DeleteAnimPrePlayNode(nod);
         break;
     case NODE_TYPE_SYNCSND:
-        return snd_ProcessSync(nod);
+        return snd_DeleteSync(nod);
+        break;
+    case NODE_TYPE_PANTRACK:
+        return snd_DeletePanTrack(nod);
         break;
     }
 
