@@ -15,6 +15,8 @@ void SaveVol();
 void SilenceVol();
 void RestoreVol();
 
+uint32_t GetChanTime(int i);
+
 int GetLogVol(uint8_t linear);
 
 

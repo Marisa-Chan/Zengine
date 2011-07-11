@@ -92,11 +92,8 @@ int snd_ProcessWav(struct_action_res *nod)
 
         }
 
-        if (GetNBeat(3))
-            mnod->subtime++;
-
         if (mnod->sub != NULL)
-            sub_ProcessSub(mnod->sub,mnod->subtime);
+            sub_ProcessSub(mnod->sub,GetChanTime(mnod->chn) / 100);
 
 
     return NODE_RET_OK;
@@ -112,8 +109,8 @@ int snd_DeleteWav(struct_action_res *nod)
         if (Mix_Playing(nod->nodes.node_music->chn))
             Mix_HaltChannel(nod->nodes.node_music->chn);
 
-    Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
-    UnlockChan(nod->nodes.node_music->chn);
+        Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
+        UnlockChan(nod->nodes.node_music->chn);
     }
     Mix_FreeChunk(nod->nodes.node_music->chunk);
     if (nod->slot != 0)
@@ -149,7 +146,6 @@ struct_action_res *snd_CreateWavNode()
     tmp->nodes.node_music->attenuate  = 0;
     tmp->nodes.node_music->universe   = false;
     tmp->nodes.node_music->sub        = NULL;
-    tmp->nodes.node_music->subtime    = 0;
 
     return tmp;
 }
@@ -168,7 +164,6 @@ struct_action_res *snd_CreateSyncNode()
     tmp->nodes.node_sync->chunk  = NULL;
     tmp->nodes.node_sync->syncto =  0;
     tmp->nodes.node_sync->sub        = NULL;
-    tmp->nodes.node_sync->subtime    = 0;
 
     return tmp;
 }
@@ -205,11 +200,9 @@ int snd_ProcessSync(struct_action_res *nod)
 
     struct_syncnode *mnod = nod->nodes.node_sync;
 
-    if (GetNBeat(3))
-        mnod->subtime++;
 
     if (mnod->sub != NULL)
-        sub_ProcessSub(mnod->sub,mnod->subtime);
+        sub_ProcessSub(mnod->sub,GetChanTime(mnod->chn) / 100);
 
         if (!Mix_Playing(mnod->chn) || getGNode(mnod->syncto) == NULL)
         {

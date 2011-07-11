@@ -6,6 +6,8 @@ int CHANNELS=0;
 
 uint8_t chanvol[TRY_CHANNELS];
 
+uint32_t chantime[TRY_CHANNELS];
+
 bool ChanStatus[TRY_CHANNELS];
 
 int audio_rate = 44100;
@@ -53,7 +55,11 @@ int GetFreeChannel()
 void LockChan(int i)
 {
     if (i>=0 && i < CHANNELS)
-        ChanStatus[i]=true;
+        {
+            ChanStatus[i]=true;
+            chantime[i]=SDL_GetTicks();
+        }
+
 }
 
 void UnlockChan(int i)
@@ -79,4 +85,12 @@ void RestoreVol()
 {
     for (int i=0; i < CHANNELS; i++)
         Mix_Volume(i,chanvol[i]);
+}
+
+uint32_t GetChanTime(int i)
+{
+    if (i>=0 && i < CHANNELS)
+        if  (ChanStatus[i])
+            return SDL_GetTicks() - chantime[i];
+    return 0;
 }
