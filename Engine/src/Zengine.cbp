@@ -42,6 +42,7 @@
 			<Add option="-lSDL_image" />
 			<Add option="-lSDL_gfx" />
 			<Add option="-lSDL_mixer" />
+			<Add option="-lSDL_ttf" />
 			<Add option="-lsmpeg" />
 			<Add option="-lrt" />
 		</Linker>
@@ -80,6 +81,8 @@
 		<Unit filename="./menu.h" />
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
+		<Unit filename="Subtitles.cpp" />
+		<Unit filename="Subtitles.h" />
 		<Extensions>
 			<envvars />
 			<code_completion>

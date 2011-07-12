@@ -85,7 +85,11 @@ int process(FILE *fi, FILE *fo, uint adpcm, uint freq, uint stereo, uint bits) {
 int main(int argc, char **argv) {
 	FILE *fi, *fo; int freq, adpcm, stereo; char c;
 
-	if(argc != 6) return 1;
+	if(argc != 6) 
+	{
+	printf("Usage:\nunraw infile.raw outfile.wav compressed freq stereo\n\ncompressed: 0 - raw; 1 - adpcm\nfreq: 11025; 22050; 44100\nstereo: 0 - mono; 1 - stereo\n\n");
+	return 1;
+	}
 	if(sscanf(argv[3], "%u%c", &adpcm, &c) != 1) return 1;
 	if(sscanf(argv[4], "%u%c", &freq, &c) != 1) return 1;
 	if((freq < 0)||(freq > 96000)) return 1;

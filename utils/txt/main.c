@@ -5,6 +5,12 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc<3)
+    {
+        printf("Usage:\ntxt infile.txt outfile.txt\n");
+        return 0;
+    }
+
     FILE *f=fopen(argv[1],"rb");
     FILE *f2=fopen(argv[2],"wb");
 

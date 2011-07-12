@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-LIBS = -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lsmpeg -lrt
+LIBS = -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lsmpeg -lrt
 TARGET=Zengine
 TARGET_DINGOO=$(TARGET).dge
 OBJS =  \
@@ -20,7 +20,8 @@ OBJS =  \
 	Timers.cpp\
  	Sound.cpp\
 	anims.cpp\
-	menu.cpp
+	menu.cpp\
+	Subtitles.cpp
 	
 
 
