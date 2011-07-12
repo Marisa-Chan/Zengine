@@ -1,5 +1,7 @@
+Status:   Beta 1
+
 Progress: [#############---------]
-         0%          70%         100%
+         0%          72%         100%
 
 
 All what's you need it's convert resources of zork by utils.
@@ -25,9 +27,8 @@ Thanks w8m (for "unraw" code reverse)
 [Script Functions]
 action_rotate_to	    :While it's work  block other processing functions
 action_dissolve		    :reverse true behavior
-action_save_game	    :reverse it and write code
-action_restore_game	    :reverse it and write code
-action_pan_track	    :add object to list(for killing and etc)
+action_save_game	    :write wrapper code for actions
+action_restore_game	    :write wrapper code for actions
 action_flush_mouse_events   :reverse it and write code
 action_copy_file	    :reverse it (for what?!) (not needed ?)
 action_quit		    :reverse it
