@@ -11,6 +11,10 @@
 #include <SDL/SDL_ttf.h>
 #include <errno.h>
 
+#ifdef WIN32
+#include "win_funct.h"
+#endif
+
 #include "mylist.h"
 
 #include "config.h"

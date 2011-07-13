@@ -323,8 +323,12 @@ void ListDir(char *dir)
     dirent *de=readdir(dr);
     while (de)
     {
+#ifdef WIN32
+        if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0)
+#else
         if (de->d_type==DT_REG)
             if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
+#endif
             {
                 sprintf(buf2,"%s/%s",buf,de->d_name);
 
