@@ -212,8 +212,9 @@ int action_debug(char *params, int aSlot , pzllst *owner)
     tmp = GetIntVal(number);
 
 #ifdef TRACE
-    printf("DEBUG :%s\t: %d \n",txt,tmp);
+    printf("        action:debug(%s)\n",params);
 #endif
+    printf("DEBUG :%s\t: %d \n",txt,tmp);
 
     return ACTION_NORMAL;
 }

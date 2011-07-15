@@ -11,10 +11,6 @@
 #include <SDL/SDL_ttf.h>
 #include <errno.h>
 
-#ifdef WIN32
-#include "win_funct.h"
-#endif
-
 #include "mylist.h"
 
 #include "config.h"
@@ -106,6 +102,20 @@ char * GetParams(char *str);
 int GetIntVal(char *chr);
 
 #define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
+
+
+struct BinTreeNd;
+
+struct BinTreeNd
+{
+    BinTreeNd *zero;
+    BinTreeNd *one;
+    FManNode  *nod;
+};
+
+BinTreeNd *CreateBinTreeNd();
+void AddToBinTree(FManNode *nod);
+FManNode *FindInBinTree(char *chr);
 
 
 #endif // SYSTEM_H_INCLUDED

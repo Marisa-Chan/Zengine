@@ -323,12 +323,8 @@ void ListDir(char *dir)
     dirent *de=readdir(dr);
     while (de)
     {
-#ifdef WIN32
-        if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0)
-#else
         if (de->d_type==DT_REG)
             if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
-#endif
             {
                 sprintf(buf2,"%s/%s",buf,de->d_name);
 
@@ -338,6 +334,8 @@ void ListDir(char *dir)
                 nod->Path=(char *) malloc(strlen(buf2)+1);
                 strcpy(nod->Path,buf2);
                 nod->File=nod->Path+len+1;
+
+                AddToBinTree(nod);
             }
         de=readdir(dr);
     }
@@ -347,7 +345,7 @@ void ListDir(char *dir)
 
 
 
-char *GetExactFilePath(char *chr)
+char *GetExactFilePath2(char *chr)
 {
     StartMList(FMan);
     while(!eofMList(FMan))
@@ -363,7 +361,7 @@ char *GetExactFilePath(char *chr)
     return NULL;
 }
 
-char *GetFilePath(char *chr)
+char *GetFilePath2(char *chr)
 {
     char buf[255];
     strcpy(buf,chr);
@@ -376,6 +374,7 @@ char *GetFilePath(char *chr)
         if (tmp!=NULL)
             {
                 strcpy(tmp,repnod->ext2);
+                break;
             }
         NextMList(FManRepl);
     }
@@ -489,4 +488,135 @@ int GetIntVal(char *chr)
     }
     else
         return atoi(chr);
+}
+
+
+
+
+BinTreeNd *root=NULL;
+MList     *BinNodesList = NULL;
+
+
+BinTreeNd *CreateBinTreeNd()
+{
+    BinTreeNd *tmp = new (BinTreeNd);
+    tmp->one  = NULL;
+    tmp->zero = NULL;
+    tmp->nod  = NULL;
+
+    if (BinNodesList == NULL)
+        BinNodesList = CreateMList();
+
+    AddToMList(BinNodesList,tmp);
+
+    return tmp;
+}
+
+void AddToBinTree(FManNode *nod)
+{
+    char buffer[255];
+    for (int i=0; i<strlen(nod->File);i++)
+        buffer[i]=tolower(nod->File[i]);
+
+    buffer[strlen(nod->File)] = 0x0;
+
+    if (root == NULL)
+        root = CreateBinTreeNd();
+
+    BinTreeNd **treenod = &root;
+
+    for (int j=0; j<strlen(buffer);j++)
+        for (int i=0; i<8; i++)
+            {
+                int bit = ((buffer[j]) >> i) & 1;
+                if (bit)
+                    treenod = &((*treenod)->one);
+                else
+                    treenod = &((*treenod)->zero);
+
+                if (*treenod == NULL)
+                    *treenod = CreateBinTreeNd();
+            }
+    if ((*treenod)->nod == NULL) //we don't need to reSet nodes (ADDON and patches don't work without it)
+        (*treenod)->nod = nod;
+}
+
+FManNode *FindInBinTree(char *chr)
+{
+    char buffer[255];
+    for (int i=0; i<strlen(chr);i++)
+        buffer[i]=tolower(chr[i]);
+
+    buffer[strlen(chr)] = 0x0;
+
+    BinTreeNd *treenod = root;
+
+    for (int j=0; j<strlen(buffer);j++)
+        for (int i=0; i<8; i++)
+            {
+                int bit = ((buffer[j]) >> i) & 1;
+                if (bit)
+                    treenod = treenod->one;
+                else
+                    treenod = treenod->zero;
+
+                if (treenod == NULL)
+                    return NULL;
+            }
+
+    return treenod->nod;
+}
+
+void DeleteBinTree()
+{
+    StartMList(BinNodesList);
+    while(!eofMList(BinNodesList))
+    {
+        BinTreeNd *nd = (BinTreeNd *)DataMList(BinNodesList);
+        delete nd;
+
+        NextMList(BinNodesList);
+    }
+    DeleteMList(BinNodesList);
+
+    BinNodesList = NULL;
+    root         = NULL;
+}
+
+char *GetFilePath(char *chr)
+{
+    char buf[255];
+    strcpy(buf,chr);
+
+    StartMList(FManRepl);
+    while(!eofMList(FManRepl))
+    {
+        FManRepNode *repnod=(FManRepNode *)DataMList(FManRepl);
+        char *tmp=strcasestr(buf,repnod->ext);
+        if (tmp!=NULL)
+            {
+                strcpy(tmp,repnod->ext2);
+                break;
+            }
+        NextMList(FManRepl);
+    }
+
+    FManNode *nod = FindInBinTree(buf);
+    if (nod != NULL)
+        return nod->Path;
+#ifdef TRACE
+    printf("Can't find %s\n",chr);
+#endif
+    return NULL;
+}
+
+char *GetExactFilePath(char *chr)
+{
+    FManNode *nod = FindInBinTree(chr);
+    if (nod != NULL)
+        return nod->Path;
+#ifdef TRACE
+    printf("Can't find %s\n",chr);
+#endif
+    return NULL;
 }

@@ -3,7 +3,7 @@
 
 
 //// TITLE
-#define TITLE       "Z-Engine: Zork Grand Inquisitor (Beta 1)"
+#define TITLE       "Z-Engine: Zork Grand Inquisitor (pre-beta)"
 ////
 
 
