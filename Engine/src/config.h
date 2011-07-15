@@ -3,11 +3,11 @@
 
 
 //// TITLE
-#define TITLE       "Z-Engine: Zork Grand Inquisitor (pre-beta)"
+#define TITLE       "Z-Engine: Zork Grand Inquisitor (Beta 1)"
 ////
 
 
-#define VAR_SLOTS_MAX      20000 //For nemesis 22320
+#define VAR_SLOTS_MAX      20000 //For nemesis 30000
 #define STATEBOX_STACK_MAX 1024
 #define MaxStateBoxEnts    0x400 //0xFF is very small
 

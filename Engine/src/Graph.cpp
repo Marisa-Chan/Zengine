@@ -41,8 +41,12 @@ void LoadFonts(char *fontsdir)
     dirent *de=readdir(dr);
     while (de)
     {
+#ifdef WIN32
+        if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0)
+#else
         if (de->d_type==DT_REG)
             if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
+#endif
             {
                 sprintf(buf,"%s/%s",fontsdir,de->d_name);
                 TTF_Font *fnt = TTF_OpenFont(buf,10);
