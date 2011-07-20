@@ -19,7 +19,6 @@ struct Cursor
 #define CURSOR_OBJ_0  -1
 #define CURSOR_OBJ_1  -2
 
-
 void Mouse_LoadCursors();
 void Mouse_SetCursor(int indx);
 Cursor *Mouse_GetCursor(int indx);

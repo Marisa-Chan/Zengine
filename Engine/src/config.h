@@ -9,7 +9,7 @@
 
 #define VAR_SLOTS_MAX      20000 //For nemesis 30000
 #define STATEBOX_STACK_MAX 1024
-#define MaxStateBoxEnts    0x400 //0xFF is very small
+#define MaxStateBoxEnts    0x800 //0xFF is very small
 
 #define pzlSTACK 0x800
 
@@ -23,7 +23,7 @@
 #define GAME_BPP 32
 
 #define GAMESCREEN_W   640
-#define GAMESCREEN_P   20    //Panorama turn area
+#define GAMESCREEN_P   60    //Panorama turn area
 #define GAMESCREEN_H   344
 #define GAMESCREEN_X   0
 #define GAMESCREEN_Y   68

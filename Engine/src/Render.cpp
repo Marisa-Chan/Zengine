@@ -39,7 +39,7 @@ void Rend_SetDelay(int delay)
 
 void Rend_SetFishTable(double angl, double k)
 {
-    memset(fishtable,0,sizeof(int)*GAMESCREEN_W*GAMESCREEN_H);
+    memset(fishtable,0,sizeof(xy)*GAMESCREEN_W*GAMESCREEN_H);
 
     int yy=GAMESCREEN_H;
     int ww=GAMESCREEN_W;
@@ -324,21 +324,18 @@ void Rend_PanaRender()
         if (ReversePana == false)
         {
             if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *PanaX +=GetgVarInt(53)/20;
+                *PanaX +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
             if (MouseX() < GAMESCREEN_P)
-                *PanaX -=GetgVarInt(53)/20;
+                *PanaX -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
         }
         else
         {
             if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *PanaX -=GetgVarInt(53)/20;
+                *PanaX -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
             if (MouseX() < GAMESCREEN_P)
-                *PanaX +=GetgVarInt(53)/20;
+                *PanaX +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
         }
     }
-
-
-
 
     if (*PanaX >= scrbuf->w)
         *PanaX %= scrbuf->w;
