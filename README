@@ -26,31 +26,15 @@ Thanks w8m (for "unraw" code reverse)
 
 [Script Functions]
 action_rotate_to	    :While it's work  block other processing functions
-action_dissolve		    :reverse true behavior
-action_save_game	    :write wrapper code for actions
-action_restore_game	    :write wrapper code for actions
-action_flush_mouse_events   :reverse it and write code
 action_copy_file	    :reverse it (for what?!) (not needed ?)
 action_quit		    :reverse it
 action_clear_system_message :reverse it
 action_preferences	    :reverse it
 action_ttytext		    :reverse it
 
-Clean and test code:
-action_animplay
-action_playpreload
-action_streamvideo
-
-Only test code:
-action_stop  :same code in action_kill
-action_kill  :same code in action_stop
-action_syncsound
-action_animunload
-
 
 [Other]
 * Make graphics scaleable for other resolutions
-+/- Reverse what will happen with playing sound/anims/timers/etc while "change_location"
 * Clear code
 * Other little things...
 
@@ -60,8 +44,6 @@ action_animunload
 //because "Not used in ZGI"
 
 [Script Functions]
-action_music		: Find true meaning of first and optional last parameter
-action_universe_music	: Find true meaning of first and optional last parameter
 action_add_preblt	:reverse it                                  [Not used in ZGI]
 action_remove_preblt	:reverse it                                  [Not used in ZGI]
 action_region		:reverse it                                  [Not used in ZGI]

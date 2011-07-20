@@ -3,7 +3,7 @@
 
 
 //// TITLE
-#define TITLE       "Z-Engine: Zork Grand Inquisitor (Beta 1)"
+#define TITLE       "Z-Engine: Zork Grand Inquisitor (Beta 1) [build: "__DATE__" "__TIME__"]"
 ////
 
 
@@ -17,6 +17,16 @@
 
 #define FILE_LN_BUF 0x400
 
+//Graphics
+#define GAME_W   640
+#define GAME_H   480
+#define GAME_BPP 32
+
+#define GAMESCREEN_W   640
+#define GAMESCREEN_P   20    //Panorama turn area
+#define GAMESCREEN_H   344
+#define GAMESCREEN_X   0
+#define GAMESCREEN_Y   68
 
 
 //Script names

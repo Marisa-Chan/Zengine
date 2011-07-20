@@ -49,7 +49,7 @@ struct_action_res *anim_CreateAnimPreNode();
 struct_action_res *anim_CreateAnimPlayPreNode();
 
 int anim_ProcessAnim(struct_action_res *nod);
-void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int mask, int framerate);
+void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, int framerate);
 void anim_DeleteAnim(animnode *nod);
 int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, int loop);
 

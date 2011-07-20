@@ -110,7 +110,7 @@ int main(int argc, char **argv)
         fwrite(&hi,2,1,ff);
         tmp=16;
         fwrite(&tmp,1,1,ff);
-        tmp=0x21;
+        tmp=0x20;  //For nemesis 0x20!
         fwrite(&tmp,1,1,ff);
 
         fwrite(unp,unp_size,1,ff);

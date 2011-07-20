@@ -7,6 +7,7 @@
 #include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_ttf.h>
 #include <smpeg/smpeg.h>
+
 extern const int FiveBitToEightBitLookupTable [32];
 
 SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp,bool ful, char *fontsdir);
@@ -46,7 +47,7 @@ struct struct_graph_font
     char path[255];
 };
 
-anim_surf *LoadAnimImage(char *file,int mask);
+anim_surf *LoadAnimImage(char *file,int32_t mask);
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame);
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf);
 void FreeAnimImage(anim_surf *anim);

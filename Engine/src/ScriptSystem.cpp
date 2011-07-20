@@ -30,7 +30,6 @@ MList    *actres =NULL; //sounds, animations, ttytexts and other.
 uint8_t  *SaveBuffer = NULL;
 uint32_t SaveCurrentSize=0;
 
-
 char * ScrSys_ReturnListName(pzllst *lst)
 {
     if (lst == world)
@@ -768,8 +767,10 @@ void ScrSys_ProcessAllRes()
             case NODE_TYPE_SYNCSND:
                 result = snd_ProcessSync(nod);
                 break;
-
             case NODE_TYPE_PANTRACK:
+                result=NODE_RET_OK;
+                break;
+
             default:
                 result=NODE_RET_OK;
                 break;
@@ -914,17 +915,4 @@ struct_action_res *ScrSys_CreateActRes(int type)
     tmp->need_delete       = false;
 
     return tmp;
-}
-
-
-////Depricated
-
-int *DGetGVars()
-{
-    return gVars;
-}
-
-uint8_t *DGetFlags()
-{
-    return Flags;
 }

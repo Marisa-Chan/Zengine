@@ -80,21 +80,23 @@ void control_slot_draw(ctrlnode *nod)
 
 
     int tmp1 = GetgVarInt(nod->slot);
-    //printf("%d %d\n",nod->slot,tmp1);
-    bool in = Ctrl_Eligeblity(tmp1,slut);
 
-    if (in && tmp1!=GetgVarInt(9))
+    //printf("%d %d\n",nod->slot,tmp1);
+    //bool in = Ctrl_Eligeblity(tmp1,slut);
+
+    if (tmp1 != 0)
     {
         if (slut->srf==NULL)
         {
             char bff[16];
             sprintf(bff,"G0ZYU%2.2x1.tga",tmp1);
-            slut->srf=IMG_Load(GetFilePath(bff));
-            ConvertImage(&slut->srf);
-            SDL_SetColorKey(slut->srf,SDL_SRCCOLORKEY ,SDL_MapRGB(slut->srf->format,0,0,0));
+            char *fil = GetFilePath(bff);
+            if (fil)
+                slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
         }
 
-        Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
+        if (slut->srf)
+            Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
     }
     else
     {
@@ -154,6 +156,7 @@ void control_input_draw(ctrlnode *ct)
 
             if (inp->cursor != NULL)
             {
+
                 Rend_DrawImageUpGamescr(inp->cursor,inp->rectangle.x + inp->textwidth,inp->rectangle.y,inp->frame);
                 if (Get2thBeat())
                     inp->frame++;

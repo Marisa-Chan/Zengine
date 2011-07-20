@@ -68,7 +68,7 @@ struct_action_res *anim_CreateAnimPlayPreNode()
     return tmp;
 }
 
-void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int mask, int framerate)
+void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, int framerate)
 {
 
     if (framerate != 0)
@@ -93,7 +93,6 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int mask, int fr
     }
     else
     {
-
         nod->anim.rlf = LoadAnimImage(filename,mask);
         nod->vid=false;
 

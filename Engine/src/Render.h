@@ -55,10 +55,9 @@ void Rend_InitSubList();
 void Rend_ProcessSubs();
 struct_SubRect *Rend_GetSubById( int id);
 
-SDL_Surface **Rend_GetGameScreen();
+SDL_Surface *Rend_GetGameScreen();
 
-#define GAMESCREEN_W 640
-#define GAMESCREEN_P 20
-#define GAMESCREEN_H 344
+uint32_t Rend_MapScreenRGB(int r, int g, int b);
+void Rend_ScreenFlip();
 
 #endif // RENDER_H_INCLUDED

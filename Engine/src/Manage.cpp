@@ -2,7 +2,7 @@
 #include "System.h"
 
 
-Locate  Location= {0,0,0,0};
+
 
 
 

@@ -184,11 +184,5 @@ void ScrSys_PrepareSaveBuffer();
 
 struct_action_res *ScrSys_CreateActRes(int type);
 
-/////  Depricated
-int *DGetGVars();
-uint8_t *DGetFlags();
-/////  /Depricated
-
-
 #endif // SCRIPTSYSTEM_H_INCLUDED
 

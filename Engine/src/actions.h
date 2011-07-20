@@ -37,5 +37,7 @@ int action_cursor(char *params, int aSlot , pzllst *owner);
 int action_attenuate(char *params, int aSlot , pzllst *owner);
 int action_pan_track(char *params, int aSlot , pzllst *owner);
 int action_animunload(char *params, int aSlot , pzllst *owner);
-
+int action_flush_mouse_events(char *params, int aSlot , pzllst *owner);
+int action_save_game(char *params, int aSlot , pzllst *owner);
+int action_restore_game(char *params, int aSlot , pzllst *owner);
 #endif // ACTIONS_H_INCLUDED

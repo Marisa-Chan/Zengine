@@ -25,7 +25,6 @@
 #include "Subtitles.h"
 #include "Sound.h"
 #include "Mouse.h"
-#include "Manage.h"
 #include "Puzzle.h"
 #include "SoundFX.h"
 #include "Timers.h"

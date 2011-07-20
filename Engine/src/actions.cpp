@@ -1,27 +1,16 @@
 #include "System.h"
 
-extern SDL_Surface *screen;
-
-extern int GAME_Y;
-
 int action_set_screen(char *params, int aSlot , pzllst *owner)
 {
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
 #endif
+    char *fil = GetFilePath(params);
 
-    SDL_Surface **scrbuf = Rend_GetGameScreen();
-
-    if (*scrbuf)
-        SDL_FreeSurface(*scrbuf);
-
-    *scrbuf=IMG_Load(GetFilePath(params));
-    if (!*scrbuf)
-        printf("ERROR:  IMG_Load(%s): %s\n\n",params, IMG_GetError());
+    if (fil != NULL)
+        Rend_LoadGamescr(fil);
     else
-    {
-        ConvertImage(scrbuf);
-    }
+        printf("Can't find %s, screen load failed\n",params);
 
     return ACTION_NORMAL;
 }
@@ -41,33 +30,30 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
     tmp1=GetIntVal(tmp11);
     tmp2=GetIntVal(tmp22);
 
-    SDL_Surface *tmp=IMG_Load(GetFilePath(file));
+    SDL_Surface *tmp = NULL;
+
+    if (tmp2 != -1)
+    {
+        int r,g,b;
+        b=FiveBitToEightBitLookupTable[((tmp2 >> 10 ) & 0x1F)];
+        g=FiveBitToEightBitLookupTable[((tmp2 >> 5 ) & 0x1F)];
+        r=FiveBitToEightBitLookupTable[(tmp2 & 0x1F)];
+#ifdef TRACE
+        printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
+#endif
+        tmp=LoadConvertImg(GetFilePath(file),Rend_MapScreenRGB(r,g,b));
+    }
+    else
+        tmp=LoadConvertImg(GetFilePath(file));
+
     if (!tmp)
         printf("ERROR:  IMG_Load(%s): %s\n\n",params, IMG_GetError());
     else
     {
-        SDL_Surface *tmp_1=SDL_ConvertSurface(tmp,screen->format,0);
-        SDL_FreeSurface(tmp);
-        tmp=tmp_1;
 
-        if (tmp2 != -1)
-        {
-            int r,g,b;
-            b=FiveBitToEightBitLookupTable[((tmp2 >> 10 ) & 0x1F)];
-            g=FiveBitToEightBitLookupTable[((tmp2 >> 5 ) & 0x1F)];
-            r=FiveBitToEightBitLookupTable[(tmp2 & 0x1F)];
-#ifdef TRACE
-            printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
-#endif
-            SDL_SetColorKey(tmp,SDL_SRCCOLORKEY ,SDL_MapRGB(tmp->format,r,g,b));
-        }
-
-        //if (tmp1==0)
         Rend_DrawImageToGamescr(tmp,x,y);
-        //else if (tmp1==1)
-        //    DrawImageToSurf(tmp,x-tmp->w/2,y-tmp->h/2,scrbuf);
-        SDL_FreeSurface(tmp);
 
+        SDL_FreeSurface(tmp);
     }
     return ACTION_NORMAL;
 }
@@ -143,11 +129,9 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
 
     SetNeedLocate(tolower(tmp[0]),tolower(tmp2[0]),tolower(tmp3[0]), tolower(tmp3[1]), GetIntVal(tmp4));
 
-    //depricated
     Rend_SetDelay(2);
-    // View_start_Loops = 1;
 
-    return ACTION_BREAK;
+    return ACTION_NORMAL;
 }
 
 int action_dissolve(char *params, int aSlot , pzllst *owner)
@@ -155,7 +139,8 @@ int action_dissolve(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:dissolve()\n");
 #endif
-
+    SDL_Surface *surf = Rend_GetGameScreen();
+    SDL_FillRect(surf,NULL,Rend_MapScreenRGB(0,0,0));
     return ACTION_NORMAL;
 }
 
@@ -315,7 +300,7 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         SDL_Event event;
         SDL_PollEvent(&event);
         UpdateKeyboard();
-        DrawImage(anm->img,xx,GAME_Y+yy);
+        DrawImage(anm->img,GAMESCREEN_X+xx,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
 
         if (subs != NULL)
         {
@@ -325,7 +310,8 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
 
         Rend_ProcessSubs();
 
-        SDL_Flip(screen);
+        Rend_ScreenFlip();
+        //SDL_Flip(screen);
 
 
         int delay = 15;
@@ -339,7 +325,7 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     if (aud!=NULL)
     {
         //if (u2 == 0)
-         //   RestoreVol();
+        //   RestoreVol();
         Mix_HaltChannel(tmp);
         Mix_FreeChunk(aud);
     }
@@ -411,21 +397,26 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
     glob->owner = owner;
 
     int mask2,r,g,b;
-    r=GetIntVal(mask);
-    b=FiveBitToEightBitLookupTable[((r >> 10 ) & 0x1F)];
-    g=FiveBitToEightBitLookupTable[((r >> 5 ) & 0x1F)];
-    r=FiveBitToEightBitLookupTable[(r & 0x1F)];
+
+    mask2=GetIntVal(mask);
+
+    if (mask2 != -1 && mask2 != 0)
+    {
+    b=FiveBitToEightBitLookupTable[((mask2 >> 10 ) & 0x1F)];
+    g=FiveBitToEightBitLookupTable[((mask2 >> 5 ) & 0x1F)];
+    r=FiveBitToEightBitLookupTable[(mask2 & 0x1F)];
     mask2=r | g<<8 | b<<16;
+    }
 
     anim_LoadAnim(nod,file,0,0,mask2,GetIntVal(framerate));
 
     anim_PlayAnim(nod,GetIntVal(x),
-                      GetIntVal(y),
-                      GetIntVal(w) - GetIntVal(x) +1,
-                      GetIntVal(h) - GetIntVal(y) +1,
-                      GetIntVal(st),
-                      GetIntVal(en),
-                      GetIntVal(loop));
+                  GetIntVal(y),
+                  GetIntVal(w) - GetIntVal(x) +1,
+                  GetIntVal(h) - GetIntVal(y) +1,
+                  GetIntVal(st),
+                  GetIntVal(en),
+                  GetIntVal(loop));
 
 
 
@@ -630,10 +621,10 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
     sscanf(params,"%s %s %s %s %s", name,u1,u2,u3,u4);
 
     anim_LoadAnim(pre->nodes.node_animpre,
-                        name,
-                        0,0,
-                        GetIntVal(u3),
-                        GetIntVal(u4));
+                  name,
+                  0,0,
+                  GetIntVal(u3),
+                  GetIntVal(u4));
 
     pre->slot = aSlot;
     pre->owner = owner;
@@ -865,9 +856,9 @@ void act_inv_add(int item)
     if (item == 0)
         return;
 
-    for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+    /*for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
         if (GetgVarInt(i) == item)
-            SetgVarInt(i,0);
+            SetgVarInt(i,0);*/
 
     for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
         if (GetgVarInt(i)==0)
@@ -954,21 +945,22 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
         struct_action_res *tmp = getGNode(item);
 
         if (tmp != NULL)
-        {
-            struct_action_res *tnod = tmp;
+            if (tmp->node_type == NODE_TYPE_MUSIC)
+            {
+                struct_action_res *tnod = tmp;
 
-            tnod->nodes.node_music->crossfade = true;
+                tnod->nodes.node_music->crossfade = true;
 
-            if (GetIntVal(frVol1)>=0)
-                tnod->nodes.node_music->volume = GetIntVal(frVol1);
+                if (GetIntVal(frVol1)>=0)
+                    tnod->nodes.node_music->volume = GetIntVal(frVol1);
 
-            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
-            tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
+                tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
+                tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
 
-            if (Mix_Playing(tnod->nodes.node_music->chn))
-                Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
+                if (Mix_Playing(tnod->nodes.node_music->chn))
+                    Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
 
-        }
+            }
     }
 
     if (item2 > 0)
@@ -976,21 +968,22 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
         struct_action_res *tmp = getGNode(item2);
 
         if (tmp != NULL)
-        {
-            struct_action_res *tnod = tmp;
+            if (tmp->node_type == NODE_TYPE_MUSIC)
+            {
+                struct_action_res *tnod = tmp;
 
-            tnod->nodes.node_music->crossfade = true;
+                tnod->nodes.node_music->crossfade = true;
 
-            if (GetIntVal(frVol2)>=0)
-                tnod->nodes.node_music->volume = GetIntVal(frVol2);
+                if (GetIntVal(frVol2)>=0)
+                    tnod->nodes.node_music->volume = GetIntVal(frVol2);
 
-            tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
-            tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol2) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
+                tnod->nodes.node_music->crossfade_params.times = ceil(GetIntVal(tim) / 33.3) ;
+                tnod->nodes.node_music->crossfade_params.deltavolume = ceil((GetIntVal(toVol2) - tnod->nodes.node_music->volume) / (float)tnod->nodes.node_music->crossfade_params.times);
 
-            if (Mix_Playing(tnod->nodes.node_music->chn))
-                Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
+                if (Mix_Playing(tnod->nodes.node_music->chn))
+                    Mix_Volume(tnod->nodes.node_music->chn, GetLogVol(tnod->nodes.node_music->volume));
 
-        }
+            }
     }
 
     /* MList *wavs = snd_GetWavsList();
@@ -1045,9 +1038,9 @@ int action_delay_render(char *params, int aSlot , pzllst *owner)
 int action_pan_track(char *params, int aSlot , pzllst *owner)
 {
     //action:pan_track:XXXXX(TargetSlot X-Pos)
-    #ifdef TRACE
-        printf("        action:pan_track:%d(%s)\n",aSlot,params);
-    #endif
+#ifdef TRACE
+    printf("        action:pan_track:%d(%s)\n",aSlot,params);
+#endif
 
     if (Rend_GetRenderer() != RENDER_PANA)
         return ACTION_NORMAL;
@@ -1073,12 +1066,13 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
         struct_action_res *tmp = getGNode(slot);
 
         if (tmp != NULL)
-        {
-            struct_action_res *tnod = tmp;
+            if (tmp->node_type == NODE_TYPE_MUSIC)
+            {
+                struct_action_res *tnod = tmp;
 
-            tnod->nodes.node_music->pantrack = true;
-            tnod->nodes.node_music->pantrack_X = XX;
-        }
+                tnod->nodes.node_music->pantrack = true;
+                tnod->nodes.node_music->pantrack_X = XX;
+            }
 
     }
 
@@ -1104,13 +1098,14 @@ int action_attenuate(char *params, int aSlot , pzllst *owner)
         struct_action_res *tmp = getGNode(slot);
 
         if (tmp != NULL)
-        {
+            if (tmp->node_type == NODE_TYPE_MUSIC)
+            {
 
-            tmp->nodes.node_music->attenuate = att;
-            Mix_SetPosition(tmp->nodes.node_music->chn,
-                            tmp->nodes.node_music->pantrack_angle,
-                            tmp->nodes.node_music->attenuate);
-        }
+                tmp->nodes.node_music->attenuate = att;
+                Mix_SetPosition(tmp->nodes.node_music->chn,
+                                tmp->nodes.node_music->pantrack_angle,
+                                tmp->nodes.node_music->attenuate);
+            }
     }
 
 
@@ -1149,6 +1144,40 @@ int action_animunload(char *params, int aSlot , pzllst *owner)
     if (nod != NULL )
         if (nod->node_type == NODE_TYPE_ANIMPRE)
             nod->need_delete = true;
+
+    return ACTION_NORMAL;
+}
+
+int action_flush_mouse_events(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:flush_mouse_events(%s)\n",params);
+#endif
+    FlushMouseBtn(SDL_BUTTON_LEFT);
+    FlushMouseBtn(SDL_BUTTON_RIGHT);
+
+    return ACTION_NORMAL;
+}
+
+int action_save_game(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:save_game(%s)\n",params);
+#endif
+
+    ScrSys_PrepareSaveBuffer();
+    ScrSys_SaveGame(params);
+
+    return ACTION_NORMAL;
+}
+
+int action_restore_game(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:restore_game(%s)\n",params);
+#endif
+
+    ScrSys_LoadGame(params);
 
     return ACTION_NORMAL;
 }

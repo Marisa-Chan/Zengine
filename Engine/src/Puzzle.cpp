@@ -127,9 +127,8 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod = new(func_node);
         AddToMList(lst,nod);
 
-        //params=GetParams(str+end_s);
-        nod->param = NULL;
-        //strcpy(nod->param,params);
+        nod->param = copy_params(params);
+        nod->slot  = slot;
 
         nod->func  = action_dissolve; //make save prev W R VI
         return;
@@ -376,6 +375,42 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod->slot  = slot;
 
         nod->func  = action_animunload;
+        return;
+    }
+
+    if (strCMP(buf,"flush_mouse_events")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_flush_mouse_events;
+        return;
+    }
+
+    if (strCMP(buf,"save_game")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_save_game;
+        return;
+    }
+
+    if (strCMP(buf,"restore_game")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_restore_game;
         return;
     }
 
@@ -732,6 +767,7 @@ int execute_puzzle_node(puzzlenode *nod)
 
         NextMList(nod->ResList);
     }
+    return ACTION_NORMAL;
 }
 
 int Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
@@ -756,6 +792,8 @@ int Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
             return execute_puzzle_node(pzlnod);
         }
     }
+
+    return ACTION_NORMAL;
 }
 
 

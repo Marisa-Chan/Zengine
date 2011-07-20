@@ -150,7 +150,7 @@ SDL_Surface *LoadConvertImg(char *file,uint32_t key)
     return tmpbuf;
 }
 
-anim_surf *LoadAnimImage(char *file, int mask)
+anim_surf *LoadAnimImage(char *file, int32_t mask)
 {
 
     char buf[64];
@@ -189,7 +189,8 @@ anim_surf *LoadAnimImage(char *file, int mask)
     for (uint8_t i=0; i< atmp->info.frames; i++)
     {
         atmp->img[i] = CreateSurface(atmp->info.w,atmp->info.h);
-        SDL_SetColorKey(atmp->img[i],SDL_SRCCOLORKEY ,mask);
+        if (mask != 0 && mask != -1)
+            SDL_SetColorKey(atmp->img[i],SDL_SRCCOLORKEY ,mask);
         SDL_Rect rtmp;
         rtmp.x=0;
         rtmp.y=i*atmp->info.h;

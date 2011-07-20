@@ -5,12 +5,6 @@ Locate Need_Locate;
 bool NeedToLoadScript=false;
 
 
-//////DEPRECATED
-extern SDL_Surface *screen;
-/////////////
-
-
-
 int32_t View_start_Loops = 0;
 
 int8_t  SaveSlot = 0;
@@ -179,6 +173,22 @@ void EasterEggsAndDebug()
                               GetKeyBuffered(0),0);
             }
 
+        if (CheckKeyboardMessage("M?????T?",8))
+            {
+                char abc[6];
+                abc[0] = GetKeyBuffered(6);
+                abc[1] = GetKeyBuffered(5);
+                abc[2] = GetKeyBuffered(4);
+                abc[3] = GetKeyBuffered(3);
+                abc[4] = GetKeyBuffered(2);
+                abc[5] = 0;
+                int ii = atoi(abc);
+                abc[0] = GetKeyBuffered(0);
+                abc[1] = 0;
+                int ii2 = atoi(abc);
+                SetgVarInt(ii,ii2);
+            }
+
         if (CheckKeyboardMessage("DBGONOFF",8))
             SetDirectgVarInt(SLOT_DBG_GOTO_LOCATION, 1 - GetgVarInt(SLOT_DBG_GOTO_LOCATION));
 
@@ -248,8 +258,6 @@ void GameLoop()
             SetgVarInt(10,1);
     }
 
-//    tmr_ProcessTimers();
-//    snd_ProcessWavs();
     ScrSys_ProcessAllRes();
 
     pzllst *room  = Getroom();
@@ -284,36 +292,9 @@ void GameLoop()
         ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.Node,Need_Locate.View,Need_Locate.X, false);
     }
 
-
-    /*char savefile[16];
-
-    sprintf(savefile,"Save%d.sav",SaveSlot);
-
-    if (KeyHit(SDLK_F6))
-        SaveSlot--;
-    if (KeyHit(SDLK_F7))
-        SaveSlot++;
-
-    if (SaveSlot > 40)
-        SaveSlot = 0;
-    if (SaveSlot < 0)
-        SaveSlot = 40;
-
-    if (KeyHit(SDLK_F5))
-    {
-        ScrSys_PrepareSaveBuffer();
-//        ScrSys_SaveGame(SaveSlot);
-    }
-    if (KeyHit(SDLK_F8))
-    {
-//        ScrSys_LoadGame(SaveSlot);
-    }*/
-
     EasterEggsAndDebug();
 
-    //stringColor(screen,0,470,savefile,0xFFFFFFFF);
-
-    SDL_Flip(screen);
+    Rend_ScreenFlip();
 }
 
 
