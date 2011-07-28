@@ -83,6 +83,8 @@
 		<Unit filename="mylist.h" />
 		<Unit filename="Subtitles.cpp" />
 		<Unit filename="Subtitles.h" />
+		<Unit filename="Text.cpp" />
+		<Unit filename="Text.h" />
 		<Extensions>
 			<envvars />
 			<code_completion>

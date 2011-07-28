@@ -49,16 +49,20 @@ struct inputnode
     Rect rectangle;
     Rect hotspot;
     SDL_Surface *rect;
-    int next_tab;
+    int32_t next_tab;
 
     char text[SAVE_NAME_MAX_LEN+1];
     int16_t textwidth;
     bool textchanged;
 
     anim_surf *cursor;
-    int  frame;
+    int32_t  frame;
     bool readonly;
     bool enterkey;
+
+    bool focused;
+    struct_txt_style string_init;
+    struct_txt_style string_chooser_init;
 };
 
 struct saveloadnode
@@ -89,6 +93,7 @@ struct ctrlnode
 ctrlnode *Ctrl_CreateNode(int type);
 
 int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
+void ProcessControls(MList *ctrlst);
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut);
 void Ctrl_DrawControls();

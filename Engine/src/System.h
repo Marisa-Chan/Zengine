@@ -22,6 +22,7 @@
 
 #include "Graph.h"
 #include "Render.h"
+#include "Text.h"
 #include "Subtitles.h"
 #include "Sound.h"
 #include "Mouse.h"

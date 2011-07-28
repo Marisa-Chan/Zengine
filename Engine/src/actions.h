@@ -40,4 +40,5 @@ int action_animunload(char *params, int aSlot , pzllst *owner);
 int action_flush_mouse_events(char *params, int aSlot , pzllst *owner);
 int action_save_game(char *params, int aSlot , pzllst *owner);
 int action_restore_game(char *params, int aSlot , pzllst *owner);
+int action_quit(char *params, int aSlot , pzllst *owner);
 #endif // ACTIONS_H_INCLUDED

@@ -243,7 +243,7 @@ void menu_UpdateMenuBar()
                               menu_ScrollPos[menu_MAIN]);
 
                     if (MouseUp(SDL_BUTTON_LEFT))
-                        __END();
+                        ifquit();
 
                 }
                 else

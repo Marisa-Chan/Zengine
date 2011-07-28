@@ -414,6 +414,18 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         return;
     }
 
+    if (strCMP(buf,"quit")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_quit;
+        return;
+    }
+
 }
 
 int Parse_Puzzle_Flags(puzzlenode *pzl,FILE *fl)
@@ -735,6 +747,48 @@ void FlushPuzzleList(pzllst *lst)
     lst->stksize    = 0;
 
     FlushMList(lst->_list);
+}
+
+bool ProcessCriteries(MList *lst)
+{
+    bool tmp=true;
+
+    StartMList(lst);
+    while (!eofMList(lst))
+    {
+        crit_node *critnd=(crit_node *)DataMList(lst);
+#ifdef FULLTRACE
+        printf("        [%d] %d [%d] %d\n",critnd->slot1,critnd->oper,critnd->slot2,critnd->var2);
+#endif
+        int tmp1=GetgVarInt(critnd->slot1);
+        int tmp2;
+
+        if (critnd->var2)
+            tmp2=GetgVarInt(critnd->slot2);
+        else
+            tmp2=critnd->slot2;
+
+        switch (critnd->oper)
+        {
+        case CRIT_OP_EQU:
+            tmp &= (tmp1 == tmp2);
+            break;
+        case CRIT_OP_GRE:
+            tmp &= (tmp1 > tmp2);
+            break;
+        case CRIT_OP_LEA:
+            tmp &= (tmp1 < tmp2);
+            break;
+        case CRIT_OP_NOT:
+            tmp &= (tmp1 != tmp2);
+            break;
+        }
+
+        if (!tmp) break;
+
+        NextMList(lst);
+    }
+    return tmp;
 }
 
 bool examine_criterias(puzzlenode *nod)

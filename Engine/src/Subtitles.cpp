@@ -109,7 +109,7 @@ struct_font_style sub_parse_parameters(char *string)
 
     char *token;
 
-    char find[2] = {' ',0x0};
+    char *find = " ";
 
     token = strtok(buff,find);
 

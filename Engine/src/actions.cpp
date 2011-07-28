@@ -1182,3 +1182,17 @@ int action_restore_game(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+int action_quit(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:quit(%s)\n",params);
+#endif
+
+    if (atoi(params)==1)
+        __END();
+    else
+        ifquit();
+
+    return ACTION_NORMAL;
+}
+

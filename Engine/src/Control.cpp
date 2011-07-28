@@ -30,7 +30,10 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->node.inp->textwidth = 0;
         tmp->node.inp->textchanged = true;
         tmp->node.inp->enterkey  = false;
+        tmp->node.inp->focused   = false;
         memset(tmp->node.inp->text,0,SAVE_NAME_MAX_LEN+1);
+        txt_init_txt_struct(&tmp->node.inp->string_init);
+        txt_init_txt_struct(&tmp->node.inp->string_chooser_init);
         break;
 
     case CTRL_SLOT:
@@ -118,24 +121,14 @@ void control_input_draw(ctrlnode *ct)
     {
         if (inp->textchanged)
         {
+
             SDL_FillRect(inp->rect,NULL,0);
 
-            struct_font_style style;
-            style.blue  = 255;
-            style.green = 255;
-            style.red   = 255;
-            strcpy(style.fontname,"Courier New");
-            style.bold       = SUB_STYLE_OFF;
-            style.escapement = 0;
-            style.italic     = SUB_STYLE_OFF;
-            style.justify    = SUB_JUSTIFY_LEFT;
-            style.newline    = 0;
-            style.size       = 14;
-            style.skipcolor  = SUB_STYLE_OFF;
-            style.strikeout  = SUB_STYLE_OFF;
-            style.underline  = SUB_STYLE_OFF;
+            if (!inp->readonly || !inp->focused)
+                inp->textwidth = txt_DrawTxt(inp->text,&inp->string_init,inp->rect);
+            else
+                inp->textwidth = txt_DrawTxt(inp->text,&inp->string_chooser_init,inp->rect);
 
-            inp->textwidth = sub_DrawTextToRect(inp->text,&style,inp->rect);
             inp->textchanged = false;
         }
         Rend_DrawImageUpGamescr(inp->rect,inp->rectangle.x,inp->rectangle.y);
@@ -247,22 +240,50 @@ void control_input(ctrlnode *ct)
 
             }
         }
-        else
+
+    if (inp->readonly)
+    {
+        if (FocusInput == ct->slot && !inp->focused)
         {
-            SDL_Delay(200);
-            FocusInput=0;
-            inp->enterkey = true;
+            inp->textchanged = true;
+            inp->focused = true;
         }
+        else if (FocusInput != ct->slot && inp->focused)
+        {
+            inp->textchanged = true;
+            inp->focused = false;
+        }
+    }
 
     if (mousein)
     {
-        if (Mouse_IsCurrentCur(CURSOR_IDLE))
-            Mouse_SetCursor(CURSOR_ACTIVE);
-        if (MouseUp(SDL_BUTTON_LEFT))
+        if (!inp->readonly)
         {
-            FocusInput = ct->slot;
-            FlushMouseBtn(SDL_BUTTON_LEFT);
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(CURSOR_ACTIVE);
+
+            if (MouseUp(SDL_BUTTON_LEFT))
+            {
+                FocusInput = ct->slot;
+                FlushMouseBtn(SDL_BUTTON_LEFT);
+            }
         }
+        else if (inp->text[0]>=' ')
+        {
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(CURSOR_ACTIVE);
+
+            FocusInput = ct->slot;
+
+            if (MouseUp(SDL_BUTTON_LEFT))
+            {
+                FocusInput = 0;
+                inp->enterkey = true;
+            }
+
+        }
+
+
     }
 }
 
@@ -553,8 +574,6 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
     char buf[FILE_LN_BUF];
     char *str;
 
-    FocusInput = 0;
-
     ctrlnode *ctnode = Ctrl_CreateNode(CTRL_INPUT);
     inputnode *inp = ctnode->node.inp;
 
@@ -605,6 +624,26 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
 
             sscanf(str,"%s",file);
             inp->cursor = LoadAnimImage(file,0);
+        }
+        else if (strCMP(str,"focus")==0)
+        {
+            str=GetParams(str);
+            if (atoi(str) == 1)
+                FocusInput = ctnode->slot;
+        }
+        else if (strCMP(str,"string_init")==0)
+        {
+            str=GetParams(str);
+            char *tmp = GetSystemString(atoi(str));
+            if (tmp != NULL)
+                txt_readfontstyle(&inp->string_init,tmp);
+        }
+        else if (strCMP(str,"chooser_init_string")==0)
+        {
+            str=GetParams(str);
+            char *tmp = GetSystemString(atoi(str));
+            if (tmp != NULL)
+                txt_readfontstyle(&inp->string_chooser_init,tmp);
         }
 
     }//while (!feof(fl))

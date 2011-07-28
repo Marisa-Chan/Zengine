@@ -916,3 +916,4 @@ struct_action_res *ScrSys_CreateActRes(int type)
 
     return tmp;
 }
+

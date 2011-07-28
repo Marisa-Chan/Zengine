@@ -1,0 +1,568 @@
+#include "System.h"
+
+void txt_init_txt_struct(struct_txt_style *style)
+{
+    style->blue = 255;
+    style->green = 255;
+    style->red   = 255;
+    strcpy(style->fontname,"Arial");
+    style->bold       = TXT_STYLE_VAR_FALSE;
+    style->escapement = 0;
+    style->italic     = TXT_STYLE_VAR_FALSE;
+    style->justify    = TXT_JUSTIFY_LEFT;
+    style->newline    = 0;
+    style->size       = 12;
+    style->skipcolor  = TXT_STYLE_VAR_FALSE;
+    style->strikeout  = TXT_STYLE_VAR_FALSE;
+    style->underline  = TXT_STYLE_VAR_FALSE;
+    style->statebox   = 0;
+}
+
+struct_txt_style *txt_NewTxt()
+{
+    struct_txt_style *txt = new(struct_txt_style);
+    txt_init_txt_struct(txt);
+    return txt;
+}
+
+int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
+{
+    char buf[512];
+    memcpy(buf,strin,len);
+    buf[len] = 0x0;
+
+    int8_t retval = TXT_RET_NOTHING;
+
+    char *token;
+
+    char *find = " ";
+
+    //font with "item what i want"
+    char *fontitem = strcasestr(buf,"font");
+    if (fontitem != NULL)
+    {
+        fontitem += 5; //to next item
+        if (fontitem[0] == '"')
+        {
+            fontitem++;
+
+            int32_t len=0;
+            while (fontitem[len]!='"' && fontitem[len]>=' ')
+            {
+                style->fontname[len] = fontitem[len];
+                len++;
+            }
+            style->fontname[len] = 0;
+        }
+        else
+        {
+            int32_t len=0;
+            while (fontitem[len]>' ')
+            {
+                style->fontname[len] = fontitem[len];
+                len++;
+            }
+            style->fontname[len] = 0;
+        }
+        retval |= TXT_RET_FNTCHG;
+    }
+
+    token = strtok(buf,find);
+
+    bool gooood;
+
+    while (token != NULL)
+    {
+        gooood = true;
+
+//        if ( strCMP(token,"font") == 0 )
+//        {
+//            token = strtok(NULL,find);
+//            if (token == NULL)
+//                gooood = false;
+//            else
+//            {
+//                if (strCMP(style->fontname,token) != 0)
+//                {
+//                    strcpy(style->fontname,token);
+//                    retval |= TXT_RET_FNTCHG;
+//                }
+//
+//            }
+//
+//        }
+//        else
+        if( strCMP(token,"blue") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+            {
+                int32_t tmp = atoi(token);
+                if (style->blue != tmp)
+                {
+                    style->blue = tmp;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+
+        }
+        else if( strCMP(token,"red") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+            {
+                int32_t tmp = atoi(token);
+                if (style->red != tmp)
+                {
+                    style->red = tmp;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+        }
+        else if( strCMP(token,"green") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+            {
+                int32_t tmp = atoi(token);
+                if (style->green != tmp)
+                {
+                    style->green = tmp;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+        }
+        else if( strCMP(token,"newline") == 0 )
+        {
+            if ((retval & TXT_RET_NEWLN) == 0)
+                style->newline = 0;
+
+            style->newline++;
+            retval |= TXT_RET_NEWLN;
+        }
+        else if( strCMP(token,"point") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+            {
+                int32_t tmp=atoi(token);
+                if (style->size != tmp)
+                {
+                    style->size = tmp;
+                    retval |= TXT_RET_FNTCHG;
+                }
+
+            }
+
+        }
+        else if( strCMP(token,"escapement") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+                style->escapement = atoi(token);
+        }
+        else if( strCMP(token,"italic") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"on") == 0 )
+                if (style->italic != TXT_STYLE_VAR_TRUE)
+                {
+                    style->italic = TXT_STYLE_VAR_TRUE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+                else if( strCMP(token,"off") == 0 )
+                    if (style->italic != TXT_STYLE_VAR_FALSE)
+                    {
+                        style->italic = TXT_STYLE_VAR_FALSE;
+                        retval |= TXT_RET_FNTSTL;
+                    }
+                    else
+                        gooood = false;
+        }
+        else if( strCMP(token,"underline") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"on") == 0 )
+                if (style->underline != TXT_STYLE_VAR_TRUE)
+                {
+                    style->underline = TXT_STYLE_VAR_TRUE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+                else if( strCMP(token,"off") == 0 )
+                    if (style->underline != TXT_STYLE_VAR_FALSE)
+                    {
+                        style->underline = TXT_STYLE_VAR_FALSE;
+                        retval |= TXT_RET_FNTSTL;
+                    }
+                    else
+                        gooood = false;
+        }
+        else if( strCMP(token,"strikeout") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"on") == 0 )
+                if (style->strikeout != TXT_STYLE_VAR_TRUE)
+                {
+                    style->strikeout = TXT_STYLE_VAR_TRUE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+                else if( strCMP(token,"off") == 0 )
+                    if (style->strikeout != TXT_STYLE_VAR_FALSE)
+                    {
+                        style->strikeout = TXT_STYLE_VAR_FALSE;
+                        retval |= TXT_RET_FNTSTL;
+                    }
+                    else
+                        gooood = false;
+        }
+        else if( strCMP(token,"bold") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"on") == 0 )
+                if (style->bold != TXT_STYLE_VAR_TRUE)
+                {
+                    style->bold = TXT_STYLE_VAR_TRUE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+                else if( strCMP(token,"off") == 0 )
+                    if (style->bold != TXT_STYLE_VAR_FALSE)
+                    {
+                        style->bold = TXT_STYLE_VAR_FALSE;
+                        retval |= TXT_RET_FNTSTL;
+                    }
+                    else
+                        gooood = false;
+        }
+        else if( strCMP(token,"skipcolor") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"on") == 0 )
+                style->skipcolor = TXT_STYLE_VAR_TRUE;
+            else if( strCMP(token,"off") == 0 )
+                style->skipcolor = TXT_STYLE_VAR_FALSE;
+            else
+                gooood = false;
+        }
+        else if( strCMP(token,"image") == 0 )
+        {
+            //token = strtok(NULL,find);
+        }
+        else if( strCMP(token,"statebox") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else
+            {
+                style->statebox = atoi(token);
+                retval |= TXT_RET_HASSTBOX;
+            }
+        }
+        else if( strCMP(token,"justify") == 0 )
+        {
+            token = strtok(NULL,find);
+            if (token == NULL)
+                gooood = false;
+            else if( strCMP(token,"center") == 0 )
+                style->justify = TXT_JUSTIFY_CENTER;
+            else if( strCMP(token,"left") == 0 )
+                style->justify = TXT_JUSTIFY_LEFT;
+            else if( strCMP(token,"right") == 0 )
+                style->justify = TXT_JUSTIFY_RIGHT;
+            else
+                gooood = false;
+        }
+
+        if (gooood)
+            token = strtok(NULL,find);
+
+    }
+    return retval;
+}
+
+void txt_DrawTxtWithJustify(char *txt, TTF_Font *fnt, SDL_Color clr, SDL_Surface *dst, int lineY, int justify)
+{
+    SDL_Surface *aaa= TTF_RenderUTF8_Solid(fnt,txt,clr);
+
+    if (justify == TXT_JUSTIFY_LEFT)
+
+        DrawImageToSurf(aaa,0,lineY - aaa->h,dst);
+
+    else if (justify == TXT_JUSTIFY_CENTER)
+
+        DrawImageToSurf(aaa, (dst->w - aaa->w)/2,  lineY - aaa->h,  dst);
+
+    else if (justify == TXT_JUSTIFY_RIGHT)
+
+        DrawImageToSurf(aaa, dst->w - aaa->w,  lineY - aaa->h,  dst);
+
+    SDL_FreeSurface(aaa);
+}
+
+
+int32_t txt_get_linelen_for_width()
+{
+
+}
+
+void txt_readfontstyle(struct_txt_style *style, char *strin)
+{
+    int32_t strt=-1;
+    int32_t endt=-1;
+    for (int32_t i=0; i< strlen(strin); i++)
+    {
+        if (strin[i] == '<')
+            strt = i;
+        else if (strin[i] == '>')
+        {
+            endt = i;
+            if (strt != -1)
+                if ((endt-strt-1) > 0)
+                    txt_parse_txt_params(style,strin+strt+1,endt-strt-1);
+        }
+
+    }
+}
+
+void txt_set_font_style(TTF_Font *font, struct_txt_style *fnt_stl)
+{
+    int32_t temp_stl=0;
+
+    if (fnt_stl->bold == SUB_STYLE_ON)
+        temp_stl |= TTF_STYLE_BOLD;
+
+    if (fnt_stl->italic == SUB_STYLE_ON)
+        temp_stl |= TTF_STYLE_ITALIC;
+
+    if (fnt_stl->underline == SUB_STYLE_ON)
+        temp_stl |= TTF_STYLE_UNDERLINE;
+
+    if (fnt_stl->strikeout == SUB_STYLE_ON)
+        temp_stl |= TTF_STYLE_STRIKETHROUGH;
+
+    TTF_SetFontStyle(font,temp_stl);
+}
+
+int32_t txt_DrawTxt(char *txt, struct_txt_style *fnt_stl, SDL_Surface *dst)
+{
+    TTF_Font *temp_font = GetFontByName(fnt_stl->fontname, fnt_stl->size);
+    if(!temp_font)
+    {
+        printf("TTF_OpenFont: %s\n", TTF_GetError());
+        exit(1);
+    }
+
+    SDL_FillRect(dst,NULL,0);
+
+    SDL_Color clr= {fnt_stl->red,fnt_stl->green,fnt_stl->blue};
+
+    txt_set_font_style(temp_font,fnt_stl);
+
+    int32_t w,h;
+
+    TTF_SizeUTF8(temp_font,txt,&w,&h);
+
+    txt_DrawTxtWithJustify(txt,temp_font,clr,dst,fnt_stl->size,fnt_stl->justify);
+
+    TTF_CloseFont(temp_font);
+
+    return w;
+}
+
+SDL_Surface *txt_RenderUTF8(TTF_Font *fnt, char *text, struct_txt_style *style)
+{
+    txt_set_font_style(fnt,style);
+    SDL_Color clr= {style->red,style->green,style->blue};
+    return TTF_RenderUTF8_Solid(fnt,text,clr);
+}
+
+void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
+{
+    struct_txt_style style,style2;
+    txt_init_txt_struct(&style);
+    int32_t strt=-1;
+    int32_t endt=-1;
+    int32_t i=0;
+    int32_t dx=0,dy=0;
+    int32_t txt_w,txt_h;
+    int32_t txtpos=0;
+    char buf[512];
+    char buf2[512];
+    memset(buf,0,512);
+    memset(buf2,0,512);
+
+    SDL_Surface *TxtSurfaces[256][6];
+    int32_t currentline=0, currentlineitm=0;
+
+    int8_t TxtJustify[256];
+    int8_t TxtPoint[256];
+
+    memset(TxtSurfaces,0,sizeof(TxtSurfaces[0][0])*256*6);
+
+    int32_t stringlen=strlen(text);
+
+    TTF_Font *font=NULL;
+
+    font = GetFontByName(style.fontname,style.size);
+    txt_set_font_style(font,&style);
+
+    int32_t prevbufspace=0, prevtxtspace=0;
+
+    while (i<stringlen)
+    {
+        TxtJustify[currentline] = style.justify;
+        TxtPoint[currentline] = style.size;
+        if (text[i]== '<')
+        {
+            int32_t ret = 0;
+
+            strt = i;
+            while (i<stringlen && text[i]!='>')
+                i++;
+            endt = i;
+            if (strt != -1)
+                if ((endt-strt-1) > 0)
+                {
+                    style2 = style;
+                    ret = txt_parse_txt_params(&style,text+strt+1,endt-strt-1);
+                }
+
+            if (ret & (TXT_RET_FNTCHG | TXT_RET_FNTSTL | TXT_RET_NEWLN))
+            {
+                if (strlen(buf)>0)
+                {
+
+                    TTF_SizeUTF8(font,buf,&txt_w,&txt_h);
+
+                    TxtSurfaces[currentline][currentlineitm] = txt_RenderUTF8(font,buf,&style2);
+
+                    currentlineitm++;
+
+                    memset(buf,0,512);
+                    prevbufspace=0;
+                    txtpos=0;
+                    dx+=txt_w;
+
+                }
+                if (ret & TXT_RET_FNTCHG)
+                {
+                    TTF_CloseFont(font);
+                    font = GetFontByName(style.fontname,style.size);
+                    txt_set_font_style(font,&style);
+                }
+                if (ret & TXT_RET_FNTSTL)
+                    txt_set_font_style(font,&style);
+
+                if (ret & TXT_RET_NEWLN)
+                {
+                    currentline++;
+                    currentlineitm=0;
+                    dx=0;
+                }
+            }
+
+            if (ret & TXT_RET_HASSTBOX)
+            {
+                char buf3[16];
+                    sprintf(buf3,"%d",GetgVarInt(style.statebox));
+                    strcat(buf,buf3);
+                    txtpos+=strlen(buf3);
+            }
+
+        }
+        else
+        {
+            buf[txtpos++]=text[i];
+            if (text[i] == ' ')
+            {
+                prevbufspace = txtpos-1;
+                prevtxtspace = i;
+            }
+
+
+            if (font != NULL)
+            {
+                TTF_SizeUTF8(font,buf,&txt_w,&txt_h);
+                if (txt_w+dx > dst->w)
+                {
+                    if (prevbufspace == 0)
+                    {
+                        prevtxtspace = i;
+                        prevbufspace = txtpos-1;
+                    }
+                    memcpy(buf2,buf,prevbufspace);
+                    buf2[prevbufspace+1] = 0x0;
+
+                    if (strlen(buf2)>0)
+                        TxtSurfaces[currentline][currentlineitm] = txt_RenderUTF8(font,buf2,&style);
+
+                    memset(buf,0,512);
+                    i = prevtxtspace;
+                    prevbufspace=0;
+                    txtpos=0;
+                    currentline++;
+                    currentlineitm=0;
+                    dx=0;
+                }
+            }
+        }
+        i++;
+    }
+
+    if (strlen(buf)>0)
+        TxtSurfaces[currentline][currentlineitm] = txt_RenderUTF8(font,buf,&style);
+
+    dy=0;
+    for (i=0;i<=currentline;i++)
+    {
+        int32_t j=0;
+        int32_t width=0;
+        while(TxtSurfaces[i][j] != NULL)
+        {
+            width+=TxtSurfaces[i][j]->w;
+            j++;
+        }
+        dx=0;
+        for (int32_t jj=0; jj<j;jj++)
+        {
+            if (     TxtJustify[i] == TXT_JUSTIFY_LEFT)
+                DrawImageToSurf(TxtSurfaces[i][jj],dx, dy+TxtPoint[i] - TxtSurfaces[i][jj]->h,dst);
+
+            else if (TxtJustify[i] == TXT_JUSTIFY_CENTER)
+                DrawImageToSurf(TxtSurfaces[i][jj],((dst->w - width)>>1)+dx,  dy+TxtPoint[i] - TxtSurfaces[i][jj]->h,dst);
+
+            else if (TxtJustify[i] == TXT_JUSTIFY_RIGHT)
+                DrawImageToSurf(TxtSurfaces[i][jj],dst->w-width+dx, dy+TxtPoint[i] - TxtSurfaces[i][jj]->h,dst);
+
+            dx+=TxtSurfaces[i][jj]->w;
+        }
+
+        dy+=TxtPoint[i];
+    }
+
+    for (i=0;i<256;i++)
+        for (int32_t j=0;j<6;j++)
+            if (TxtSurfaces[i][j]!= NULL)
+                SDL_FreeSurface(TxtSurfaces[i][j]);
+
+}

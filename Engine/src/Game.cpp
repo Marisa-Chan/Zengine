@@ -9,6 +9,8 @@ int32_t View_start_Loops = 0;
 
 int8_t  SaveSlot = 0;
 
+char *SystemStrings[SYSTEM_STRINGS_NUM];
+
 
 void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 {
@@ -45,96 +47,6 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 
 
 
-
-
-
-
-bool ProcessCriteries2(MList *lst)
-{
-    bool tmp=true;
-
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        crit_node *critnd=(crit_node *)DataMList(lst);
-#ifdef TRACE
-        printf("        [%d] %d [%d] %d\n",critnd->slot1,critnd->oper,critnd->slot2,critnd->var2);
-#endif
-        int tmp1=GetgVarInt(critnd->slot1);
-        int tmp2;
-
-        if (critnd->var2)
-            tmp2=GetgVarInt(critnd->slot2);
-        else
-            tmp2=critnd->slot2;
-
-        switch (critnd->oper)
-        {
-        case CRIT_OP_EQU:
-            tmp &= (tmp1 == tmp2);
-            break;
-        case CRIT_OP_GRE:
-            tmp &= (tmp1 > tmp2);
-            break;
-        case CRIT_OP_LEA:
-            tmp &= (tmp1 < tmp2);
-            break;
-        case CRIT_OP_NOT:
-            tmp &= (tmp1 != tmp2);
-            break;
-        }
-
-        if (!tmp) break;
-
-        NextMList(lst);
-    }
-    return tmp;
-}
-
-bool ProcessCriteries(MList *lst)
-{
-    bool tmp=true;
-
-    StartMList(lst);
-    while (!eofMList(lst))
-    {
-        crit_node *critnd=(crit_node *)DataMList(lst);
-#ifdef FULLTRACE
-        printf("        [%d] %d [%d] %d\n",critnd->slot1,critnd->oper,critnd->slot2,critnd->var2);
-#endif
-        int tmp1=GetgVarInt(critnd->slot1);
-        int tmp2;
-
-        if (critnd->var2)
-            tmp2=GetgVarInt(critnd->slot2);
-        else
-            tmp2=critnd->slot2;
-
-        switch (critnd->oper)
-        {
-        case CRIT_OP_EQU:
-            tmp &= (tmp1 == tmp2);
-            break;
-        case CRIT_OP_GRE:
-            tmp &= (tmp1 > tmp2);
-            break;
-        case CRIT_OP_LEA:
-            tmp &= (tmp1 < tmp2);
-            break;
-        case CRIT_OP_NOT:
-            tmp &= (tmp1 != tmp2);
-            break;
-        }
-
-        if (!tmp) break;
-
-        NextMList(lst);
-    }
-    return tmp;
-}
-
-
-
 void InitGameLoop()
 {
     pzllst *uni = GetUni();
@@ -153,6 +65,9 @@ void InitGameLoop()
     SetDirectgVarInt(SLOT_MENU_LASTVIEW , InitView);
     SetDirectgVarInt(53,250);
     //\Hack
+
+
+
 }
 
 
@@ -297,7 +212,53 @@ void GameLoop()
     Rend_ScreenFlip();
 }
 
+void ReadSystemStrings(char *filename)
+{
+    memset(SystemStrings,0,sizeof(SystemStrings[0])*SYSTEM_STRINGS_NUM);
+
+    FILE *fl = fopen(filename,"rb");
+
+    int32_t ii=0;
+
+    char buf[FILE_LN_BUF];
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        char *str = TrimRight(buf);
+        if (ii<SYSTEM_STRINGS_NUM)
+        {
+            SystemStrings[ii] = (char *)malloc (strlen(str)+1);
+            strcpy(SystemStrings[ii],str);
+        }
+        ii++;
+    }
+
+    fclose(fl);
+}
+
+char *GetSystemString(int32_t indx)
+{
+    if (indx<SYSTEM_STRINGS_NUM)
+        return SystemStrings[indx];
+    return NULL;
+}
 
 
 
-
+void ifquit()
+{
+    struct_SubRect *zzz=Rend_CreateSubRect(0,412,640,68);
+    txt_DrawTxtInOneLine(GetSystemString(6),zzz->img);
+    Rend_ProcessSubs();
+    Rend_ScreenFlip();
+    while (!KeyDown(SDLK_y) && !KeyDown(SDLK_n))
+    {
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        UpdateKeyboard();
+    }
+    zzz->todelete = true;
+    if (KeyDown(SDLK_y))
+        __END();
+}

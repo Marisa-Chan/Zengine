@@ -69,6 +69,9 @@ int main(int argc, char **argv)
     sprintf(buf,"%s/%s",pa,"FONTS");
     Rend_InitGraphics(fullscreen,buf);
 
+    sprintf(buf,"%s/%s",pa,"INQUIS.STR");
+    ReadSystemStrings(buf);
+
     menu_LoadGraphics();
 
     InitScriptsEngine();
