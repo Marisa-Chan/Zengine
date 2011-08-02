@@ -42,4 +42,23 @@ void txt_set_font_style(TTF_Font *font, struct_txt_style *fnt_stl);
 int32_t txt_DrawTxt(char *txt, struct_txt_style *fnt_stl, SDL_Surface *dst);
 void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst);
 
+struct struct_ttytext
+{
+    int32_t            x,y;
+    int32_t            w,h;
+    struct_txt_style   style;
+    TTF_Font           *fnt;
+    char               *txtbuf;
+    int32_t            txtpos;
+    int32_t            txtsize;
+    int32_t            delay;
+    int32_t            nexttime;
+    SDL_Surface        *img;
+    int32_t            dx,dy;
+};
+
+struct_action_res *txt_CreateTTYtext();
+int txt_DeleteTTYtext(struct_action_res *nod);
+int txt_ProcessTTYtext(struct_action_res *nod);
+
 #endif // TEXT_H_INCLUDED

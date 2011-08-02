@@ -12,7 +12,6 @@ OBJS =  \
 	Control.cpp\
 	Game.cpp\
 	Graph.cpp\
-	Manage.cpp\
 	main.cpp\
 	System.cpp\
 	Mouse.cpp\

@@ -59,5 +59,6 @@ struct_action_res *snd_CreateSyncNode();
 
 struct_action_res *snd_CreatePanTrack();
 int snd_DeletePanTrack(struct_action_res *nod);
+int snd_ProcessPanTrack(struct_action_res *nod);
 
 #endif // SOUNDFX_H_INCLUDED

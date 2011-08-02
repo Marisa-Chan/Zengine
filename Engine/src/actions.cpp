@@ -100,7 +100,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     setGNode(aSlot, nod);
 
     s = PrepareString(tmp2);
-    nod->nodes.node_timer = GetIntVal(s);
+    nod->nodes.node_timer = GetIntVal(s) * 100;
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif
@@ -702,10 +702,74 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
 
 int action_ttytext(char *params, int aSlot , pzllst *owner)
 {
+#ifdef TRACE
+    printf("        action:ttytext:%d(%s)\n",aSlot,params);
+#endif
     char chars[16];
-    sscanf(params,"%s",chars);
-    printf("STUB     action:ttytext:%d(%s) \n>>>   ",aSlot,params);
-    action_timer("15",aSlot,owner);
+    int32_t delay;
+    int32_t x,y,w,h;
+    sscanf(params,"%d %d %d %d %s %d",&x,&y,&w,&h,chars,&delay);
+
+    w-=x;
+    h-=y;
+
+    char *fil = GetFilePath(chars);
+
+    if (fil == NULL)
+    {
+#ifdef TRACE
+    printf("          +-> file (%s) not found\n",chars);
+#endif
+        return ACTION_NORMAL;
+    }
+
+
+    struct_action_res *nod = txt_CreateTTYtext();
+
+    nod->slot = aSlot;
+    nod->owner = owner;
+
+    FILE *fl = fopen(fil,"rb");
+
+    fseek(fl,0,SEEK_END);
+    int32_t flsize = ftell(fl);
+    fseek(fl,0,SEEK_SET);
+
+    uint8_t *tmp = (uint8_t *)malloc(flsize);
+
+    nod->nodes.tty_text->txtbuf = (char *)malloc(flsize);
+    memset(nod->nodes.tty_text->txtbuf,0,flsize);
+
+    fread(tmp,flsize,1,fl);
+
+    fclose(fl);
+
+    int32_t j=0;
+    for (int32_t i=0; i<flsize; i++)
+        if (tmp[i]!=0x0A && tmp[i]!=0x0D)
+        {
+            nod->nodes.tty_text->txtbuf[j]=(char)tmp[i];
+            j++;
+        }
+    nod->nodes.tty_text->txtsize = j;
+    free(tmp);
+
+    txt_readfontstyle(&nod->nodes.tty_text->style,nod->nodes.tty_text->txtbuf);
+    nod->nodes.tty_text->fnt = GetFontByName(nod->nodes.tty_text->style.fontname,nod->nodes.tty_text->style.size);
+
+    nod->nodes.tty_text->w = w;
+    nod->nodes.tty_text->h = h;
+    nod->nodes.tty_text->x = x;
+    nod->nodes.tty_text->y = y;
+    nod->nodes.tty_text->delay = delay;
+
+
+    nod->nodes.tty_text->img = CreateSurface(w,h);
+
+    SetgVarInt(nod->slot, 1);
+    setGNode(nod->slot,nod);
+
+    ScrSys_AddToActResList(nod);
 
     return ACTION_NORMAL;
 }
@@ -772,8 +836,8 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
 
     slot = GetIntVal(chars);
 
-    if (getGNode(slot) == NULL)
-        return ACTION_NOT_FOUND;
+    //if (getGNode(slot) == NULL)
+        //return ACTION_NOT_FOUND;
 
     MList *all = GetAction_res_List();
 
@@ -1060,6 +1124,9 @@ int action_pan_track(char *params, int aSlot , pzllst *owner)
 
         nod->owner = owner;
         nod->slot  = aSlot;
+
+        if (nod->slot > 0)
+            setGNode(nod->slot,nod);
 
         ScrSys_AddToActResList(nod);
 

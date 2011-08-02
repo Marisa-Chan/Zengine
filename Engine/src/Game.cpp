@@ -160,9 +160,7 @@ void GameLoop()
         SetgVarInt(10,0);
 
     if (KeyAnyHit())
-        if (GetLastKey() != SDLK_FIRST && GetLastKey() != SDLK_F5 &&\
-                GetLastKey() != SDLK_F6    && GetLastKey() != SDLK_F7 &&\
-                GetLastKey() != SDLK_F8)
+        if (GetLastKey() != SDLK_FIRST)
             SetgVarInt(8,GetWinKey(GetLastKey()));
 
     if (Rend_MouseInGamescr())
@@ -258,7 +256,7 @@ void ifquit()
         SDL_PollEvent(&event);
         UpdateKeyboard();
     }
-    zzz->todelete = true;
+    Rend_DeleteSubRect(zzz);
     if (KeyDown(SDLK_y))
         __END();
 }

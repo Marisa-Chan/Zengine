@@ -113,11 +113,13 @@ struct struct_action_res
         anim_preplay_node *node_animpreplay;
         struct_syncnode *node_sync;
         int          node_timer;
+        struct_ttytext  *tty_text;
 
         int          node_pantracking;
         void        *node_unknow;
     } nodes;
     bool       need_delete;
+    bool       first_process;
 };
 
 pzllst *GetUni();

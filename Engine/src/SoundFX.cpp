@@ -228,6 +228,21 @@ struct_action_res *snd_CreatePanTrack()
     tmp->nodes.node_pantracking = 0;
 }
 
+int snd_ProcessPanTrack(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_PANTRACK)
+        return NODE_RET_OK;
+
+    struct_action_res *tr_nod = getGNode(nod->nodes.node_pantracking);
+    if ( tr_nod == NULL)
+        {
+            snd_DeletePanTrack(nod);
+            return NODE_RET_DELETE;
+        }
+
+    return NODE_RET_OK;
+}
+
 int snd_DeletePanTrack(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_PANTRACK)
@@ -241,6 +256,9 @@ int snd_DeletePanTrack(struct_action_res *nod)
             Mix_SetPosition(tr_nod->nodes.node_music->chn, 0, tr_nod->nodes.node_music->attenuate);
             tr_nod->need_delete = true;
         }
+
+    if (nod->slot > 0)
+        setGNode(nod->slot,NULL);
 
     delete nod;
 

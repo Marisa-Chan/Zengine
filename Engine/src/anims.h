@@ -6,20 +6,20 @@
 
 struct animnode
 {
-    int      x;
-    int      y;
-    int      w;
-    int      h;
-    int  start;
-    int    end;
-    int   loopcnt;
-    int   unk1; //???
-    int   unk2;
-    int   mask;
-    int   framerate;
-    int  CurFr;
-    int  nexttick;
-    int  loops;
+    int32_t      x;
+    int32_t      y;
+    int32_t      w;
+    int32_t      h;
+    int32_t  start;
+    int32_t    end;
+    int32_t   loopcnt;
+    int32_t   unk1; //???
+    int32_t   unk2;
+    int32_t   mask;
+    int32_t   framerate;
+    int32_t  CurFr;
+    int32_t  nexttick;
+    int32_t  loops;
     union anim
     {
         anim_surf *rlf;
@@ -31,15 +31,15 @@ struct animnode
 };
 
 struct anim_preplay_node{
-    int pointingslot;
-    int playerid;
-    int      x;
-    int      y;
-    int      w;
-    int      h;
-    int  start;
-    int    end;
-    int   loop;
+    int32_t pointingslot;
+    int32_t playerid;
+    int32_t      x;
+    int32_t      y;
+    int32_t      w;
+    int32_t      h;
+    int32_t  start;
+    int32_t    end;
+    int32_t   loop;
     animnode *point; //pointer to direct access
 };
 

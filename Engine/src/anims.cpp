@@ -72,7 +72,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
 {
 
     if (framerate != 0)
-        nod->framerate = ceil(30.0 / float(framerate));
+        nod->framerate = 1000.0/framerate;
     else
         nod->framerate = 0;
 
@@ -88,7 +88,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         nod->anim.avi->img = NULL;
 
         if (nod->framerate == 0)
-            nod->framerate = 2; //~15fps
+            nod->framerate = 66; //~15fps
 
     }
     else
@@ -97,7 +97,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         nod->vid=false;
 
         if (nod->framerate == 0)
-            nod->framerate = ceil(30.0*(nod->anim.rlf->info.frames / 10000.0))+1;
+            nod->framerate = nod->anim.rlf->info.time;
     }
 }
 
@@ -108,9 +108,9 @@ void anim_ProcessAnim(animnode *mnod)
         return;
 
     if (mnod)
-        if (GetBeat())
-        {
-            mnod->nexttick--;
+    {
+
+            mnod->nexttick -= GetDTime();
 
             if (mnod->nexttick <= 0)
             {
@@ -160,7 +160,7 @@ void anim_ProcessAnim(animnode *mnod)
                     }
                 }
             }
-        }
+    }
 }
 
 int anim_ProcessAnimPlayNode(struct_action_res *nod)

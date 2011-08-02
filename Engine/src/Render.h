@@ -44,6 +44,7 @@ void Rend_ProcessCursor();
 
 void Rend_RenderFunc();
 void Rend_InitGraphics(bool fullscreen,char *fontpath);
+void Rend_SwitchFullscreen();
 
 void Rend_SetDelay(int delay);
 

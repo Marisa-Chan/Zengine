@@ -86,6 +86,14 @@ struct_textfile *sub_LoadTextFile(char *file)
     return tmp;
 }
 
+void sub_DeleteTextFile(struct_textfile *txt)
+{
+    free(txt->buffer);
+    free(txt->subs);
+    free(txt->params);
+    delete txt;
+}
+
 
 struct_font_style sub_parse_parameters(char *string)
 {
@@ -532,10 +540,9 @@ int sub_ProcessSub(struct_subtitles *sub,int subtime)
 
 void sub_DeleteSub(struct_subtitles *sub)
 {
-    sub->SubRect->todelete = true;
+    Rend_DeleteSubRect(sub->SubRect);
 
-    delete sub->txt->buffer;
-    delete sub->txt;
-    delete [] sub->subs;
+    sub_DeleteTextFile(sub->txt);
+    free(sub->subs);
     delete sub;
 }

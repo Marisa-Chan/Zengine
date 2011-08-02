@@ -303,7 +303,7 @@ void ScrSys_PrepareSaveBuffer()
 
                 tmp = (int32_t *)&SaveBuffer[buffpos+12];
 
-                *tmp = nod->nodes.node_timer * 100;
+                *tmp = nod->nodes.node_timer;
 
                 buffpos+=16;
             }
@@ -745,6 +745,8 @@ void ScrSys_ProcessAllRes()
     {
         struct_action_res *nod = (struct_action_res *)DataMList(lst);
 
+        nod->first_process = true;
+
         if (!nod->need_delete)
         {
             switch(nod->node_type)
@@ -768,7 +770,10 @@ void ScrSys_ProcessAllRes()
                 result = snd_ProcessSync(nod);
                 break;
             case NODE_TYPE_PANTRACK:
-                result=NODE_RET_OK;
+                result = snd_ProcessPanTrack(nod);
+                break;
+            case NODE_TYPE_TTYTEXT:
+                result = txt_ProcessTTYtext(nod);
                 break;
 
             default:
@@ -830,6 +835,9 @@ int ScrSys_DeleteNode(struct_action_res *nod)
         break;
     case NODE_TYPE_PANTRACK:
         return snd_DeletePanTrack(nod);
+        break;
+    case NODE_TYPE_TTYTEXT:
+        return txt_DeleteTTYtext(nod);
         break;
     }
 
@@ -895,7 +903,7 @@ void ScrSys_FlushResourcesByType(int type)
     {
         struct_action_res *nod = (struct_action_res *)DataMList(all);
 
-        if (nod->node_type == type)
+        if (nod->node_type == type && nod->first_process == true)
             if (ScrSys_DeleteNode(nod) == NODE_RET_DELETE)
                 DeleteCurrent(all);
 
@@ -913,6 +921,7 @@ struct_action_res *ScrSys_CreateActRes(int type)
     tmp->owner             = NULL;
     tmp->slot              = 0;
     tmp->need_delete       = false;
+    tmp->first_process     = false;
 
     return tmp;
 }

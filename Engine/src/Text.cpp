@@ -177,19 +177,23 @@ int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
             if (token == NULL)
                 gooood = false;
             else if( strCMP(token,"on") == 0 )
+            {
                 if (style->italic != TXT_STYLE_VAR_TRUE)
                 {
                     style->italic = TXT_STYLE_VAR_TRUE;
                     retval |= TXT_RET_FNTSTL;
                 }
-                else if( strCMP(token,"off") == 0 )
-                    if (style->italic != TXT_STYLE_VAR_FALSE)
-                    {
-                        style->italic = TXT_STYLE_VAR_FALSE;
-                        retval |= TXT_RET_FNTSTL;
-                    }
-                    else
-                        gooood = false;
+            }
+            else if( strCMP(token,"off") == 0 )
+            {
+                if (style->italic != TXT_STYLE_VAR_FALSE)
+                {
+                    style->italic = TXT_STYLE_VAR_FALSE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+            else
+                gooood = false;
         }
         else if( strCMP(token,"underline") == 0 )
         {
@@ -197,19 +201,23 @@ int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
             if (token == NULL)
                 gooood = false;
             else if( strCMP(token,"on") == 0 )
+            {
                 if (style->underline != TXT_STYLE_VAR_TRUE)
                 {
                     style->underline = TXT_STYLE_VAR_TRUE;
                     retval |= TXT_RET_FNTSTL;
                 }
-                else if( strCMP(token,"off") == 0 )
-                    if (style->underline != TXT_STYLE_VAR_FALSE)
-                    {
-                        style->underline = TXT_STYLE_VAR_FALSE;
-                        retval |= TXT_RET_FNTSTL;
-                    }
-                    else
-                        gooood = false;
+            }
+            else if( strCMP(token,"off") == 0 )
+            {
+                if (style->underline != TXT_STYLE_VAR_FALSE)
+                {
+                    style->underline = TXT_STYLE_VAR_FALSE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+            else
+                gooood = false;
         }
         else if( strCMP(token,"strikeout") == 0 )
         {
@@ -217,19 +225,23 @@ int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
             if (token == NULL)
                 gooood = false;
             else if( strCMP(token,"on") == 0 )
+            {
                 if (style->strikeout != TXT_STYLE_VAR_TRUE)
                 {
                     style->strikeout = TXT_STYLE_VAR_TRUE;
                     retval |= TXT_RET_FNTSTL;
                 }
-                else if( strCMP(token,"off") == 0 )
-                    if (style->strikeout != TXT_STYLE_VAR_FALSE)
-                    {
-                        style->strikeout = TXT_STYLE_VAR_FALSE;
-                        retval |= TXT_RET_FNTSTL;
-                    }
-                    else
-                        gooood = false;
+            }
+            else if( strCMP(token,"off") == 0 )
+            {
+                if (style->strikeout != TXT_STYLE_VAR_FALSE)
+                {
+                    style->strikeout = TXT_STYLE_VAR_FALSE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+            else
+                gooood = false;
         }
         else if( strCMP(token,"bold") == 0 )
         {
@@ -237,19 +249,23 @@ int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
             if (token == NULL)
                 gooood = false;
             else if( strCMP(token,"on") == 0 )
+            {
                 if (style->bold != TXT_STYLE_VAR_TRUE)
                 {
                     style->bold = TXT_STYLE_VAR_TRUE;
                     retval |= TXT_RET_FNTSTL;
                 }
-                else if( strCMP(token,"off") == 0 )
-                    if (style->bold != TXT_STYLE_VAR_FALSE)
-                    {
-                        style->bold = TXT_STYLE_VAR_FALSE;
-                        retval |= TXT_RET_FNTSTL;
-                    }
-                    else
-                        gooood = false;
+            }
+            else if( strCMP(token,"off") == 0 )
+            {
+                if (style->bold != TXT_STYLE_VAR_FALSE)
+                {
+                    style->bold = TXT_STYLE_VAR_FALSE;
+                    retval |= TXT_RET_FNTSTL;
+                }
+            }
+            else
+                gooood = false;
         }
         else if( strCMP(token,"skipcolor") == 0 )
         {
@@ -484,9 +500,9 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
             if (ret & TXT_RET_HASSTBOX)
             {
                 char buf3[16];
-                    sprintf(buf3,"%d",GetgVarInt(style.statebox));
-                    strcat(buf,buf3);
-                    txtpos+=strlen(buf3);
+                sprintf(buf3,"%d",GetgVarInt(style.statebox));
+                strcat(buf,buf3);
+                txtpos+=strlen(buf3);
             }
 
         }
@@ -533,7 +549,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
         TxtSurfaces[currentline][currentlineitm] = txt_RenderUTF8(font,buf,&style);
 
     dy=0;
-    for (i=0;i<=currentline;i++)
+    for (i=0; i<=currentline; i++)
     {
         int32_t j=0;
         int32_t width=0;
@@ -543,7 +559,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
             j++;
         }
         dx=0;
-        for (int32_t jj=0; jj<j;jj++)
+        for (int32_t jj=0; jj<j; jj++)
         {
             if (     TxtJustify[i] == TXT_JUSTIFY_LEFT)
                 DrawImageToSurf(TxtSurfaces[i][jj],dx, dy+TxtPoint[i] - TxtSurfaces[i][jj]->h,dst);
@@ -560,9 +576,201 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
         dy+=TxtPoint[i];
     }
 
-    for (i=0;i<256;i++)
-        for (int32_t j=0;j<6;j++)
+    for (i=0; i<256; i++)
+        for (int32_t j=0; j<6; j++)
             if (TxtSurfaces[i][j]!= NULL)
                 SDL_FreeSurface(TxtSurfaces[i][j]);
 
 }
+
+
+
+
+struct_action_res *txt_CreateTTYtext()
+{
+    struct_action_res *tmp;
+    tmp = ScrSys_CreateActRes(NODE_TYPE_TTYTEXT);
+
+    tmp->nodes.tty_text = new (struct_ttytext);
+    tmp->nodes.tty_text->delay = 0;
+    txt_init_txt_struct(&tmp->nodes.tty_text->style);
+    tmp->nodes.tty_text->fnt = NULL;
+    tmp->nodes.tty_text->x = 0;
+    tmp->nodes.tty_text->y = 0;
+    tmp->nodes.tty_text->w = 0;
+    tmp->nodes.tty_text->h = 0;
+    tmp->nodes.tty_text->txtbuf = NULL;
+    tmp->nodes.tty_text->txtpos = 0;
+    tmp->nodes.tty_text->img = NULL;
+    tmp->nodes.tty_text->nexttime =0;
+    tmp->nodes.tty_text->dx = 0;
+    tmp->nodes.tty_text->dy = 0;
+    tmp->nodes.tty_text->txtsize = 0;
+
+    return tmp;
+}
+
+int txt_DeleteTTYtext(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_TTYTEXT)
+        return NODE_RET_NO;
+
+    if (nod->nodes.tty_text->img != NULL)
+        SDL_FreeSurface(nod->nodes.tty_text->img);
+
+    if (nod->nodes.tty_text->fnt != NULL)
+        TTF_CloseFont(nod->nodes.tty_text->fnt);
+
+    if (nod->slot > 0)
+    {
+        SetgVarInt(nod->slot,2);
+        setGNode(nod->slot,NULL);
+    }
+
+    delete nod;
+
+    return NODE_RET_DELETE;
+}
+
+void ttynewline(struct_ttytext *tty)
+{
+    tty->dy+=tty->style.size;
+    tty->dx=0;
+}
+
+void ttyscroll(struct_ttytext *tty)
+{
+    int32_t scroll=0;
+    while (tty->dy-scroll > tty->h-tty->style.size)
+        scroll+=tty->style.size;
+    SDL_Surface *tmp = CreateSurface(tty->w,tty->h);
+    DrawImageToSurf(tty->img,0,-scroll,tmp);
+    SDL_FreeSurface(tty->img);
+    tty->img=tmp;
+    tty->dy-=scroll;
+}
+
+void outchartotty(uint16_t chr,struct_ttytext *tty)
+{
+    SDL_Color clr = {tty->style.red,tty->style.green,tty->style.blue};
+
+    SDL_Surface *tmp_surf = TTF_RenderGlyph_Solid(tty->fnt,chr,clr);
+
+    int32_t minx,maxx,miny,maxy,advice;
+    TTF_GlyphMetrics(tty->fnt,chr,&minx,&maxx,&miny,&maxy,&advice);
+
+    if (tty->dx+advice > tty->w)
+        ttynewline(tty);
+
+    if (tty->dy + tty->style.size + tty->style.size/4 > tty->h)
+        ttyscroll(tty);
+
+    DrawImageToSurf(tmp_surf,tty->dx,tty->dy+tty->style.size - maxy,tty->img);
+
+    tty->dx += advice;
+
+    SDL_FreeSurface(tmp_surf);
+}
+
+int txt_ProcessTTYtext(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_TTYTEXT)
+        return NODE_RET_NO;
+
+    struct_ttytext *tty = nod->nodes.tty_text;
+
+    tty->nexttime -= GetDTime();
+
+    if (tty->nexttime < 0)
+    {
+        if (tty->txtpos < tty->txtsize)
+        {
+            if (tty->txtbuf[tty->txtpos] == '<')
+            {
+                int32_t strt=tty->txtpos, endt=0,ret=0;
+                while(tty->txtbuf[tty->txtpos] != '>' && tty->txtpos < tty->txtsize)
+                    tty->txtpos++;
+                endt = tty->txtpos;
+                if (strt != -1)
+                    if ((endt-strt-1) > 0)
+                        ret = txt_parse_txt_params(&tty->style,tty->txtbuf+strt+1,endt-strt-1);
+
+                if (ret & (TXT_RET_FNTCHG | TXT_RET_FNTSTL | TXT_RET_NEWLN))
+                {
+                    if (ret & TXT_RET_FNTCHG)
+                    {
+                        TTF_CloseFont(tty->fnt);
+                        tty->fnt = GetFontByName(tty->style.fontname,tty->style.size);
+                        txt_set_font_style(tty->fnt,&tty->style);
+                    }
+                    if (ret & TXT_RET_FNTSTL)
+                        txt_set_font_style(tty->fnt,&tty->style);
+
+                    if (ret & TXT_RET_NEWLN)
+                        ttynewline(tty);
+                }
+
+                if (ret & TXT_RET_HASSTBOX)
+                {
+                    char buf[16];
+                    sprintf(buf,"%d",GetgVarInt(tty->style.statebox));
+                    for (int8_t j=0; j<strlen(buf); j++)
+                        outchartotty(buf[j],tty);
+                }
+
+                tty->txtpos++;
+            }
+            else
+            {
+                int8_t charsz=GetUtf8CharSize(tty->txtbuf[tty->txtpos]);
+
+                uint16_t chr = ReadUtf8Char(&tty->txtbuf[tty->txtpos]);
+
+
+
+                if (chr == ' ')
+                {
+                    int32_t i=tty->txtpos + charsz;
+                    int32_t width=0;
+                    while (i < tty->txtsize && tty->txtbuf[i] != ' ' && tty->txtbuf[i] != '<')
+                    {
+
+                        int8_t chsz   = GetUtf8CharSize(tty->txtbuf[i]);
+                        uint16_t uchr = ReadUtf8Char(&tty->txtbuf[i]);
+
+                        int32_t minx,maxx,miny,maxy,advice;
+                        TTF_GlyphMetrics(tty->fnt,chr,&minx,&maxx,&miny,&maxy,&advice);
+
+                        width+=advice;
+
+                        i+=chsz;
+                    }
+                    if (tty->dx+width > tty->w)
+                        ttynewline(tty);
+                    else
+                        outchartotty(chr,tty);
+
+
+                }
+                else
+                    outchartotty(chr,tty);
+
+                tty->txtpos+=charsz;
+            }
+            tty->nexttime = tty->delay;
+            Rend_DrawImageToGamescr(tty->img,tty->x,tty->y);
+        }
+        else
+        {
+            txt_DeleteTTYtext(nod);
+            return NODE_RET_DELETE;
+        }
+
+
+    }
+
+    return NODE_RET_OK;
+}
+
+
+

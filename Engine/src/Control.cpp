@@ -885,6 +885,7 @@ void DeleteSelControl(ctrlnode *nod)
     case CTRL_SLOT:
         if (nod->node.slot->srf)
             SDL_FreeSurface(nod->node.slot->srf);
+        free(nod->node.slot->eligible_objects);
         delete nod->node.slot;
         break;
     case CTRL_INPUT:

@@ -9,7 +9,7 @@
 #include <smpeg/smpeg.h>
 
 extern const int FiveBitToEightBitLookupTable [32];
-
+SDL_Surface *SwitchFullscreen();
 SDL_Surface *InitGraphicAndSound(uint16_t width, uint16_t height, uint16_t bpp,bool ful, char *fontsdir);
 void ConvertImage(SDL_Surface **tmp);
 SDL_Surface *CreateSurface(uint16_t w,uint16_t h);
@@ -51,7 +51,6 @@ anim_surf *LoadAnimImage(char *file,int32_t mask);
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame);
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf);
 void FreeAnimImage(anim_surf *anim);
-
 
 SDL_Surface *LoadConvertImg(char *file);
 SDL_Surface *LoadConvertImg(char *file,uint32_t key);

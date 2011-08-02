@@ -624,3 +624,56 @@ char *GetExactFilePath(char *chr)
 #endif
     return NULL;
 }
+
+int8_t GetUtf8CharSize(char chr)
+{
+    if ((chr & 0x80) == 0)
+        return 1;
+    else if ((chr & 0xE0) == 0xC0)
+        return 2;
+    else if ((chr & 0xF0) == 0xE0)
+        return 3;
+    else if ((chr & 0xF8) == 0xF0)
+        return 4;
+    else if ((chr & 0xFC) == 0xF8)
+        return 5;
+    else if ((chr & 0xFE) == 0xFC)
+        return 6;
+
+    return 1;
+}
+
+uint16_t ReadUtf8Char(char *chr)
+{
+    uint16_t result=0;
+    if ((chr[0] & 0x80) == 0)
+        result = chr[0];
+    else if ((chr[0] & 0xE0) == 0xC0)
+        result = ((chr[0] & 0x1F) << 6) | (chr[1] & 0x3F);
+    else if ((chr[0] & 0xF0) == 0xE0)
+        result = ((chr[0] & 0x0F) << 12) | ((chr[1] & 0x3F) << 6) | (chr[2] & 0x3F);
+    else
+        result = chr[0];
+
+    return result;
+}
+
+
+uint32_t CurrentTime=0;
+uint32_t DeltaTime=0;
+
+void UpdateDTime()
+{
+    uint32_t tmptime=SDL_GetTicks();
+    if (CurrentTime!=0)
+        DeltaTime=tmptime-CurrentTime;
+    CurrentTime=tmptime;
+}
+
+uint32_t GetDTime()
+{
+    if (DeltaTime == 0)
+        DeltaTime = 1;
+    return DeltaTime;
+}
+

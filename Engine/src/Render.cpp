@@ -95,6 +95,11 @@ void Rend_InitGraphics(bool fullscreen, char *fontsdir)
 
 }
 
+void Rend_SwitchFullscreen()
+{
+    screen = SwitchFullscreen();
+}
+
 void Rend_DrawImageToGamescr(SDL_Surface *scr,int x, int y)
 {
     if (scrbuf)
@@ -260,6 +265,9 @@ void Rend_FlatRender()
 
 void Rend_DrawPanorama()
 {
+    //hehe
+    //float hhx = 5.0/10.0;
+    /////
     SDL_LockSurface(tempbuf);
     SDL_LockSurface(scrbuf);
     if (GAME_BPP == 32)
@@ -273,7 +281,7 @@ void Rend_DrawPanorama()
             // int *nww = (int *)screen->pixels;
             int *old = (int *)scrbuf->pixels;    // only for 32 bit color
 
-            int newx = fishtable[x][y].x + *PanaX;
+            int newx = fishtable[x][y].x  /* *hhx */   + *PanaX;
 
             if (newx < 0)
                 newx += scrbuf->w;
@@ -408,10 +416,15 @@ struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h)
     return tmp;
 }
 
-void Rend_DeleteSubRect(struct_SubRect *erect)
+void Rend___DeleteSubRect(struct_SubRect *erect)
 {
     SDL_FreeSurface(erect->img);
     delete erect;
+}
+
+void Rend_DeleteSubRect(struct_SubRect *erect)
+{
+    erect->todelete = true;
 }
 
 void Rend_ClearSubs()
@@ -420,7 +433,7 @@ void Rend_ClearSubs()
     while(!eofMList(sublist))
     {
         struct_SubRect *subrec = (struct_SubRect *)DataMList(sublist);
-        Rend_DeleteSubRect(subrec);
+        Rend___DeleteSubRect(subrec);
         NextMList(sublist);
     }
     FlushMList(sublist);
@@ -444,7 +457,7 @@ void Rend_ProcessSubs()
 
         if (subrec->todelete)
         {
-            Rend_DeleteSubRect(subrec);
+            Rend___DeleteSubRect(subrec);
             DeleteCurrent(sublist);
         }
         else

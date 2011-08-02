@@ -97,13 +97,17 @@ bool CheckKeyboardMessage(char *msg, int len);
 bool FileExist(char * fil);
 
 
-
+void UpdateDTime();
+uint32_t GetDTime();
 
 char * PrepareString(char *buf);
 char * TrimLeft(char *buf);
 char * TrimRight(char *buf);
 char * GetParams(char *str);
 int GetIntVal(char *chr);
+
+int8_t GetUtf8CharSize(char chr);
+uint16_t ReadUtf8Char(char *chr);
 
 #define strCMP(X,Y) strncasecmp(X,Y,strlen(Y))
 

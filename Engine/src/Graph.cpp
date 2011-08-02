@@ -85,6 +85,19 @@ TTF_Font *GetFontByName(char *name,int size)
     return TTF_OpenFont(fnt->path,size);
 }
 
+SDL_Surface *SwitchFullscreen()
+{
+    int32_t flags = screen->flags;
+
+    screen = SDL_SetVideoMode(0,0,0,flags ^ SDL_FULLSCREEN);
+    if (screen == NULL)
+        screen = SDL_SetVideoMode(0,0,0,flags);
+    else
+        flags ^= SDL_FULLSCREEN;
+
+    return screen;
+}
+
 SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful, char *fontsdir)
 {
 
@@ -244,7 +257,7 @@ if (!anim)
             if (anim->img[i])
                 SDL_FreeSurface(anim->img[i]);
 
-        delete[] anim->img;
+        delete [] anim->img;
         delete anim;
     }
 }

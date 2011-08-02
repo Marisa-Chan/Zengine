@@ -51,8 +51,9 @@ int tmr_ProcessTimer(struct_action_res *nod)
         return NODE_RET_DELETE;
     }
 
-    if (GetNBeat(3)) //10fps
-        nod->nodes.node_timer--;
+    //if (GetNBeat(3)) //10fps
+    //    nod->nodes.node_timer--;
+    nod->nodes.node_timer -= GetDTime();
 
 return NODE_RET_OK;
 }
