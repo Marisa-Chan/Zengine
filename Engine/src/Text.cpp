@@ -672,6 +672,13 @@ void outchartotty(uint16_t chr,struct_ttytext *tty)
     SDL_FreeSurface(tmp_surf);
 }
 
+int32_t getglyphwidth(TTF_Font *fnt,uint16_t chr)
+{
+    int32_t minx,maxx,miny,maxy,advice;
+    TTF_GlyphMetrics(fnt,chr,&minx,&maxx,&miny,&maxy,&advice);
+    return advice;
+}
+
 int txt_ProcessTTYtext(struct_action_res *nod)
 {
     if (nod->node_type != NODE_TYPE_TTYTEXT)
@@ -731,17 +738,15 @@ int txt_ProcessTTYtext(struct_action_res *nod)
                 if (chr == ' ')
                 {
                     int32_t i=tty->txtpos + charsz;
-                    int32_t width=0;
+                    int32_t width=getglyphwidth(tty->fnt,chr);
+
                     while (i < tty->txtsize && tty->txtbuf[i] != ' ' && tty->txtbuf[i] != '<')
                     {
 
                         int8_t chsz   = GetUtf8CharSize(tty->txtbuf[i]);
                         uint16_t uchr = ReadUtf8Char(&tty->txtbuf[i]);
 
-                        int32_t minx,maxx,miny,maxy,advice;
-                        TTF_GlyphMetrics(tty->fnt,chr,&minx,&maxx,&miny,&maxy,&advice);
-
-                        width+=advice;
+                        width+=getglyphwidth(tty->fnt,uchr);;
 
                         i+=chsz;
                     }

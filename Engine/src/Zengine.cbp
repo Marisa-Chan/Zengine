@@ -52,8 +52,6 @@
 		<Unit filename="Game.h" />
 		<Unit filename="Graph.cpp" />
 		<Unit filename="Graph.h" />
-		<Unit filename="Manage.cpp" />
-		<Unit filename="Manage.h" />
 		<Unit filename="Mouse.cpp" />
 		<Unit filename="Mouse.h" />
 		<Unit filename="Puzzle.cpp" />

@@ -94,6 +94,7 @@ int main(int argc, char **argv)
   //      printf("\n\nLoop #%d\n\n",bl);
         //Update game timer
         ProcMTime();
+        UpdateDTime();
         // message processing loop
         SDL_Event event;
 
@@ -119,7 +120,9 @@ int main(int argc, char **argv)
         UpdateKeyboard();
 
 
-        //if (KeyHit(SDLK_ESCAPE))
+
+        if (KeyDown(SDLK_RALT) && KeyHit(SDLK_RETURN))
+            Rend_SwitchFullscreen();
             //done=true;
 
 
