@@ -9,12 +9,12 @@
 
 struct struct_SubRect
 {
-    int x;
-    int y;
-    int w;
-    int h;
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
     SDL_Surface *img;
-    int id;
+    int32_t id;
     bool todelete;
 };
 
@@ -41,6 +41,9 @@ void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame);
 
 int  Rend_GetRenderer();
 void Rend_ProcessCursor();
+
+void Rend_PanaMouseInteract();
+void Rend_MouseInteractOfRender();
 
 void Rend_RenderFunc();
 void Rend_InitGraphics(bool fullscreen,char *fontpath);

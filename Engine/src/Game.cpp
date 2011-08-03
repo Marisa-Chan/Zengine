@@ -191,6 +191,13 @@ void GameLoop()
         ScrSys_exec_puzzle_list(uni);
 
 
+    if (!ScrSys_BreakExec())
+        menu_UpdateMenuBar();
+
+    if (!ScrSys_BreakExec())
+        Rend_MouseInteractOfRender();
+
+
     MList *ctrl = Getctrl();
 
     if (!ScrSys_BreakExec())

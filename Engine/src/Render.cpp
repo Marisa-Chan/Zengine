@@ -325,9 +325,9 @@ void Rend_DrawPanorama()
     SDL_UnlockSurface(scrbuf);
 }
 
-void Rend_PanaRender()
+void Rend_PanaMouseInteract()
 {
-    if (Rend_MouseInGamescr())
+if (Rend_MouseInGamescr())
     {
         if (ReversePana == false)
         {
@@ -349,12 +349,13 @@ void Rend_PanaRender()
         *PanaX %= scrbuf->w;
     if (*PanaX < 0)
         *PanaX += scrbuf->w;
-
-    //SDL_FillRect(screen,0,0);
-
-    Rend_DrawPanorama();
 }
 
+void Rend_MouseInteractOfRender()
+{
+    if (Renderer == RENDER_PANA)
+        Rend_PanaMouseInteract();
+}
 
 int Rend_GetPanaWidth()
 {
@@ -374,7 +375,7 @@ void Rend_RenderFunc()
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();
     else
-        Rend_PanaRender();
+        Rend_DrawPanorama();
 
     Ctrl_DrawControls();
 
@@ -382,11 +383,9 @@ void Rend_RenderFunc()
     DrawImage(tempbuf,GAMESCREEN_X,GAMESCREEN_Y);
 
 
-
-
     Rend_ProcessSubs();
 
-    menu_UpdateMenuBar();
+    menu_DrawMenuBar();
 
     Rend_ProcessCursor();
 

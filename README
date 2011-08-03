@@ -1,10 +1,15 @@
 Status:   Beta 1
 
-Progress: [#############---------]
-         0%          74%         100%
+Progress:     [#############-------]
+             0%         74%        100%
+
+ZGI Code:     [###################-]
+             0%         95%        100%
+
+Nemesis Code: [--------------------]
+             0%         0%         100%
 
 
-All what's you need it's convert resources of zork by utils.
 
 *untga will rewrite original file. After work of untga convert result to png.
 
@@ -22,57 +27,44 @@ P.S.
 Thanks w8m (for "unraw" code reverse)
 
 ------------------TODO------------------
+Mouse cursors and menu-bar(with animation) code for nemesis
 
-
-[Script Functions]
-action_rotate_to	    :While it's work  block other processing functions
-action_copy_file	    :reverse it (for what?!) (not needed ?)
+[Actions Functions]
+action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
 action_preferences	    :reverse it
+action_region               :reverse it
+action_distort              :add code to panorama-render(X-scale) or wrapper over any screen
+action_display_message      :shows text line in box from titler-control
+
+[Controls Objects]
+control_titler              :contain message lines
+control_fist                :shows fingers in one scene in the Nemesis
+control_lever               :shows lever, that we can turn
+control_paint               :shows easel canvas
+control_hotmovie            :don't know
+control_tilt                :vertical renderer like a pana
+control_safe                :shows safe circle
+control_push_toggle(venus_id): reverse what means "venus_id"
 
 
 [Other]
-* Make graphics scaleable for other resolutions
+* Create database with convert parameters
+* Create utility and scripts for scale for dingoo
 * Clear code
 * Other little things...
 
 
---------------TODO after release-----------------
-//(for other games on this engine)
-//because "Not used in ZGI"
+--------------TODO if needed (not used)-----------------
 
 [Script Functions]
-action_add_preblt	:reverse it                                  [Not used in ZGI]
-action_remove_preblt	:reverse it                                  [Not used in ZGI]
-action_region		:reverse it                                  [Not used in ZGI]
-action_set_master_volume:reverse it and write code     [Not used in ZGI]
-action_distort		:reverse it and write code     [Not used in ZGI]
-action_zoom		:reverse it and write code     [Not used in ZGI]
+action_add_preblt	:reverse it
+action_remove_preblt	:reverse it
+action_set_master_volume:reverse it and write code
+action_zoom		:reverse it and write code
 action_inventory	: // add cycle code
-action_display_message	:reverse it                    [Not used in ZGI]
-action_set_venus	:reverse it                    [Not used in ZGI]
-action_disable_venus	:no comments %)                [Not used in ZGI]
-
-
-------------------FOR NEMESIS--------------------
-Recode "action" to "anything:" because it's decorative construction for script-reading. Nemesis use "action:", "background:" and "event:", but all of them is same.
-Mouse cursors and menu-bar(with animation?) code for nemesis
-
-Controls:
-titler
-fist
-lever
-paint
-hotmovie
-tilt
-safe
-push_toggle (venus_id !)
-
-Actions:
-region
-distort
-display_message
-
+action_set_venus	:reverse it    
+action_disable_venus	:no comments %)     
 
 
 ------------------License--------------------

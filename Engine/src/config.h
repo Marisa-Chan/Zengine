@@ -17,6 +17,16 @@
 
 #define FILE_LN_BUF 0x400
 
+
+
+//MENU//
+#define menu_UpdateMenuBar menu_UpdateZGIMenuBar
+#define menu_DrawMenuBar   menu_DrawZGIMenuBar
+
+
+
+
+
 //Graphics
 #define GAME_W   640
 #define GAME_H   480
@@ -27,6 +37,12 @@
 #define GAMESCREEN_H   344
 #define GAMESCREEN_X   0
 #define GAMESCREEN_Y   68
+
+
+
+
+
+
 
 
 //Script names
@@ -52,6 +68,11 @@
 #define InitRoom    'a'
 #define InitNode    'r'
 #define InitView    'y'
+
+
+
+
+
 
 
 //Save

@@ -13,6 +13,7 @@ void menu_SetMenuBarVal(uint16_t val);
 uint16_t menu_GetMenuBarVal();
 
 void menu_LoadGraphics();
-void menu_UpdateMenuBar();
+void menu_UpdateZGIMenuBar();
+void menu_DrawZGIMenuBar();
 
 #endif // MENU_H_INCLUDED

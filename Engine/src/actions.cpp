@@ -1263,3 +1263,63 @@ int action_quit(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+int action_rotate_to(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:rotate_to(%s)\n",params);
+#endif
+
+    if (Rend_GetRenderer()!= RENDER_PANA)
+        return ACTION_NORMAL;
+
+    int32_t topos;
+    int32_t time;
+
+    sscanf(params,"%d, %d",&topos,&time);
+
+    int32_t maxX = Rend_GetPanaWidth();
+    int32_t curX = GetgVarInt(SLOT_VIEW_POS);
+    int32_t oner = 0;
+
+    if (curX == topos)
+        return ACTION_NORMAL;
+
+    if (curX > topos)
+    {
+        if (curX - topos > maxX/2)
+            oner = (topos + (maxX-curX)) / time;
+        else
+            oner = -(curX-topos) / time;
+    }
+    else
+    {
+        if (topos - curX > maxX/2)
+            oner = -((maxX -topos) + curX) / time;
+        else
+            oner = (topos - curX)/ time;
+    }
+
+    for (int32_t i=0; i<=time; i++)
+    {
+        if (i == time)
+            curX = topos;
+        else
+            curX += oner;
+
+        if (curX < 0)
+            curX = maxX - curX;
+        else if (curX >= maxX)
+            curX %= maxX;
+
+        SetDirectgVarInt(SLOT_VIEW_POS,curX);
+
+        Rend_RenderFunc();
+        Rend_ScreenFlip();
+
+        SDL_Delay(500/time);
+
+    }
+
+    return ACTION_NORMAL;
+}
+

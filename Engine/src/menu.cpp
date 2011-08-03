@@ -35,6 +35,10 @@ int menu_MAIN_X = (640-580)/2;
 
 int8_t menu_mousefocus = -1;
 
+bool inmenu=false;
+
+int16_t mouse_on_item=-1;
+
 
 
 
@@ -74,12 +78,15 @@ void menu_LoadGraphics()
 
 }
 
-void menu_UpdateMenuBar()
+void menu_UpdateZGIMenuBar()
 {
     char buf[255];
 
+    mouse_on_item = -1;
+
     if (MouseY() <= 40)
     {
+        inmenu = true;
 
         switch (menu_mousefocus)
         {
@@ -97,8 +104,6 @@ void menu_UpdateMenuBar()
                     menu_ScrollPos [menu_ITEM] = 0;
                 }
 
-                DrawImage(menuback[menu_ITEM][0],menu_ScrollPos[menu_ITEM],0);
-
                 int item_count = GetgVarInt(SLOT_TOTAL_INV_AVAIL);
                 if (item_count == 0)
                     item_count = 20;
@@ -107,15 +112,11 @@ void menu_UpdateMenuBar()
 
                 for (int i=0; i<item_count; i++)
                 {
-
-
                     int itemspace = (600-menu_ITEM_SPACE) / item_count;
-
-                    bool inrect = false;
 
                     if (MouseInRect(menu_ScrollPos[menu_ITEM] + itemspace * i,0,28,32))
                     {
-                        inrect = true;
+                        mouse_on_item = i;
 
                         if (MouseUp(SDL_BUTTON_LEFT))
                             if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
@@ -130,6 +131,181 @@ void menu_UpdateMenuBar()
                                 SetgVarInt(SLOT_INVENTORY_MOUSE,te);
                             }
                     }
+                }
+
+
+            }
+            break;
+
+        case menu_MAGIC:
+            if (menu_bar_flag & menu_BAR_MAGIC)
+            {
+                SetgVarInt(SLOT_MENU_STATE,3);
+
+                if (!menu_Scrolled[menu_MAGIC])
+                    menu_ScrollPos [menu_MAGIC]+=12;
+
+                if (menu_ScrollPos[menu_MAGIC] >= menuback[menu_MAGIC][0]->w)
+                {
+                    menu_Scrolled[menu_MAGIC] = true;
+                    menu_ScrollPos [menu_MAGIC] = menuback[menu_MAGIC][0]->w;
+                }
+
+                for (int i=0; i<12; i++)
+                {
+
+                    int itemnum;
+                    if (GetgVarInt(SLOT_REVERSED_SPELLBOOK) == 1)
+                        itemnum = 0xEE + i;
+                    else
+                        itemnum = 0xE0 + i;
+
+
+                    if (MouseInRect(640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,28,32))
+                    {
+                        mouse_on_item = i;
+                        if (MouseUp(SDL_BUTTON_LEFT))
+                            if (GetgVarInt(SLOT_INVENTORY_MOUSE) == 0 || GetgVarInt(SLOT_INVENTORY_MOUSE) >= 0xE0)
+                                if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
+                                    SetgVarInt(SLOT_USER_CHOSE_THIS_SPELL,itemnum);
+                    }
+                }
+
+            }
+            break;
+
+        case menu_MAIN:
+
+            SetgVarInt(SLOT_MENU_STATE,2);
+
+            if (!menu_Scrolled[menu_MAIN])
+                menu_ScrollPos [menu_MAIN]+=2;
+
+            if (menu_ScrollPos[menu_MAIN] >= 0)
+            {
+                menu_Scrolled[menu_MAIN] = true;
+                menu_ScrollPos [menu_MAIN] = 0;
+            }
+
+            //EXIT
+            if (menu_bar_flag & menu_BAR_EXIT)
+                if (MouseInRect(menu_MAIN_CENTER+menu_MAIN_EL_W,
+                                menu_ScrollPos[menu_MAIN],
+                                menu_MAIN_EL_W,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_EXIT;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                        ifquit();
+                }
+
+
+            //SETTINGS
+            if (menu_bar_flag & menu_BAR_SETTINGS)
+                if (MouseInRect(menu_MAIN_CENTER,
+                                menu_ScrollPos[menu_MAIN],
+                                menu_MAIN_EL_W,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_PREF;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                        SetNeedLocate(PrefWorld,PrefRoom,PrefNode,PrefView,0);
+                }
+
+
+
+            //LOAD
+            if (menu_bar_flag & menu_BAR_RESTORE)
+                if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W,
+                                menu_ScrollPos[menu_MAIN],
+                                menu_MAIN_EL_W,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_REST;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                        SetNeedLocate(LoadWorld,LoadRoom,LoadNode,LoadView,0);
+                }
+
+
+            //SAVE
+            if (menu_bar_flag & menu_BAR_SAVE)
+                if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W*2,
+                                menu_ScrollPos[menu_MAIN],
+                                menu_MAIN_EL_W,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_SAVE;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                        SetNeedLocate(SaveWorld,SaveRoom,SaveNode,SaveView,0);
+                }
+
+
+            break;
+
+        default:
+
+            if (MouseInRect(menu_MAIN_X,0,\
+                            menuback[menu_MAIN][1]->w,\
+                            4))
+            {
+                menu_mousefocus = menu_MAIN;
+                menu_Scrolled[menu_MAIN]  = false;
+                menu_ScrollPos[menu_MAIN] = menuback[menu_MAIN][1]->h - menuback[menu_MAIN][0]->h;
+            }
+
+            if (menu_bar_flag & menu_BAR_MAGIC)
+                if (MouseInRect(640-28,0,28,32))
+                {
+                    menu_mousefocus = menu_MAGIC;
+                    menu_Scrolled[menu_MAGIC]  = false;
+                    menu_ScrollPos[menu_MAGIC] = 28;
+                }
+
+            if (menu_bar_flag & menu_BAR_ITEM)
+                if (MouseInRect(0,0,28,32))
+                {
+                    menu_mousefocus = menu_ITEM;
+                    menu_Scrolled[menu_ITEM]  = false;
+                    menu_ScrollPos[menu_ITEM] = menuback[menu_ITEM][1]->w - menuback[menu_ITEM][0]->w;
+                }
+        }
+    }
+    else
+    {
+        inmenu = false;
+        SetDirectgVarInt(SLOT_MENU_STATE,0);
+        menu_mousefocus = -1;
+    }
+}
+
+void menu_DrawZGIMenuBar()
+{
+    char buf[255];
+
+    if (inmenu)
+    {
+
+        switch (menu_mousefocus)
+        {
+        case menu_ITEM:
+            if (menu_bar_flag & menu_BAR_ITEM)
+            {
+                DrawImage(menuback[menu_ITEM][0],menu_ScrollPos[menu_ITEM],0);
+
+                int item_count = GetgVarInt(SLOT_TOTAL_INV_AVAIL);
+                if (item_count == 0)
+                    item_count = 20;
+
+
+                for (int i=0; i<item_count; i++)
+                {
+                    int itemspace = (600-menu_ITEM_SPACE) / item_count;
+
+                    bool inrect = false;
+
+                    if (mouse_on_item == i)
+                        inrect = true;
+
 
                     if (GetgVarInt(SLOT_START_SLOT + i) != 0)
                     {
@@ -159,17 +335,6 @@ void menu_UpdateMenuBar()
         case menu_MAGIC:
             if (menu_bar_flag & menu_BAR_MAGIC)
             {
-                SetgVarInt(SLOT_MENU_STATE,3);
-
-                if (!menu_Scrolled[menu_MAGIC])
-                    menu_ScrollPos [menu_MAGIC]+=12;
-
-                if (menu_ScrollPos[menu_MAGIC] >= menuback[menu_MAGIC][0]->w)
-                {
-                    menu_Scrolled[menu_MAGIC] = true;
-                    menu_ScrollPos [menu_MAGIC] = menuback[menu_MAGIC][0]->w;
-                }
-
                 DrawImage(menuback[menu_MAGIC][0],640-menu_ScrollPos[menu_MAGIC],0);
 
                 for (int i=0; i<12; i++)
@@ -183,14 +348,8 @@ void menu_UpdateMenuBar()
 
                     bool inrect = false;
 
-                    if (MouseInRect(640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,28,32))
-                    {
+                    if (mouse_on_item == i)
                         inrect = true;
-                        if (MouseUp(SDL_BUTTON_LEFT))
-                            if (GetgVarInt(SLOT_INVENTORY_MOUSE) == 0 || GetgVarInt(SLOT_INVENTORY_MOUSE) >= 0xE0)
-                                if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
-                                    SetgVarInt(SLOT_USER_CHOSE_THIS_SPELL,itemnum);
-                    }
 
                     if (GetgVarInt(SLOT_SPELL_1 + i) != 0)
                     {
@@ -218,34 +377,15 @@ void menu_UpdateMenuBar()
 
         case menu_MAIN:
 
-            SetgVarInt(SLOT_MENU_STATE,2);
-
-            if (!menu_Scrolled[menu_MAIN])
-                menu_ScrollPos [menu_MAIN]+=2;
-
-            if (menu_ScrollPos[menu_MAIN] >= 0)
-            {
-                menu_Scrolled[menu_MAIN] = true;
-                menu_ScrollPos [menu_MAIN] = 0;
-            }
 
             DrawImage(menuback[menu_MAIN][0],menu_MAIN_X,menu_ScrollPos[menu_MAIN]);
 
             //EXIT
             if (menu_bar_flag & menu_BAR_EXIT)
             {
-                if (MouseInRect(menu_MAIN_CENTER+menu_MAIN_EL_W,
-                                menu_ScrollPos[menu_MAIN],
-                                menu_MAIN_EL_W,
-                                menu_MAIN_EL_H))
-                {
+                if (mouse_on_item == menu_MAIN_IMAGE_EXIT)
                     DrawImage(menubar[menu_MAIN_IMAGE_EXIT][1],menu_MAIN_CENTER+menu_MAIN_EL_W,
                               menu_ScrollPos[menu_MAIN]);
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                        ifquit();
-
-                }
                 else
                     DrawImage(menubar[menu_MAIN_IMAGE_EXIT][0],menu_MAIN_CENTER+menu_MAIN_EL_W,
                               menu_ScrollPos[menu_MAIN]);
@@ -254,18 +394,9 @@ void menu_UpdateMenuBar()
             //SETTINGS
             if (menu_bar_flag & menu_BAR_SETTINGS)
             {
-                if (MouseInRect(menu_MAIN_CENTER,
-                                menu_ScrollPos[menu_MAIN],
-                                menu_MAIN_EL_W,
-                                menu_MAIN_EL_H))
-                {
+                if (mouse_on_item == menu_MAIN_IMAGE_PREF)
                     DrawImage(menubar[menu_MAIN_IMAGE_PREF][1],menu_MAIN_CENTER,
                               menu_ScrollPos[menu_MAIN]);
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate(PrefWorld,PrefRoom,PrefNode,PrefView,0);
-
-                }
                 else
                     DrawImage(menubar[menu_MAIN_IMAGE_PREF][0],menu_MAIN_CENTER,
                               menu_ScrollPos[menu_MAIN]);
@@ -274,18 +405,9 @@ void menu_UpdateMenuBar()
             //LOAD
             if (menu_bar_flag & menu_BAR_RESTORE)
             {
-                if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W,
-                                menu_ScrollPos[menu_MAIN],
-                                menu_MAIN_EL_W,
-                                menu_MAIN_EL_H))
-                {
+                if (mouse_on_item == menu_MAIN_IMAGE_REST)
                     DrawImage(menubar[menu_MAIN_IMAGE_REST][1],menu_MAIN_CENTER-menu_MAIN_EL_W,
                               menu_ScrollPos[menu_MAIN]);
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate(LoadWorld,LoadRoom,LoadNode,LoadView,0);
-
-                }
                 else
                     DrawImage(menubar[menu_MAIN_IMAGE_REST][0],menu_MAIN_CENTER-menu_MAIN_EL_W,
                               menu_ScrollPos[menu_MAIN]);
@@ -294,26 +416,15 @@ void menu_UpdateMenuBar()
             //SAVE
             if (menu_bar_flag & menu_BAR_SAVE)
             {
-                if (MouseInRect(menu_MAIN_CENTER-menu_MAIN_EL_W*2,
-                                menu_ScrollPos[menu_MAIN],
-                                menu_MAIN_EL_W,
-                                menu_MAIN_EL_H))
-                {
+                if (mouse_on_item == menu_MAIN_IMAGE_SAVE)
                     DrawImage(menubar[menu_MAIN_IMAGE_SAVE][1],menu_MAIN_CENTER-menu_MAIN_EL_W*2,
                               menu_ScrollPos[menu_MAIN]);
-
-                    if (MouseUp(SDL_BUTTON_LEFT))
-                        SetNeedLocate(SaveWorld,SaveRoom,SaveNode,SaveView,0);
-
-                }
                 else
                     DrawImage(menubar[menu_MAIN_IMAGE_SAVE][0],menu_MAIN_CENTER-menu_MAIN_EL_W*2,
                               menu_ScrollPos[menu_MAIN]);
             }
 
             break;
-
-
 
         default:
             DrawImage(menuback[menu_MAIN][1],menu_MAIN_X,0);
@@ -324,39 +435,7 @@ void menu_UpdateMenuBar()
             if (menu_bar_flag & menu_BAR_MAGIC)
                 DrawImage(menuback[menu_MAGIC][1], 640-menuback[menu_MAGIC][1]->w, 0);
 
-            if (MouseInRect(menu_MAIN_X,0,\
-                            menuback[menu_MAIN][1]->w,\
-                            4))
-            {
-                menu_mousefocus = menu_MAIN;
-                menu_Scrolled[menu_MAIN]  = false;
-                menu_ScrollPos[menu_MAIN] = menuback[menu_MAIN][1]->h - menuback[menu_MAIN][0]->h;
-            }
-
-            if (menu_bar_flag & menu_BAR_MAGIC)
-                if (MouseInRect(640-28,0,28,32))
-                {
-                    menu_mousefocus = menu_MAGIC;
-                    menu_Scrolled[menu_MAGIC]  = false;
-                    menu_ScrollPos[menu_MAGIC] = 28;
-                }
-
-            if (menu_bar_flag & menu_BAR_ITEM)
-                if (MouseInRect(0,0,28,32))
-                {
-                    menu_mousefocus = menu_ITEM;
-                    menu_Scrolled[menu_ITEM]  = false;
-                    menu_ScrollPos[menu_ITEM] = menuback[menu_ITEM][1]->w - menuback[menu_ITEM][0]->w;
-                }
         }
-
-
-
-
     }
-    else
-    {
-        SetDirectgVarInt(SLOT_MENU_STATE,0);
-        menu_mousefocus = -1;
-    }
+
 }
