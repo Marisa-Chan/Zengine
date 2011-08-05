@@ -1323,3 +1323,23 @@ int action_rotate_to(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+int action_distort(char *params, int aSlot , pzllst *owner)
+{
+
+    return ACTION_NORMAL;
+}
+
+int action_preferences(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:preferences(%s)\n",params);
+#endif
+
+    if (strCMP(params,"save")== 0)
+        ScrSys_SavePreferences();
+    else
+        ScrSys_LoadPreferences();
+
+    return ACTION_NORMAL;
+}
+

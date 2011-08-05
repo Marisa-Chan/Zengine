@@ -27,6 +27,7 @@ xy fishtable[GAMESCREEN_W][GAMESCREEN_H];
 int PanaWidth=1800;
 int *PanaX;
 bool ReversePana = false;
+float angle, linscale;
 
 
 
@@ -39,6 +40,8 @@ void Rend_SetDelay(int delay)
 
 void Rend_SetFishTable(double angl, double k)
 {
+    angle = angl;
+    linscale = k;
     memset(fishtable,0,sizeof(xy)*GAMESCREEN_W*GAMESCREEN_H);
 
     int yy=GAMESCREEN_H;
@@ -55,8 +58,9 @@ void Rend_SetFishTable(double angl, double k)
     {
         double poX = (double)x - half_w +0.01; //0.01 - for zero tan/atan issue (vertical line on half of screen)
 
-        double nX  = k * hhdtan * atan(poX*tandhh);
-        double nn  = cos(atan(poX*tandhh));
+        double tmx = atan(poX*tandhh);
+        double nX  = k * hhdtan * tmx;
+        double nn  = cos(tmx);
         double nhw = half_h * nn * hhdtan * tandhh*2.0;
 
         int relx   = floor(nX);// + half_w);
@@ -71,6 +75,7 @@ void Rend_SetFishTable(double angl, double k)
             fishtable[x][y].y = floor(et2);
         }
     }
+
 }
 
 void Rend_InitGraphics(bool fullscreen, char *fontsdir)
@@ -263,8 +268,112 @@ void Rend_FlatRender()
     DrawImageToSurf(scrbuf,0,0,tempbuf);
 }
 
+//void Rend_DrawPanorama2()
+//{
+//    //hehe
+//    //float hhx = 5.0/10.0;
+//    /////
+//    int asddsa= SDL_GetTicks();
+//
+//    SDL_LockSurface(tempbuf);
+//    SDL_LockSurface(scrbuf);
+//    if (GAME_BPP == 32)
+//    {
+//    int *nww = ((int *)tempbuf->pixels) ;
+//    for(int y = 0; y < GAMESCREEN_H>>2; y++)
+//    {
+//        //int *nww = ((int *)tempbuf->pixels) + (tempbuf->w * y*4); // only for 32 bit color
+//
+//        for(int x = 0; x < GAMESCREEN_W>>2; x++)
+//        {
+//            // int *nww = (int *)screen->pixels;
+//            int *old = (int *)scrbuf->pixels;    // only for 32 bit color
+//
+//            int newx = fishtable[(x<<2)][(y<<2)].x  /* *hhx */   + *PanaX;
+//
+//            if (newx < 0)
+//                newx += scrbuf->w;
+//            else if (newx > scrbuf->w)
+//                newx -= scrbuf->w;
+//
+//            *nww = old[newx + fishtable[(x<<2)][(y<<2)].y * scrbuf->w];
+//            nww++; //more faster than mul %)
+//            *nww = old[newx + fishtable[(x<<2)+1][(y<<2)].y * scrbuf->w];
+//            nww++;
+//            *nww = old[newx + fishtable[(x<<2)+2][(y<<2)].y * scrbuf->w];
+//            nww++; //more faster than mul %)
+//            *nww = old[newx + fishtable[(x<<2)+3][(y<<2)].y * scrbuf->w];
+//            nww++;
+//            int *nw2=nww;
+//
+//            nw2+=tempbuf->w-4;
+//            *nw2 = old[newx + fishtable[(x<<2)][(y<<2)+1].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+1][(y<<2)+1].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+2][(y<<2)+1].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+3][(y<<2)+1].y * scrbuf->w];
+//
+//            nw2+=tempbuf->w-3;
+//            *nw2 = old[newx + fishtable[(x<<2)][(y<<2)+2].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+1][(y<<2)+2].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+2][(y<<2)+2].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+3][(y<<2)+2].y * scrbuf->w];
+//
+//            nw2+=tempbuf->w-3;
+//            *nw2 = old[newx + fishtable[(x<<2)][(y<<2)+3].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+1][(y<<2)+3].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+2][(y<<2)+3].y * scrbuf->w];
+//            nw2++; //more faster than mul %)
+//            *nw2 = old[newx + fishtable[(x<<2)+3][(y<<2)+3].y * scrbuf->w];
+//
+//        }
+//        nww+=tempbuf->w+tempbuf->w+tempbuf->w;
+//    }
+//    }
+//    else if (GAME_BPP == 16)
+//    {
+//    for(int y = 0; y < GAMESCREEN_H; y++)
+//    {
+//        short *nww = ((short *)tempbuf->pixels) + (tempbuf->w * y); // only for 16 bit color
+//
+//        for(int x = 0; x < GAMESCREEN_W; x++)
+//        {
+//            // int *nww = (int *)screen->pixels;
+//            short *old = (short *)scrbuf->pixels;    // only for 16 bit color
+//
+//            int newx = fishtable[x][y].x + *PanaX;
+//
+//            if (newx < 0)
+//                newx += scrbuf->w;
+//            else if (newx > scrbuf->w)
+//                newx -= scrbuf->w;
+//
+//            *nww = old[newx + fishtable[x][y].y * scrbuf->w];
+//            nww++; //more faster than mul %)
+//        }
+//    }
+//    }
+//    else
+//    {
+//        printf("Write panorama code for %d bpp\n",GAME_BPP);
+//        exit(0);
+//    }
+//    SDL_UnlockSurface(tempbuf);
+//    SDL_UnlockSurface(scrbuf);
+//
+//    printf("%d\n",SDL_GetTicks()-asddsa);
+//}
+
 void Rend_DrawPanorama()
 {
+    //int asddsa= SDL_GetTicks();
     //hehe
     //float hhx = 5.0/10.0;
     /////
@@ -272,14 +381,15 @@ void Rend_DrawPanorama()
     SDL_LockSurface(scrbuf);
     if (GAME_BPP == 32)
     {
+    int *nww = ((int *)tempbuf->pixels);
+    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
     for(int y = 0; y < GAMESCREEN_H; y++)
     {
-        int *nww = ((int *)tempbuf->pixels) + (tempbuf->w * y); // only for 32 bit color
+         // only for 32 bit color
 
         for(int x = 0; x < GAMESCREEN_W; x++)
         {
             // int *nww = (int *)screen->pixels;
-            int *old = (int *)scrbuf->pixels;    // only for 32 bit color
 
             int newx = fishtable[x][y].x  /* *hhx */   + *PanaX;
 
@@ -295,14 +405,13 @@ void Rend_DrawPanorama()
     }
     else if (GAME_BPP == 16)
     {
+    short *nww = ((short *)tempbuf->pixels); // only for 16 bit color
+    short *old = (short *)scrbuf->pixels;    // only for 16 bit color
     for(int y = 0; y < GAMESCREEN_H; y++)
     {
-        short *nww = ((short *)tempbuf->pixels) + (tempbuf->w * y); // only for 16 bit color
-
         for(int x = 0; x < GAMESCREEN_W; x++)
         {
             // int *nww = (int *)screen->pixels;
-            short *old = (short *)scrbuf->pixels;    // only for 16 bit color
 
             int newx = fishtable[x][y].x + *PanaX;
 
@@ -323,6 +432,7 @@ void Rend_DrawPanorama()
     }
     SDL_UnlockSurface(tempbuf);
     SDL_UnlockSurface(scrbuf);
+   // printf("%d\n",SDL_GetTicks()-asddsa);
 }
 
 void Rend_PanaMouseInteract()

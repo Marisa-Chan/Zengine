@@ -419,6 +419,9 @@ bool FileExist(char * fil)
 
 char * TrimLeft(char *buf)
 {
+    if (buf == NULL)
+        return NULL;
+
     int len = strlen(buf);
 
     char *str=buf;
@@ -434,6 +437,8 @@ char * TrimLeft(char *buf)
 
 char * TrimRight(char *buf)
 {
+    if (buf == NULL)
+        return NULL;
     int len = strlen(buf);
 
     char *str=buf;

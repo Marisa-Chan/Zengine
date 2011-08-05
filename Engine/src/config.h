@@ -25,6 +25,10 @@
 
 
 
+//Preferences
+#define pref_FileName      "./INQUIS.INI"
+#define pref_TagString     "ZorkGrandInquisitor"
+
 
 
 //Graphics

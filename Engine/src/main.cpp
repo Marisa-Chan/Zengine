@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 
 
 
-        if (KeyDown(SDLK_RALT) && KeyHit(SDLK_RETURN))
+        if ((KeyDown(SDLK_RALT) || KeyDown(SDLK_LALT)) && KeyHit(SDLK_RETURN))
             Rend_SwitchFullscreen();
             //done=true;
 

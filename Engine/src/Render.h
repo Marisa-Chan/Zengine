@@ -64,4 +64,10 @@ SDL_Surface *Rend_GetGameScreen();
 uint32_t Rend_MapScreenRGB(int r, int g, int b);
 void Rend_ScreenFlip();
 
+struct struct_distort
+{
+
+
+};
+
 #endif // RENDER_H_INCLUDED

@@ -63,9 +63,11 @@ void InitGameLoop()
     SetDirectgVarInt(SLOT_MENU_LASTROOM , InitRoom);
     SetDirectgVarInt(SLOT_MENU_LASTNODE , InitNode);
     SetDirectgVarInt(SLOT_MENU_LASTVIEW , InitView);
-    SetDirectgVarInt(53,250);
+    if (GetgVarInt(SLOT_PANAROTATE_SPEED) == 0)
+        SetDirectgVarInt(SLOT_PANAROTATE_SPEED,570);
+    if (GetgVarInt(SLOT_KBD_ROTATE_SPEED) == 0)
+        SetDirectgVarInt(SLOT_KBD_ROTATE_SPEED,60);
     //\Hack
-
 
 
 }
@@ -78,7 +80,7 @@ void EasterEggsAndDebug()
 {
     if (KeyAnyHit())
     {
-        if (GetgVarInt(SLOT_DBG_GOTO_LOCATION) == 1)
+        if (GetgVarInt(SLOT_DEBUGCHEATS) == 1)
             if (CheckKeyboardMessage("GO????",6))
             {
                 NeedToLoadScript = true;
@@ -105,7 +107,7 @@ void EasterEggsAndDebug()
             }
 
         if (CheckKeyboardMessage("DBGONOFF",8))
-            SetDirectgVarInt(SLOT_DBG_GOTO_LOCATION, 1 - GetgVarInt(SLOT_DBG_GOTO_LOCATION));
+            SetDirectgVarInt(SLOT_DEBUGCHEATS, 1 - GetgVarInt(SLOT_DEBUGCHEATS));
 
         if (CheckKeyboardMessage("COMPUTERARCH",12))
             {

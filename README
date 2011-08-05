@@ -1,10 +1,10 @@
-Status:   Beta 1
+Status:   ZGI:RC
 
-Progress:     [#############-------]
-             0%         74%        100%
+Progress:     [###############-----]
+             0%         75%        100%
 
-ZGI Code:     [###################-]
-             0%         95%        100%
+ZGI Code:     [###################-]  //TESTING!
+             0%         98%        100%
 
 Nemesis Code: [--------------------]
              0%         0%         100%
@@ -32,7 +32,6 @@ Mouse cursors and menu-bar(with animation) code for nemesis
 [Actions Functions]
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
-action_preferences	    :reverse it
 action_region               :reverse it
 action_distort              :add code to panorama-render(X-scale) or wrapper over any screen
 action_display_message      :shows text line in box from titler-control

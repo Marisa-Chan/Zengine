@@ -28,16 +28,25 @@
 #define SLOT_MENU_LASTNODE     47
 #define SLOT_MENU_LASTVIEW     48
 #define SLOT_MENU_LASTVIEW_POS 49
-#define SLOT_SUBTITLE_FLAG     51
+#define SLOT_KBD_ROTATE_SPEED  50
+#define SLOT_SUBTITLE_FLAG     51 //ShowSubtitles
 #define SLOT_PANAROTATE_SPEED  53
 #define SLOT_QSOUND_ENABLE     57
+#define SLOT_VENUSENABLED      58
 #define SLOT_HIGH_QUIALITY     59
 #define SLOT_LINE_SKIP_VIDEO   65
+#define SLOT_PLATFORM          66
 #define SLOT_INSTALL_LEVEL     67
 #define SLOT_COUNTRY_CODE      68
-#define SLOT_TURN_OFF_ANIM     71
-#define SLOT_DBG_GOTO_LOCATION 74 //if set to 1, we may type GOXXXX while game, and it will be changed location to XXXX
+#define SLOT_CPU               69
+#define SLOT_MOVIE_CURSOR      70
+#define SLOT_TURN_OFF_ANIM     71 //NoAnimWhileTurning
+#define SLOT_WIN958            72
+#define SLOT_SHOWERRORDIALOG   73
+#define SLOT_DEBUGCHEATS       74 //if set to 1, we may type GOXXXX while game, and it will be changed location to XXXX
                                     //To change - type DBGONOFF
+#define SLOT_JAPANESEFONTS     75
+#define SLOT_BRIGHTNESS        77
 #define SLOT_INV_STORAGE_1    102
 #define SLOT_INV_STORAGE_2    103
 #define SLOT_INV_STORAGE_3    104
@@ -185,6 +194,9 @@ void ScrSys_LoadGame(char *file);
 void ScrSys_PrepareSaveBuffer();
 
 struct_action_res *ScrSys_CreateActRes(int type);
+
+void ScrSys_LoadPreferences();
+void ScrSys_SavePreferences();
 
 #endif // SCRIPTSYSTEM_H_INCLUDED
 

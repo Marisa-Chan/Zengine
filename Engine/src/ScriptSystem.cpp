@@ -176,7 +176,7 @@ void setGNode(int32_t indx, struct_action_res *data)
 
 void InitScriptsEngine()
 {
-    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(int));
+    memset(gVars,0x0,VAR_SLOTS_MAX * sizeof(gVars[0]));
     ScrSys_FlushGNodes();
 
     view  = CreatePzlLst();
@@ -193,6 +193,8 @@ void InitScriptsEngine()
     StateBoxStkSz = 0;
 
     memset(Flags,0x0,VAR_SLOTS_MAX * sizeof(uint8_t));
+
+    ScrSys_LoadPreferences();
 }
 
 
@@ -459,6 +461,8 @@ void ScrSys_LoadGame(char *file)
     SetgVarInt(SLOT_JUST_RESTORED, 1);
 
     fclose(f);
+
+    ScrSys_LoadPreferences();
 }
 
 void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X, bool force_all) // world / room / view
@@ -926,3 +930,78 @@ struct_action_res *ScrSys_CreateActRes(int type)
     return tmp;
 }
 
+
+
+
+
+
+
+
+#define pref_COUNT 17
+
+const struct {char *name;int slot;} prefs[pref_COUNT] =
+{
+{"KeyboardTurnSpeed",SLOT_KBD_ROTATE_SPEED},
+{"PanaRotateSpeed",SLOT_PANAROTATE_SPEED},
+{"QSoundEnabled",SLOT_QSOUND_ENABLE},
+{"VenusEnabled",SLOT_VENUSENABLED},
+{"HighQuality",SLOT_HIGH_QUIALITY},
+{"Platform",SLOT_PLATFORM},
+{"InstallLevel",SLOT_INSTALL_LEVEL},
+{"CountryCode",SLOT_COUNTRY_CODE},
+{"CPU",SLOT_CPU},
+{"MovieCursor",SLOT_MOVIE_CURSOR},
+{"NoAnimWhileTurning",SLOT_TURN_OFF_ANIM},
+{"Win958",SLOT_WIN958},
+{"ShowErrorDialogs",SLOT_SHOWERRORDIALOG},
+{"ShowSubtitles",SLOT_SUBTITLE_FLAG},
+{"DebugCheats",SLOT_DEBUGCHEATS},
+{"JapaneseFonts",SLOT_JAPANESEFONTS},
+{"Brightness",SLOT_BRIGHTNESS}
+};
+
+
+void ScrSys_LoadPreferences()
+{
+FILE *fl = fopen(pref_FileName,"rb");
+if (fl == NULL)
+    return;
+
+char buffer[128];
+char *str;
+
+while(!feof(fl))
+{
+    fgets(buffer,128,fl);
+    str=TrimLeft(TrimRight(buffer));
+    if (str != NULL)
+    if (strlen(str)>0)
+        for (int16_t i=0; i<pref_COUNT; i++ )
+            if (strCMP(str,prefs[i].name)==0)
+            {
+                str=strstr(str,"=");
+                if (str != NULL)
+                {
+                    str++;
+                    str=TrimLeft(str);
+                    SetDirectgVarInt(prefs[i].slot,atoi(str));
+
+                }
+                break;
+            }
+}
+
+fclose(fl);
+}
+
+void ScrSys_SavePreferences()
+{
+FILE *fl = fopen(pref_FileName,"wb");
+if (fl == NULL)
+    return;
+fprintf(fl,"[%s]\r\n",pref_TagString);
+for (int16_t i=0; i<pref_COUNT; i++ )
+    fprintf(fl,"%s=%d\r\n",prefs[i].name,GetgVarInt(prefs[i].slot));
+
+fclose(fl);
+}
