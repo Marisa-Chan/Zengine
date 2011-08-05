@@ -26,7 +26,7 @@ OBJS =  \
 	menu.cpp\
 	Subtitles.cpp\
 	Text.cpp
-	
+
 WINOBJ = \
 	win_funct.cpp
 

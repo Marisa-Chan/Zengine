@@ -1,6 +1,7 @@
 #include "System.h"
 
 int FocusInput=0;
+bool pushChangeMouse=false;
 
 ctrlnode *Ctrl_CreateNode(int type)
 {
@@ -350,8 +351,12 @@ void control_push(ctrlnode *ct)
 
     if (mousein)
     {
-        if (Mouse_IsCurrentCur(CURSOR_IDLE))
-            Mouse_SetCursor(psh->cursor);
+        if (!pushChangeMouse)
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            {
+                Mouse_SetCursor(psh->cursor);
+                pushChangeMouse = true;
+            }
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
@@ -854,8 +859,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 void ProcessControls(MList *ctrlst)
 {
 
-    pushnode *psh;//=(pushnode *) nod->node;
-    slotnode *slut;
+    pushChangeMouse = false;
 
     LastMList(ctrlst);
 
