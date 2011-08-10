@@ -5,6 +5,7 @@
 
 #define RENDER_FLAT 0
 #define RENDER_PANA 1
+#define RENDER_TILT 2
 
 
 struct struct_SubRect
@@ -35,7 +36,15 @@ int Rend_GetPanaWidth();
 void Rend_SetReversePana(bool pana);
 
 void Rend_SetRenderer(int meth);
-void Rend_SetFishTable(double angl, double k);
+void Rend_pana_SetTable();
+void Rend_pana_SetAngle(float angle);
+void Rend_pana_SetLinscale(float linscale);
+
+void Rend_tilt_SetTable();
+void Rend_tilt_SetAngle(float angle);
+void Rend_tilt_SetLinscale(float linscale);
+void Rend_DrawTilt();
+
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
 void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame);
 
@@ -44,12 +53,13 @@ void Rend_ProcessCursor();
 
 void Rend_PanaMouseInteract();
 void Rend_MouseInteractOfRender();
+void Rend_tilt_MouseInteract();
 
 void Rend_RenderFunc();
 void Rend_InitGraphics(bool fullscreen,char *fontpath);
 void Rend_SwitchFullscreen();
 
-void Rend_SetDelay(int delay);
+void Rend_SetDelay(int32_t delay);
 
 
 struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h);

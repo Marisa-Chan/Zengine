@@ -2,6 +2,7 @@
 #include "System.h"
 
 #define CURSOR_STATES      2
+
 #define CURSOR_UP_STATE    0
 #define CURSOR_DW_STATE    1
 

@@ -12,10 +12,12 @@ struct Cursor
 #define NUM_CURSORS 18
 
 #define CURSOR_ACTIVE 0
+#define CURSOR_DWNARR 3
 #define CURSOR_HANDPU 6
 #define CURSOR_IDLE   11
 #define CURSOR_LEFT   12
 #define CURSOR_RIGH   13
+#define CURSOR_UPARR  17
 #define CURSOR_OBJ_0  -1
 #define CURSOR_OBJ_1  -2
 

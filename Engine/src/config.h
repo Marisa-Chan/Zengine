@@ -42,6 +42,8 @@
 #define GAMESCREEN_X   0
 #define GAMESCREEN_Y   68
 
+#define GAMESCREEN_H_2  (GAMESCREEN_H >> 1)
+#define GAMESCREEN_W_2  (GAMESCREEN_W >> 1)
 
 
 

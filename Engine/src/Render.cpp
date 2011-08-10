@@ -6,7 +6,7 @@ uint8_t     Renderer = RENDER_FLAT;
 
 
 MList *sublist = NULL;
-int subid=0;
+int32_t subid=0;
 
 
 SDL_Surface *screen;
@@ -18,34 +18,43 @@ int32_t RenderDelay = 0;
 
 struct xy
 {
-    int x;
-    int y;
+    int32_t x;
+    int32_t y;
 };
 
-xy fishtable[GAMESCREEN_W][GAMESCREEN_H];
+xy render_table[GAMESCREEN_W][GAMESCREEN_H];
 
-int PanaWidth=1800;
-int *PanaX;
-bool ReversePana = false;
-float angle, linscale;
+int32_t  *_X;
 
-
-
+int32_t pana_PanaWidth=1800;
+bool    pana_ReversePana = false;
+float   pana_angle=60.0, pana_linscale=1.00;
 
 
-void Rend_SetDelay(int delay)
+
+void Rend_pana_SetAngle(float angle)
+{
+    pana_angle = angle;
+}
+
+void Rend_pana_SetLinscale(float linscale)
+{
+    pana_linscale = linscale;
+}
+
+void Rend_SetDelay(int32_t delay)
 {
     RenderDelay = delay;
 }
 
-void Rend_SetFishTable(double angl, double k)
+void Rend_pana_SetTable()
 {
-    angle = angl;
-    linscale = k;
-    memset(fishtable,0,sizeof(xy)*GAMESCREEN_W*GAMESCREEN_H);
+    float angl = pana_angle;
+    float k = pana_linscale;
+    memset(render_table,0,sizeof(xy)*GAMESCREEN_W*GAMESCREEN_H);
 
-    int yy=GAMESCREEN_H;
-    int ww=GAMESCREEN_W;
+    int32_t yy=GAMESCREEN_H;
+    int32_t ww=GAMESCREEN_W;
 
     double half_w = (double)ww / 2.0;
     double half_h = (double)yy / 2.0;
@@ -54,7 +63,7 @@ void Rend_SetFishTable(double angl, double k)
     double hhdtan = half_h / tan(angle);
     double tandhh = tan(angle)/half_h;
 
-    for (int x=0; x<ww; x++)
+    for (int32_t x=0; x<ww; x++)
     {
         double poX = (double)x - half_w +0.01; //0.01 - for zero tan/atan issue (vertical line on half of screen)
 
@@ -63,16 +72,17 @@ void Rend_SetFishTable(double angl, double k)
         double nn  = cos(tmx);
         double nhw = half_h * nn * hhdtan * tandhh*2.0;
 
-        int relx   = floor(nX);// + half_w);
+        int32_t relx   = floor(nX);// + half_w);
         double yk  = nhw / (double)yy;
 
-        for (int y=0; y<yy; y++)
+        double et2=((double)yy-nhw)/2.0;
+
+        for (int32_t y=0; y<yy; y++)
         {
             double et1=(double)y*yk;
-            double et2=((double)yy-nhw)/2.0 + et1;
 
-            fishtable[x][y].x = relx;
-            fishtable[x][y].y = floor(et2);
+            render_table[x][y].x = relx;
+            render_table[x][y].y = floor(et2+et1);
         }
     }
 
@@ -96,7 +106,7 @@ void Rend_InitGraphics(bool fullscreen, char *fontsdir)
 
     SDL_ShowCursor(SDL_DISABLE);
 
-    PanaX = getdirectvar(SLOT_VIEW_POS);
+    _X = getdirectvar(SLOT_VIEW_POS);
 
 }
 
@@ -145,7 +155,10 @@ void Rend_LoadGamescr(char *path)
     if (!scrbuf)
         printf("ERROR:  IMG_Load(%s): %s\n\n",path, IMG_GetError());
 
-    PanaWidth = scrbuf->w;
+    if (Renderer != RENDER_TILT)
+        pana_PanaWidth = scrbuf->w;
+    else
+        pana_PanaWidth = scrbuf->h;
 }
 
 
@@ -165,17 +178,23 @@ void Rend_ProcessCursor()
         }
     }
 
+
     if (Renderer == RENDER_PANA)
-    {
         if (Rend_MouseInGamescr())
+        {
             if (MouseX() < GAMESCREEN_P)
                 Mouse_SetCursor(CURSOR_LEFT);
-
-        if (Rend_MouseInGamescr())
             if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
                 Mouse_SetCursor(CURSOR_RIGH);
-    }
-
+        }
+    if (Renderer == RENDER_TILT)
+        if (Rend_MouseInGamescr())
+        {
+            if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
+                Mouse_SetCursor(CURSOR_UPARR);
+            if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
+                Mouse_SetCursor(CURSOR_DWNARR);
+        }
 
 
     Mouse_DrawCursor(MouseX(),MouseY());
@@ -183,10 +202,7 @@ void Rend_ProcessCursor()
 
 bool Rend_MouseInGamescr()
 {
-    return (MouseX() >= GAMESCREEN_X          &&\
-            MouseX() <= GAMESCREEN_X + GAMESCREEN_W &&\
-            MouseY() >= GAMESCREEN_Y          &&\
-            MouseY() <= GAMESCREEN_Y + GAMESCREEN_H );
+    return MouseInRect(GAMESCREEN_X,GAMESCREEN_Y,GAMESCREEN_W,GAMESCREEN_H);
 }
 
 int Rend_GetMouseGameX()
@@ -198,22 +214,40 @@ int Rend_GetMouseGameX()
     case RENDER_FLAT:
         return MouseX() - GAMESCREEN_X;
         break;
-
     case RENDER_PANA:
         tmp = MouseY() - GAMESCREEN_Y;
 
         if (tmp >= 0 && tmp < GAMESCREEN_H)
-            tmpl = fishtable[MouseX()][tmp].x;
+            tmpl = render_table[MouseX()][tmp].x;
         else
             tmpl = 0;
 
-        tmpl += *PanaX;
+        tmpl += *_X;
         if (tmpl < 0)
-            tmpl += PanaWidth;
-        else if (tmpl > PanaWidth)
-            tmpl -= PanaWidth;
+            tmpl += pana_PanaWidth;
+        else if (tmpl > pana_PanaWidth)
+            tmpl -= pana_PanaWidth;
 
         return tmpl;
+        break;
+
+    case RENDER_TILT:
+        tmp = MouseY() - GAMESCREEN_Y;
+
+        if (tmp >= 0 && tmp < GAMESCREEN_H)
+            tmpl = render_table[MouseX()][tmp].x;
+        else
+            tmpl = 0;
+
+        //tmpl += GAMESCREEN_W_2;
+
+        if (tmpl < 0)
+            tmpl += GAMESCREEN_W;
+        else if (tmpl > GAMESCREEN_W)
+            tmpl -= GAMESCREEN_W;
+
+        return tmpl;
+
         break;
 
     default:
@@ -232,16 +266,34 @@ int Rend_GetMouseGameY()
         break;
 
     case RENDER_PANA:
-    {
         tmp = MouseY() - GAMESCREEN_Y;
 
         if (tmp >= 0 && tmp < GAMESCREEN_H)
-            return fishtable[MouseX()][tmp].y;
+            return render_table[MouseX()][tmp].y;
         else
             return tmp;
 
         break;
-    }
+
+    case RENDER_TILT:
+        tmp = MouseY() - GAMESCREEN_Y;
+
+        if (tmp >= 0 && tmp < GAMESCREEN_H)
+            tmpl = render_table[MouseX()][tmp].y;
+        else
+            tmpl = 0;
+
+        tmpl+=*_X;
+
+        if (tmpl>pana_PanaWidth)
+            tmpl=pana_PanaWidth;
+        else if (tmpl<0)
+            tmpl=0;
+
+        return tmpl;
+
+        break;
+
     default:
         return MouseY() - GAMESCREEN_Y;
     }
@@ -250,12 +302,12 @@ int Rend_GetMouseGameY()
 void Rend_SetRenderer(int meth)
 {
     Renderer = meth;
-    ReversePana = false;
+    pana_ReversePana = false;
 }
 
 void Rend_SetReversePana(bool pana)
 {
-    ReversePana = pana;
+    pana_ReversePana = pana;
 }
 
 int Rend_GetRenderer()
@@ -391,14 +443,14 @@ void Rend_DrawPanorama()
         {
             // int *nww = (int *)screen->pixels;
 
-            int newx = fishtable[x][y].x  /* *hhx */   + *PanaX;
+            int newx = render_table[x][y].x  /* *hhx */   + *_X;
 
             if (newx < 0)
                 newx += scrbuf->w;
             else if (newx > scrbuf->w)
                 newx -= scrbuf->w;
 
-            *nww = old[newx + fishtable[x][y].y * scrbuf->w];
+            *nww = old[newx + render_table[x][y].y * scrbuf->w];
             nww++; //more faster than mul %)
         }
     }
@@ -413,14 +465,14 @@ void Rend_DrawPanorama()
         {
             // int *nww = (int *)screen->pixels;
 
-            int newx = fishtable[x][y].x + *PanaX;
+            int newx = render_table[x][y].x + *_X;
 
             if (newx < 0)
                 newx += scrbuf->w;
             else if (newx > scrbuf->w)
                 newx -= scrbuf->w;
 
-            *nww = old[newx + fishtable[x][y].y * scrbuf->w];
+            *nww = old[newx + render_table[x][y].y * scrbuf->w];
             nww++; //more faster than mul %)
         }
     }
@@ -439,37 +491,39 @@ void Rend_PanaMouseInteract()
 {
 if (Rend_MouseInGamescr())
     {
-        if (ReversePana == false)
+        if (pana_ReversePana == false)
         {
             if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *PanaX +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
             if (MouseX() < GAMESCREEN_P)
-                *PanaX -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
         }
         else
         {
             if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *PanaX -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
             if (MouseX() < GAMESCREEN_P)
-                *PanaX +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
         }
     }
 
-    if (*PanaX >= scrbuf->w)
-        *PanaX %= scrbuf->w;
-    if (*PanaX < 0)
-        *PanaX += scrbuf->w;
+    if (*_X >= pana_PanaWidth)
+        *_X %= pana_PanaWidth;
+    if (*_X < 0)
+        *_X += pana_PanaWidth;
 }
 
 void Rend_MouseInteractOfRender()
 {
     if (Renderer == RENDER_PANA)
         Rend_PanaMouseInteract();
+    else if (Renderer == RENDER_TILT)
+        Rend_tilt_MouseInteract();
 }
 
 int Rend_GetPanaWidth()
 {
-    return PanaWidth;
+    return pana_PanaWidth;
 }
 
 
@@ -484,8 +538,10 @@ void Rend_RenderFunc()
 
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();
-    else
+    else if (Renderer == RENDER_PANA)
         Rend_DrawPanorama();
+    else if (Renderer == RENDER_TILT)
+        Rend_DrawTilt();
 
     Ctrl_DrawControls();
 
@@ -606,4 +662,132 @@ uint32_t Rend_MapScreenRGB(int r, int g, int b)
 void Rend_ScreenFlip()
 {
     SDL_Flip(screen);
+}
+
+
+
+
+
+float tilt_angle=60.0;
+float tilt_linscale=1.0;
+bool  tilt_Reverse = false;
+
+void Rend_tilt_SetAngle(float angle)
+{
+    tilt_angle = angle;
+}
+
+void Rend_tilt_SetLinscale(float linscale)
+{
+    tilt_linscale = linscale;
+}
+
+void Rend_tilt_SetTable()
+{
+    float angl = tilt_angle;
+    float k = tilt_linscale;
+    memset(render_table,0,sizeof(xy)*GAMESCREEN_W*GAMESCREEN_H);
+
+    int32_t yy=GAMESCREEN_H;
+    int32_t xx=GAMESCREEN_W;
+
+    double half_w = (double)xx / 2.0;
+    double half_h = (double)yy / 2.0;
+
+    double angle  = (angl * 3.14159265 / 180.0 );
+    double hhdtan = half_w / tan(angle);
+    double tandhh = tan(angle)/half_w;
+
+    for (int32_t y=0; y<yy; y++)
+    {
+        double poY = (double)y - half_h +0.01; //0.01 - for zero tan/atan issue (vertical line on half of screen)
+
+        double tmx = atan(poY*tandhh);
+        double nX  = k * hhdtan * tmx;
+        double nn  = cos(tmx);
+        double nhw = half_w * nn * hhdtan * tandhh*2.0;
+
+        int32_t rely   = floor(nX);// + half_w);
+        double xk  = nhw / (double)xx;
+
+        double et2=((double)xx-nhw)/2.0;
+
+        for (int32_t x=0; x<xx; x++)
+        {
+            double et1=(double)x*xk;
+
+            render_table[x][y].y = rely;
+            render_table[x][y].x = floor(et2+et1);
+        }
+    }
+
+}
+
+void Rend_DrawTilt()
+{
+
+    SDL_LockSurface(tempbuf);
+    SDL_LockSurface(scrbuf);
+    if (GAME_BPP == 32)
+    {
+        int32_t maxIndx = scrbuf->w*scrbuf->h;
+    int *nww = ((int *)tempbuf->pixels);
+    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
+    for(int y = 0; y < GAMESCREEN_H; y++)
+    {
+         // only for 32 bit color
+
+        for(int x = 0; x < GAMESCREEN_W; x++)
+        {
+            // int *nww = (int *)screen->pixels;
+
+            int newy = render_table[x][y].y  /* *hhx */   + *_X;
+
+            if (newy < 0)
+                newy += scrbuf->h;
+            else if (newy > scrbuf->h)
+                newy -= scrbuf->h;
+
+            int32_t index = render_table[x][y].x + newy * scrbuf->w;
+            if (index > maxIndx)
+                index %= maxIndx;
+            *nww = old[index];
+            nww++; //more faster than mul %)
+        }
+    }
+    }
+    else
+    {
+        printf("Write tilt code for %d bpp\n",GAME_BPP);
+        exit(0);
+    }
+    SDL_UnlockSurface(tempbuf);
+    SDL_UnlockSurface(scrbuf);
+}
+
+
+void Rend_tilt_MouseInteract()
+{
+if (Rend_MouseInGamescr())
+    {
+        if (tilt_Reverse == false)
+        {
+            if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
+                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+            if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
+                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+        }
+        else
+        {
+            if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
+                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+            if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
+                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+        }
+    }
+
+    if (*_X >= (pana_PanaWidth - GAMESCREEN_H_2))
+        *_X = pana_PanaWidth - GAMESCREEN_H_2;
+    if (*_X <= GAMESCREEN_H_2)
+        *_X = GAMESCREEN_H_2;
 }

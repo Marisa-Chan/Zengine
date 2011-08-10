@@ -3,6 +3,67 @@
 int FocusInput=0;
 bool pushChangeMouse=false;
 
+pushnode * CreatePushNode()
+{
+    pushnode *tmp = new(pushnode);
+    tmp->cursor = CURSOR_IDLE;
+    tmp->flat = false;
+    tmp->x = 0;
+    tmp->y = 0;
+    tmp->w = 0;
+    tmp->h = 0;
+    return tmp;
+}
+
+inputnode * CreateInputNode()
+{
+    inputnode *tmp = new(inputnode);
+    tmp->rect = NULL;
+    tmp->rectangle= {0,0,0,0};
+    tmp->hotspot = {0,0,0,0};
+    tmp->cursor = NULL;
+    tmp->frame = 0;
+    tmp->readonly = false;
+    tmp->textwidth = 0;
+    tmp->textchanged = true;
+    tmp->enterkey  = false;
+    tmp->focused   = false;
+    memset(tmp->text,0,SAVE_NAME_MAX_LEN+1);
+    txt_init_txt_struct(&tmp->string_init);
+    txt_init_txt_struct(&tmp->string_chooser_init);
+    return tmp;
+}
+
+slotnode * CreateSlotNode()
+{
+    slotnode *tmp = new(slotnode);
+    tmp->cursor = CURSOR_IDLE;
+    tmp->eligable_cnt = 0;
+    tmp->eligible_objects = NULL;
+    tmp->srf = NULL;
+    tmp->rectangle = {0,0,0,0};
+    tmp->hotspot = {0,0,0,0};
+    tmp->flat = false;
+
+    return tmp;
+}
+
+saveloadnode * CreateSaveNode()
+{
+    saveloadnode *tmp = new(saveloadnode);
+
+    tmp->forsaving = false;
+
+    for (int32_t i=0; i<MAX_SAVES; i++)
+        {
+            tmp->inputslot[i] = -1;
+            tmp->input_nodes[i] = NULL;
+            memset(tmp->Names[i],0,SAVE_NAME_MAX_LEN+1);
+        }
+
+    return tmp;
+}
+
 ctrlnode *Ctrl_CreateNode(int type)
 {
     ctrlnode *tmp;
@@ -16,46 +77,26 @@ ctrlnode *Ctrl_CreateNode(int type)
     {
     case CTRL_PUSH:
         tmp->type = CTRL_PUSH;
-        tmp->node.push = new(pushnode);
+        tmp->node.push = CreatePushNode();
         tmp->func = control_push;
         break;
 
     case CTRL_INPUT:
         tmp->type = CTRL_INPUT;
-        tmp->node.inp = new(inputnode);
+        tmp->node.inp = CreateInputNode();
         tmp->func = control_input;
-        tmp->node.inp->rect = NULL;
-        tmp->node.inp->cursor = NULL;
-        tmp->node.inp->frame = 0;
-        tmp->node.inp->readonly = false;
-        tmp->node.inp->textwidth = 0;
-        tmp->node.inp->textchanged = true;
-        tmp->node.inp->enterkey  = false;
-        tmp->node.inp->focused   = false;
-        memset(tmp->node.inp->text,0,SAVE_NAME_MAX_LEN+1);
-        txt_init_txt_struct(&tmp->node.inp->string_init);
-        txt_init_txt_struct(&tmp->node.inp->string_chooser_init);
         break;
 
     case CTRL_SLOT:
         tmp->type = CTRL_SLOT;
-        tmp->node.slot = new(slotnode);
+        tmp->node.slot = CreateSlotNode();
         tmp->func = control_slot;
-        tmp->node.slot->srf = NULL;
         break;
 
     case CTRL_SAVE:
         tmp->type = CTRL_SAVE;
-        tmp->node.svld = new(saveloadnode);
+        tmp->node.svld = CreateSaveNode();
         tmp->func = control_save;
-        for (int i=0; i<MAX_SAVES; i++)
-        {
-            tmp->node.svld->inputslot[i] = -1;
-            tmp->node.svld->input_nodes[i] = NULL;
-            memset(tmp->node.svld->Names[i],0,SAVE_NAME_MAX_LEN+1);
-        }
-
-
         break;
 
     };
@@ -341,6 +382,8 @@ void control_push(ctrlnode *ct)
     printf("Push_toggle\n");
 #endif
 
+    if (!Rend_MouseInGamescr())
+        return;
     pushnode *psh = ct->node.push;
 
     if ( psh->x          <= Rend_GetMouseGameX() &&\
@@ -445,19 +488,24 @@ int Parse_Control_Panorama(FILE *fl)
         {
             str   = GetParams(str);
             angle = atof(str);
+            Rend_pana_SetAngle(angle);
         }
         else if (strCMP(str,"linscale")==0)
         {
             str   = GetParams(str);
             k = atof(str);
+            Rend_pana_SetLinscale(k);
         }
         else if (strCMP(str,"reversepana")==0)
         {
             str   = GetParams(str);
             tmp = atoi(str);
-            printf("%d\n",tmp);
             if (tmp == 1)
                 Rend_SetReversePana(true);
+        }
+        else if (strCMP(str,"zeropoint")==0)
+        {
+
         }
 
     }
@@ -465,8 +513,56 @@ int Parse_Control_Panorama(FILE *fl)
     //  printf("%f\n",angle);
     //  printf("%f\n",k);
 
-    Rend_SetFishTable(angle,k);
+    Rend_pana_SetTable();
+}
 
+int Parse_Control_Tilt(FILE *fl)
+{
+    char  buf[FILE_LN_BUF];
+    char *str;
+    int  good = 0;
+
+    double angle = 27.0;
+    double     k = 0.55;
+    int      tmp = 0;
+
+    Rend_SetRenderer (RENDER_TILT);
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"angle")==0)
+        {
+            str   = GetParams(str);
+            angle = atof(str);
+            Rend_tilt_SetAngle(angle);
+        }
+        else if (strCMP(str,"linscale")==0)
+        {
+            str   = GetParams(str);
+            k = atof(str);
+            Rend_tilt_SetLinscale(k);
+        }
+        else if (strCMP(str,"reversepana")==0)
+        {
+            str   = GetParams(str);
+            tmp = atoi(str);
+            //if (tmp == 1)
+                //Rend_SetReversePana(true);
+        }
+    }
+
+    //  printf("%f\n",angle);
+    //  printf("%f\n",k);
+
+    Rend_tilt_SetTable();
 }
 
 int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
@@ -719,7 +815,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
             tmpobj++;
 
             slut->eligable_cnt = tmpobj;
-            slut->eligible_objects = (int *)malloc (tmpobj * sizeof(int));
+            slut->eligible_objects = (int32_t *)malloc (tmpobj * sizeof(int32_t));
             int i=0;
             tmpobj=0;
 
@@ -821,7 +917,7 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     if (strCMP(ctrltp,"flat")==0)
     {
 #ifdef FULLTRACE
-        printf("    Flat Rendere\n");
+        printf("    Flat Renderer\n");
 #endif
 
         Parse_Control_Flat();
@@ -829,10 +925,18 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     else if (strCMP(ctrltp,"pana")==0)
     {
 #ifdef FULLTRACE
-        printf("    Panorama Rendere\n");
+        printf("    Panorama Renderer\n");
 #endif
 
         Parse_Control_Panorama(fl);
+    }
+    else if (strCMP(ctrltp,"tilt")==0)
+    {
+#ifdef FULLTRACE
+        printf("    Tilt Renderer\n");
+#endif
+
+        Parse_Control_Tilt(fl);
     }
     else if (strCMP(ctrltp,"push_toggle")==0)
     {

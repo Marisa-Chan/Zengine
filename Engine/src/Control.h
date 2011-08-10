@@ -13,20 +13,20 @@
 
 struct Rect
 {
-    int x;
-    int y;
-    int w;
-    int h;
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
 };
 
 
 struct pushnode
 {
     bool flat; //true - flat, false - warp
-    int x;
-    int y;
-    int w;
-    int h;
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
     int16_t cursor;
 };
 
@@ -38,8 +38,8 @@ struct slotnode
     //int distance_id;
     Rect hotspot;
     //int do_skip;
-    int *eligible_objects;
-    int eligable_cnt;
+    int32_t *eligible_objects;
+    int32_t eligable_cnt;
     int16_t cursor;
     SDL_Surface *srf;
 };

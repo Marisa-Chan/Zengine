@@ -531,8 +531,9 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[3]=temp.View;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
-
-        LoadScriptFile(view,GetExactFilePath(buf),true,ctrl);
+        char *fil = GetExactFilePath(buf);
+        if (fil != NULL)
+            LoadScriptFile(view,fil,true,ctrl);
 
     }
 
@@ -549,7 +550,9 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[2]=0;
         sprintf(buf,"%s.scr",tm);
 
-        LoadScriptFile(room,GetExactFilePath(buf),false,NULL);
+        char *fil = GetExactFilePath(buf);
+        if (fil != NULL)
+            LoadScriptFile(room,fil,false,NULL);
     }
 
 
@@ -564,7 +567,9 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[1]=0;
         sprintf(buf,"%s.scr",tm);
 
-        LoadScriptFile(world,GetExactFilePath(buf),false,NULL);
+        char *fil = GetExactFilePath(buf);
+        if (fil != NULL)
+            LoadScriptFile(world,fil,false,NULL);
 
         Mouse_ShowCursor();
     }

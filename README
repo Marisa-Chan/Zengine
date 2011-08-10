@@ -6,8 +6,8 @@ Progress:     [###############-----]
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [--------------------]
-             0%         0%         100%
+Nemesis Code: [#-------------------]
+             0%         5%         100%
 
 
 
@@ -42,7 +42,6 @@ control_fist                :shows fingers in one scene in the Nemesis
 control_lever               :shows lever, that we can turn
 control_paint               :shows easel canvas
 control_hotmovie            :don't know
-control_tilt                :vertical renderer like a pana
 control_safe                :shows safe circle
 control_push_toggle(venus_id): reverse what means "venus_id"
 
@@ -52,6 +51,7 @@ control_push_toggle(venus_id): reverse what means "venus_id"
 * Create utility and scripts for scale for dingoo
 * Clear code
 * Other little things...
+* Add more code for pana and tilt renderers
 
 
 --------------TODO if needed (not used)-----------------
