@@ -1325,6 +1325,47 @@ int action_rotate_to(char *params, int aSlot , pzllst *owner)
 
 int action_distort(char *params, int aSlot , pzllst *owner)
 {
+#ifdef TRACE
+    printf("        action:distort(%s)\n",params);
+#endif
+
+    if (Rend_GetRenderer() != RENDER_PANA && Rend_GetRenderer() != RENDER_TILT)
+        return ACTION_NORMAL;
+
+    int32_t slot,speed;
+    float st_angl,en_angl;
+    float st_lin,en_lin;
+    sscanf(params,"%d %d %f %f %f %f",&slot,&speed,&st_angl,&en_angl,&st_lin,&en_lin);
+
+    if (getGNode(slot)!= NULL)
+        return ACTION_NORMAL;
+
+    struct_action_res *act = Rend_CreateDistortNode();
+    act->slot = slot;
+    act->owner = owner;
+
+    if (slot > 0)
+    {
+        setGNode(act->slot, act);
+        SetgVarInt(act->slot, 1);
+    }
+
+    ScrSys_AddToActResList(act);
+
+    act->nodes.distort->speed = speed;
+    act->nodes.distort->increase = true;
+    act->nodes.distort->rend_angl = Rend_GetRendererAngle();
+    act->nodes.distort->rend_lin  = Rend_GetRendererLinscale();
+    act->nodes.distort->st_angl = st_angl;
+    act->nodes.distort->st_lin  = st_lin;
+    act->nodes.distort->end_angl = en_angl;
+    act->nodes.distort->end_lin  = en_lin;
+    act->nodes.distort->dif_angl = en_angl - st_angl;
+    act->nodes.distort->dif_lin  = en_lin - st_lin;
+    act->nodes.distort->param1   = (float)speed / 15.0;
+    act->nodes.distort->frames = ceil((5.0-act->nodes.distort->param1*2.0) / (act->nodes.distort->param1));
+    if (act->nodes.distort->frames <= 0)
+        act->nodes.distort->frames = 1;
 
     return ACTION_NORMAL;
 }

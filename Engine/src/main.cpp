@@ -24,16 +24,16 @@ int main(int argc, char **argv)
     bool fullscreen = false;
     char *pa="./";
     for (int i=1; i<argc; i++)
+    {
+        if (strcasecmp(argv[i],"-f")==0)
         {
-            if (strcasecmp(argv[i],"-f")==0)
-            {
-                fullscreen = true;
-            }
-            else
-            {
-                pa=argv[i];
-            }
+            fullscreen = true;
         }
+        else
+        {
+            pa=argv[i];
+        }
+    }
 
     sprintf(buf,"%s/%s",pa,"Zork.dir");
     FILE *dirs=fopen(buf,"rb");
@@ -43,12 +43,18 @@ int main(int argc, char **argv)
 
     while(!feof(dirs))
     {
+        memset(buf,0,128);
         if (fgets(buf,128,dirs) == NULL)
             break;
-        buf[strlen(buf)-1]=0;
-        sprintf(buf2,"%s/%s",pa,buf);
+        char *sstr=TrimRight(TrimLeft(buf));
+        if (sstr!=NULL)
+            if (strlen(sstr)>1)
+            {
+                sprintf(buf2,"%s/%s",pa,buf);
 
-        ListDir(buf2);
+                ListDir(buf2);
+            }
+
     }
 
     fclose(dirs);
@@ -91,7 +97,7 @@ int main(int argc, char **argv)
 #ifdef TRACE
         //    printf("\n\nLoop #%d\n\n",bl);
 #endif
-  //      printf("\n\nLoop #%d\n\n",bl);
+        //      printf("\n\nLoop #%d\n\n",bl);
         //Update game timer
         ProcMTime();
         UpdateDTime();
@@ -123,7 +129,7 @@ int main(int argc, char **argv)
 
         if ((KeyDown(SDLK_RALT) || KeyDown(SDLK_LALT)) && KeyHit(SDLK_RETURN))
             Rend_SwitchFullscreen();
-            //done=true;
+        //done=true;
 
 
 

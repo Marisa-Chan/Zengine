@@ -427,7 +427,7 @@ void Rend_DrawPanorama()
 {
     //int asddsa= SDL_GetTicks();
     //hehe
-    //float hhx = 5.0/10.0;
+    //float hhx = (float)(rand()%6+3)/10.0;
     /////
     SDL_LockSurface(tempbuf);
     SDL_LockSurface(scrbuf);
@@ -443,7 +443,7 @@ void Rend_DrawPanorama()
         {
             // int *nww = (int *)screen->pixels;
 
-            int newx = render_table[x][y].x  /* *hhx */   + *_X;
+            int newx = render_table[x][y].x  /* *hhx */  + *_X;
 
             if (newx < 0)
                 newx += scrbuf->w;
@@ -725,7 +725,7 @@ void Rend_tilt_SetTable()
 
 void Rend_DrawTilt()
 {
-
+    //float hhx = (float)(rand()%5+1)/10.0;
     SDL_LockSurface(tempbuf);
     SDL_LockSurface(scrbuf);
     if (GAME_BPP == 32)
@@ -741,7 +741,7 @@ void Rend_DrawTilt()
         {
             // int *nww = (int *)screen->pixels;
 
-            int newy = render_table[x][y].y  /* *hhx */   + *_X;
+            int newy = render_table[x][y].y  /* *hhx */  + *_X;
 
             if (newy < 0)
                 newy += scrbuf->h;
@@ -790,4 +790,125 @@ if (Rend_MouseInGamescr())
         *_X = pana_PanaWidth - GAMESCREEN_H_2;
     if (*_X <= GAMESCREEN_H_2)
         *_X = GAMESCREEN_H_2;
+}
+
+float Rend_GetRendererAngle()
+{
+    if (Renderer == RENDER_PANA)
+        return pana_angle;
+    else if (Renderer == RENDER_TILT)
+        return tilt_angle;
+    else
+        return 1.0;
+}
+
+float Rend_GetRendererLinscale()
+{
+    if (Renderer == RENDER_PANA)
+        return pana_linscale;
+    else if (Renderer == RENDER_TILT)
+        return tilt_linscale;
+    else
+        return 1.0;
+}
+
+void Rend_SetRendererAngle(float angle)
+{
+    if (Renderer == RENDER_PANA)
+        pana_angle = angle;
+    else if (Renderer == RENDER_TILT)
+        tilt_angle = angle;
+}
+
+void Rend_SetRendererLinscale(float lin)
+{
+    if (Renderer == RENDER_PANA)
+        pana_linscale = lin;
+    else if (Renderer == RENDER_TILT)
+        tilt_linscale = lin;
+}
+
+void Rend_SetRendererTable()
+{
+    if (Renderer == RENDER_PANA)
+        Rend_pana_SetTable();
+    else if (Renderer == RENDER_TILT)
+        Rend_tilt_SetTable();
+}
+
+struct_action_res *Rend_CreateDistortNode()
+{
+    struct_action_res *act = ScrSys_CreateActRes(NODE_TYPE_DISTORT);
+    act->nodes.distort = new (struct_distort);
+    act->nodes.distort->cur_frame = 0;
+    act->nodes.distort->increase = true;
+    act->nodes.distort->frames = 0;
+    act->nodes.distort->speed = 0;
+    act->nodes.distort->param1 = 0.0;
+    act->nodes.distort->dif_angl = 0.0;
+    act->nodes.distort->st_angl = 0.0;
+    act->nodes.distort->end_angl = 0.0;
+    act->nodes.distort->rend_angl = 0.0;
+    act->nodes.distort->st_lin = 0.0;
+    act->nodes.distort->end_lin = 0.0;
+    act->nodes.distort->dif_lin = 0.0;
+    act->nodes.distort->rend_lin = 0.0;
+
+    return act;
+}
+
+int32_t Rend_ProcessDistortNode(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_DISTORT)
+        return NODE_RET_OK;
+
+    if (Rend_GetRenderer() != RENDER_PANA && Rend_GetRenderer() != RENDER_TILT)
+        return NODE_RET_OK;
+
+    struct_distort *dist = nod->nodes.distort;
+
+    if (dist->increase)
+        dist->cur_frame+=rand()%dist->frames;
+    else
+        dist->cur_frame-=rand()%dist->frames;
+
+    if (dist->cur_frame >= dist->frames)
+        {
+            dist->increase = false;
+            dist->cur_frame = dist->frames;
+        }
+    else if (dist->cur_frame <= 1)
+        {
+            dist->cur_frame = 1;
+            dist->increase = true;
+        }
+
+    float diff=(1.0/(5.0-((float)dist->cur_frame * dist->param1)))/(5.0-dist->param1);
+
+    Rend_SetRendererAngle(dist->st_angl+diff*dist->dif_angl);
+    Rend_SetRendererLinscale(dist->st_lin+diff*dist->dif_lin);
+    Rend_SetRendererTable();
+    return NODE_RET_OK;
+}
+
+int32_t Rend_DeleteDistortNode(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_DISTORT)
+        return NODE_RET_NO;
+
+    Rend_SetRendererAngle(nod->nodes.distort->rend_angl);
+    Rend_SetRendererLinscale(nod->nodes.distort->rend_lin);
+    Rend_SetRendererTable();
+
+    if (nod->slot > 0)
+    {
+        setGNode(nod->slot, NULL);
+        SetgVarInt(nod->slot, 2);
+    }
+
+
+    delete nod->nodes.distort;
+    delete nod;
+
+    return NODE_RET_DELETE;
 }

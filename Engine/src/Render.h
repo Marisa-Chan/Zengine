@@ -45,6 +45,12 @@ void Rend_tilt_SetAngle(float angle);
 void Rend_tilt_SetLinscale(float linscale);
 void Rend_DrawTilt();
 
+float Rend_GetRendererAngle();
+float Rend_GetRendererLinscale();
+void Rend_SetRendererAngle(float angle);
+void Rend_SetRendererLinscale(float lin);
+void Rend_SetRendererTable();
+
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
 void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame);
 
@@ -76,8 +82,23 @@ void Rend_ScreenFlip();
 
 struct struct_distort
 {
-
-
+    int32_t speed;
+    float   st_angl;
+    float  end_angl;
+    float  dif_angl;
+    float  rend_angl;
+    float   st_lin;
+    float  end_lin;
+    float  dif_lin;
+    float  rend_lin;
+    int32_t frames;
+    int32_t cur_frame;
+    bool   increase;
+    float  param1;
 };
+
+struct_action_res *Rend_CreateDistortNode();
+int32_t Rend_ProcessDistortNode(struct_action_res *nod);
+int32_t Rend_DeleteDistortNode(struct_action_res *nod);
 
 #endif // RENDER_H_INCLUDED

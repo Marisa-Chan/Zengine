@@ -25,7 +25,7 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
     int  slot;
 
     func_node *nod;
-    char *params;
+    char *params=" ";
 
     str = instr;
 
@@ -130,7 +130,7 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod->param = copy_params(params);
         nod->slot  = slot;
 
-        nod->func  = action_dissolve; //make save prev W R VI
+        nod->func  = action_dissolve;
         return;
     }
 

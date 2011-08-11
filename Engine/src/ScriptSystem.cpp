@@ -353,6 +353,18 @@ void ScrSys_PrepareSaveBuffer()
         for (int i=0; i<VAR_SLOTS_MAX; i++)
             tmp2[i] = GetgVarInt(i);
 
+        lst = GetAction_res_List();
+        StartMList(lst);
+        while(!eofMList(lst))
+        {
+            struct_action_res *nod = (struct_action_res *)DataMList(lst);
+            if (nod->node_type == NODE_TYPE_MUSIC)
+                if (nod->slot > 0)
+                    tmp2[nod->slot] = 2;
+
+            NextMList(lst);
+        }
+
         buffpos+=VAR_SLOTS_MAX*2;
 
         SaveCurrentSize = buffpos;
@@ -499,15 +511,14 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
     }
 
 
+    ScrSys_ClearStateBox();
+
     if (temp.World == SaveWorld && temp.Room  == SaveRoom  &&
         temp.Node  == SaveNode  && temp.View  == SaveView)
     {
         //Save all to buffer
         ScrSys_PrepareSaveBuffer();
     }
-
-
-    ScrSys_ClearStateBox();
 
     char buf[32];
     char tm[5];
@@ -784,6 +795,9 @@ void ScrSys_ProcessAllRes()
             case NODE_TYPE_TTYTEXT:
                 result = txt_ProcessTTYtext(nod);
                 break;
+            case NODE_TYPE_DISTORT:
+                result = Rend_ProcessDistortNode(nod);
+                break;
 
             default:
                 result=NODE_RET_OK;
@@ -847,6 +861,9 @@ int ScrSys_DeleteNode(struct_action_res *nod)
         break;
     case NODE_TYPE_TTYTEXT:
         return txt_DeleteTTYtext(nod);
+        break;
+    case NODE_TYPE_DISTORT:
+        return Rend_DeleteDistortNode(nod);
         break;
     }
 

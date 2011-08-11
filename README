@@ -1,4 +1,5 @@
 Status:   ZGI:RC
+          ZNEMESIS: dev
 
 Progress:     [###############-----]
              0%         75%        100%
@@ -6,8 +7,8 @@ Progress:     [###############-----]
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [#-------------------]
-             0%         5%         100%
+Nemesis Code: [##------------------]
+             0%         10%        100%
 
 
 
@@ -33,7 +34,6 @@ Mouse cursors and menu-bar(with animation) code for nemesis
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
 action_region               :reverse it
-action_distort              :add code to panorama-render(X-scale) or wrapper over any screen
 action_display_message      :shows text line in box from titler-control
 
 [Controls Objects]
@@ -52,6 +52,7 @@ control_push_toggle(venus_id): reverse what means "venus_id"
 * Clear code
 * Other little things...
 * Add more code for pana and tilt renderers
+* Add fast code for distort effect based on scale-parameter. What code is used we may choose in config.h
 
 
 --------------TODO if needed (not used)-----------------

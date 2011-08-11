@@ -487,6 +487,7 @@ char * GetParams(char *str)
             return str+i+1;
         }
     }
+    return " ";
 }
 
 int GetIntVal(char *chr)
