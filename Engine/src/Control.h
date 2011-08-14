@@ -19,6 +19,8 @@ struct Rect
     int32_t h;
 };
 
+void __InitRect(Rect *rct);
+
 
 struct pushnode
 {

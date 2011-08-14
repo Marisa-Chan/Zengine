@@ -196,8 +196,11 @@ anim_surf *LoadAnimImage(char *file, int32_t mask)
     fclose(ff);
 
     //atmp->info.time&=0x7f;
+
+    typedef SDL_Surface* PSDL_Surface;
+
     atmp->info.time=66;
-    atmp->img=new(SDL_Surface *[atmp->info.frames]);//frames * sizeof(SDL_Surface *));
+    atmp->img=new PSDL_Surface[atmp->info.frames];//frames * sizeof(SDL_Surface *));
 
     for (uint8_t i=0; i< atmp->info.frames; i++)
     {

@@ -26,15 +26,15 @@ OBJS =  \
 	menu.cpp\
 	Subtitles.cpp\
 	Text.cpp
-
+	
 WINOBJ = \
 	win_funct.cpp
 
 pc: $(OBJS)
-	$(CXX) -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+	$(CXX) -Wno-write-strings -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
 win32: $(OBJS) $(WINOBJ)
-	$(CXX_WIN) -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 clean:
 	rm -f $(TARGET) $(TARGET_DINGOO) *.o

@@ -19,8 +19,8 @@ inputnode * CreateInputNode()
 {
     inputnode *tmp = new(inputnode);
     tmp->rect = NULL;
-    tmp->rectangle= {0,0,0,0};
-    tmp->hotspot = {0,0,0,0};
+    __InitRect(&tmp->rectangle);
+    __InitRect(&tmp->hotspot);
     tmp->cursor = NULL;
     tmp->frame = 0;
     tmp->readonly = false;
@@ -41,8 +41,8 @@ slotnode * CreateSlotNode()
     tmp->eligable_cnt = 0;
     tmp->eligible_objects = NULL;
     tmp->srf = NULL;
-    tmp->rectangle = {0,0,0,0};
-    tmp->hotspot = {0,0,0,0};
+    __InitRect(&tmp->rectangle);
+    __InitRect(&tmp->hotspot);
     tmp->flat = false;
 
     return tmp;
@@ -101,6 +101,14 @@ ctrlnode *Ctrl_CreateNode(int type)
 
     };
     return tmp;
+}
+
+void __InitRect(Rect *rct)
+{
+    rct->h = 0;
+    rct->w = 0;
+    rct->x = 0;
+    rct->y = 0;
 }
 
 
