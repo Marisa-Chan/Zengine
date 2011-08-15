@@ -23,6 +23,7 @@ inputnode * CreateInputNode()
     __InitRect(&tmp->hotspot);
     tmp->cursor = NULL;
     tmp->frame = 0;
+    tmp->period = 0;
     tmp->readonly = false;
     tmp->textwidth = 0;
     tmp->textchanged = true;
@@ -55,11 +56,11 @@ saveloadnode * CreateSaveNode()
     tmp->forsaving = false;
 
     for (int32_t i=0; i<MAX_SAVES; i++)
-        {
-            tmp->inputslot[i] = -1;
-            tmp->input_nodes[i] = NULL;
-            memset(tmp->Names[i],0,SAVE_NAME_MAX_LEN+1);
-        }
+    {
+        tmp->inputslot[i] = -1;
+        tmp->input_nodes[i] = NULL;
+        memset(tmp->Names[i],0,SAVE_NAME_MAX_LEN+1);
+    }
 
     return tmp;
 }
@@ -201,8 +202,15 @@ void control_input_draw(ctrlnode *ct)
             {
 
                 Rend_DrawImageUpGamescr(inp->cursor,inp->rectangle.x + inp->textwidth,inp->rectangle.y,inp->frame);
-                if (Get2thBeat())
+
+                inp->period -= GetDTime();
+
+                if (inp->period <= 0)
+                {
                     inp->frame++;
+                    inp->period = inp->cursor->info.time;
+                }
+
                 if (inp->frame >= inp->cursor->info.frames)
                     inp->frame = 0;
             }
@@ -285,7 +293,7 @@ void control_input(ctrlnode *ct)
                 }
                 else if(key == SDLK_TAB)
                 {
-
+                    //TODO
                 }
 
             }
@@ -563,7 +571,7 @@ int Parse_Control_Tilt(FILE *fl)
             str   = GetParams(str);
             tmp = atoi(str);
             //if (tmp == 1)
-                //Rend_SetReversePana(true);
+            //Rend_SetReversePana(true);
         }
     }
 
@@ -991,28 +999,50 @@ void ProcessControls(MList *ctrlst)
     }
 }
 
+
+void ctrl_Delete_PushNode(ctrlnode *nod)
+{
+    delete nod->node.push;
+}
+
+void ctrl_Delete_SlotNode(ctrlnode *nod)
+{
+    if (nod->node.slot->srf)
+        SDL_FreeSurface(nod->node.slot->srf);
+    if (nod->node.slot->eligible_objects)
+        free(nod->node.slot->eligible_objects);
+    delete nod->node.slot;
+}
+
+void ctrl_Delete_InputNode(ctrlnode *nod)
+{
+    if (nod->node.inp->cursor)
+        FreeAnimImage(nod->node.inp->cursor);
+    if (nod->node.inp->rect)
+        SDL_FreeSurface(nod->node.inp->rect);
+    delete nod->node.inp;
+}
+
+void ctrl_Delete_SaveNode(ctrlnode *nod)
+{
+    delete nod->node.svld;
+}
+
 void DeleteSelControl(ctrlnode *nod)
 {
     switch (nod->type)
     {
     case CTRL_PUSH:
-        delete nod->node.push;
+        ctrl_Delete_PushNode(nod);
         break;
     case CTRL_SLOT:
-        if (nod->node.slot->srf)
-            SDL_FreeSurface(nod->node.slot->srf);
-        free(nod->node.slot->eligible_objects);
-        delete nod->node.slot;
+        ctrl_Delete_SlotNode(nod);
         break;
     case CTRL_INPUT:
-        if (nod->node.inp->cursor)
-            FreeAnimImage(nod->node.inp->cursor);
-        if (nod->node.inp->rect)
-            SDL_FreeSurface(nod->node.inp->rect);
-        delete nod->node.inp;
+        ctrl_Delete_InputNode(nod);
         break;
     case CTRL_SAVE:
-        delete nod->node.svld;
+        ctrl_Delete_SaveNode(nod);
         break;
     }
 

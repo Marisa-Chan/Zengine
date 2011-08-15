@@ -59,6 +59,7 @@ struct inputnode
 
     anim_surf *cursor;
     int32_t  frame;
+    int32_t  period;
     bool readonly;
     bool enterkey;
 

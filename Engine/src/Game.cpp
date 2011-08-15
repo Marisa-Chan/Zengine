@@ -90,15 +90,16 @@ void EasterEggsAndDebug()
                               GetKeyBuffered(0),0);
             }
 
-        if (CheckKeyboardMessage("QWE",3))
-        {
-            printf("16186 %d\n",GetgVarInt(16186));
-            printf("05574 %d\n",GetgVarInt(5574));
-            printf("05580 %d\n",GetgVarInt(5580));
-            printf("16187 %d\n",GetgVarInt(16187));
-            printf("5208 %d\n",GetgVarInt(5208));
-            printf("1001 %d\n",GetgVarInt(1001));
-        }
+/* Debug */
+//        if (CheckKeyboardMessage("QWE",3))
+//        {
+//            printf("16186 %d\n",GetgVarInt(16186));
+//            printf("05574 %d\n",GetgVarInt(5574));
+//            printf("05580 %d\n",GetgVarInt(5580));
+//            printf("16187 %d\n",GetgVarInt(16187));
+//            printf("5208 %d\n",GetgVarInt(5208));
+//            printf("1001 %d\n",GetgVarInt(1001));
+//        }
 
         if (CheckKeyboardMessage("M?????T?",8))
             {
@@ -234,6 +235,12 @@ void ReadSystemStrings(char *filename)
     memset(SystemStrings,0,sizeof(SystemStrings[0])*SYSTEM_STRINGS_NUM);
 
     FILE *fl = fopen(filename,"rb");
+
+    if (fl == NULL)
+    {
+        printf("File %s not found\n",pref_FileName);
+        exit(-1);
+    }
 
     int32_t ii=0;
 

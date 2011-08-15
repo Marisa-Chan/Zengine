@@ -250,7 +250,11 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
 
     anim_avi *anm=new(anim_avi);
     Mix_Chunk *aud=NULL;
-    anm->mpg=SMPEG_new(GetFilePath(file),&anm->inf,0);
+
+    fil = GetFilePath(file);
+    if (fil == NULL)
+        return ACTION_NORMAL;
+    anm->mpg=SMPEG_new(fil,&anm->inf,0);
     anm->img = CreateSurface(ww,hh);
 
 
