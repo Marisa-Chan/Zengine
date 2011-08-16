@@ -43,6 +43,10 @@ void __END();
 //uint64_t millisec();
 #define millisec SDL_GetTicks
 
+#define SDL_TTF_NUM_VERSION (SDL_TTF_MAJOR_VERSION * 10000 \
+                               + SDL_TTF_MINOR_VERSION * 100 \
+                               + SDL_TTF_PATCHLEVEL)
+
 //Game timer functions
 void InitMTime(float fps);
 void ProcMTime();

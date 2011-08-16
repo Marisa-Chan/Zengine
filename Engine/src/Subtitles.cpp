@@ -424,8 +424,10 @@ int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
     if (fnt_stl->underline == SUB_STYLE_ON)
         temp_stl |= TTF_STYLE_UNDERLINE;
 
+#if (SDL_TTF_NUM_VERSION >= 20010)
     if (fnt_stl->strikeout == SUB_STYLE_ON)
         temp_stl |= TTF_STYLE_STRIKETHROUGH;
+#endif
 
     TTF_SetFontStyle(temp_font,temp_stl);
 
