@@ -16,6 +16,7 @@ height,\
 bpp;
 
 #define SFTYPE  SDL_SWSURFACE
+//#define SFTYPE  SDL_HWSURFACE
 
 
 MList *FontList = NULL;

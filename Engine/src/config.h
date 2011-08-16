@@ -6,6 +6,9 @@
 #define TITLE       "Z-Engine: Zork Grand Inquisitor (Beta 1) [build: "__DATE__" "__TIME__"]"
 ////
 
+#define FPS         15
+#define FPS_DELAY   66 //millisecs  1000/FPS
+
 #define SYSTEM_STRINGS_NUM 64
 #define VAR_SLOTS_MAX      20000 //For nemesis 30000
 #define STATEBOX_STACK_MAX 1024

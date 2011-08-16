@@ -566,7 +566,7 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     if (getGNode(syncto)->node_type == NODE_TYPE_ANIMPRE)
     {
-        getGNode(syncto)->nodes.node_animpre->framerate=2; //~15fps hack
+        getGNode(syncto)->nodes.node_animpre->framerate=FPS_DELAY; //~15fps hack
     }
 
     char *filp=GetFilePath(a3);

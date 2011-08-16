@@ -88,7 +88,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         nod->anim.avi->img = NULL;
 
         if (nod->framerate == 0)
-            nod->framerate = 66; //~15fps
+            nod->framerate = FPS_DELAY; //~15fps
 
     }
     else
