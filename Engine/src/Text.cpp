@@ -373,8 +373,10 @@ void txt_set_font_style(TTF_Font *font, struct_txt_style *fnt_stl)
     if (fnt_stl->underline == SUB_STYLE_ON)
         temp_stl |= TTF_STYLE_UNDERLINE;
 
+#if (SDL_TTF_NUM_VERSION >= 20010)
     if (fnt_stl->strikeout == SUB_STYLE_ON)
         temp_stl |= TTF_STYLE_STRIKETHROUGH;
+#endif
 
     TTF_SetFontStyle(font,temp_stl);
 }
