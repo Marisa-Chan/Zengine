@@ -66,6 +66,12 @@ void unlzw(uint8_t *dst,uint8_t *src,uint32_t size)
 
 int main(int argc, char **argv)
 {
+    if(argc != 3)
+    {
+        printf("Usage:\n untga infile.tga outfile.tga\n");
+        exit(0);
+    }
+
     FILE *f=fopen(argv[1],"rb");
 
     fseek(f,0,SEEK_END);
@@ -97,7 +103,7 @@ int main(int argc, char **argv)
         unlzw((uint8_t *)unp, (uint8_t *)packed, pa_size);
 
 
-        FILE *ff=fopen(argv[1],"wb");
+        FILE *ff=fopen(argv[2],"wb");
 
         int tmp=0x020000;
         fwrite(&tmp,3,1,ff);
