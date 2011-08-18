@@ -299,11 +299,13 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         Mix_Volume(tmp,127);
     }
 
-    while(SMPEG_status(anm->mpg) != SMPEG_STOPPED  &&  !KeyDown(SDLK_SPACE))
+    while(SMPEG_status(anm->mpg) != SMPEG_STOPPED)
     {
         SDL_Event event;
         SDL_PollEvent(&event);
         UpdateKeyboard();
+        if (KeyDown(SDLK_SPACE))
+            SMPEG_stop(anm->mpg);
         DrawImage(anm->img,GAMESCREEN_X+xx,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
 
         if (subs != NULL)
@@ -326,8 +328,6 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         else
             SDL_Delay(delay);
     }
-
-    FlushKeybKey(SDLK_SPACE);
 
     if (aud!=NULL)
     {
@@ -595,7 +595,10 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
 
+    Mix_Volume(tmp->nodes.node_sync->chn,GetLogVol(100));
+
     Mix_PlayChannel(tmp->nodes.node_sync->chn,tmp->nodes.node_sync->chunk,0);
+
     LockChan(tmp->nodes.node_sync->chn);
 
     ScrSys_AddToActResList(tmp);

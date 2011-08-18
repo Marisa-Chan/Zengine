@@ -94,7 +94,8 @@ void SetgVarInt(int32_t indx, int var)
 
 void SetDirectgVarInt(uint32_t indx, int var)
 {
-    gVars[indx]=var;
+    if (indx > 0 && indx < VAR_SLOTS_MAX )
+        gVars[indx]=var;
 }
 
 int GetgVarInt(int32_t indx)
@@ -1007,7 +1008,6 @@ while(!feof(fl))
                     str++;
                     str=TrimLeft(str);
                     SetDirectgVarInt(prefs[i].slot,atoi(str));
-
                 }
                 break;
             }
