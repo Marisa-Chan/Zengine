@@ -3,13 +3,14 @@
 
 Locate Need_Locate;
 bool NeedToLoadScript=false;
-
+int8_t NeedToLoadScriptDelay = CHANGELOCATIONDELAY;
 
 int32_t View_start_Loops = 0;
 
 int8_t  SaveSlot = 0;
 
 char *SystemStrings[SYSTEM_STRINGS_NUM];
+
 
 
 void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
@@ -207,22 +208,34 @@ void GameLoop()
     if (!ScrSys_BreakExec())
         menu_UpdateMenuBar();
 
-    if (!ScrSys_BreakExec())
-        Rend_MouseInteractOfRender();
+
 
 
     MList *ctrl = Getctrl();
 
-    if (!ScrSys_BreakExec())
-        ProcessControls(ctrl);
+    if (!NeedToLoadScript)
+    {
+        if (!ScrSys_BreakExec())
+            Rend_MouseInteractOfRender();
 
-    if (!ScrSys_BreakExec())
-        Rend_RenderFunc();
+        if (!ScrSys_BreakExec())
+            ProcessControls(ctrl);
+
+        if (!ScrSys_BreakExec())
+            Rend_RenderFunc();
+    }
+
 
     if (NeedToLoadScript)
     {
-        NeedToLoadScript=false;
-        ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.Node,Need_Locate.View,Need_Locate.X, false);
+        if (NeedToLoadScriptDelay <= 0)
+        {
+            NeedToLoadScript=false;
+            ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.Node,Need_Locate.View,Need_Locate.X, false);
+            NeedToLoadScriptDelay = CHANGELOCATIONDELAY;
+        }
+        else
+            NeedToLoadScriptDelay--;
     }
 
     EasterEggsAndDebug();

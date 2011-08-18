@@ -555,7 +555,6 @@ void Rend_RenderFunc()
 
     Rend_ProcessCursor();
 
-    //SDL_Flip(screen);
 }
 
 

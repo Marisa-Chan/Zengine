@@ -724,6 +724,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("          +-> file (%s) not found\n",chars);
 #endif
+        SetgVarInt(aSlot,2);
         return ACTION_NORMAL;
     }
 
