@@ -31,9 +31,9 @@ uint8_t KeyHits[512]; //Array with hitted keys (once per press)
 bool AnyHit=false;    //it's indicate what any key was pressed
 uint8_t *Keys;        //Array with pressed keys (while pressed)
 SDLKey lastkey;
-int keybbuf[KEYBUFLEN]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int16_t keybbuf[KEYBUFLEN] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-int Mx, My;
+int32_t Mx, My;
 uint8_t LMstate,Mstate;
 
 
@@ -49,11 +49,16 @@ void FlushHits()
 void SetHit(SDLKey key)
 {
     AnyHit=true;
-    KeyHits[key]=1;
+    KeyHits[key] = 1;
     lastkey=key;
-    for (int i=0;i<KEYBUFLEN-1;i++)
-        keybbuf[i]=keybbuf[i+1];
+    for (int16_t i=0; i < KEYBUFLEN - 1; i++)
+        keybbuf[i] = keybbuf[i+1];
     keybbuf[KEYBUFLEN-1] = key;
+}
+
+void FlushKeybKey(SDLKey key)
+{
+    KeyHits[key] = 0;
 }
 
 int GetKeyBuffered(int indx)

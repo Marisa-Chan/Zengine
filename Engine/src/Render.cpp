@@ -491,19 +491,20 @@ void Rend_PanaMouseInteract()
 {
 if (Rend_MouseInGamescr())
     {
-        if (pana_ReversePana == false)
+        if (MouseX() > GAMESCREEN_X + GAMESCREEN_W - GAMESCREEN_P)
         {
-            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
-            if (MouseX() < GAMESCREEN_P)
-                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+            int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
+            int32_t param  = (((MouseX() - GAMESCREEN_X - GAMESCREEN_W + GAMESCREEN_P) << 7 ) / GAMESCREEN_P * mspeed) >> 7;
+
+            *_X += (pana_ReversePana == false ? param: -param);
         }
-        else
+
+        if (MouseX() < GAMESCREEN_X + GAMESCREEN_P)
         {
-            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
-                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
-            if (MouseX() < GAMESCREEN_P)
-                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/20;
+            int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
+            int32_t param  = (((GAMESCREEN_X + GAMESCREEN_P - MouseX()) << 7) / GAMESCREEN_P * mspeed) >> 7;
+
+            *_X -= (pana_ReversePana == false ? param: -param);
         }
     }
 

@@ -326,6 +326,9 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         else
             SDL_Delay(delay);
     }
+
+    FlushKeybKey(SDLK_SPACE);
+
     if (aud!=NULL)
     {
         //if (u2 == 0)

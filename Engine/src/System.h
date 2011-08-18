@@ -57,6 +57,7 @@ bool Get4thBeat();
 uint64_t GetBeatCount();
 
 //Keyboard functions
+void FlushKeybKey(SDLKey key);
 void FlushHits();
 void UpdateKeyboard();
 bool KeyDown(SDLKey key);
