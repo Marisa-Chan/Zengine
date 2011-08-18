@@ -55,7 +55,7 @@ void unxor(void *buf,uint32_t size,uint32_t xork)
 
 int main(int argvc,char **argv)
 {
-    if (argvc>1)
+    if (argvc>2)
     {
         FILE *f=fopen(argv[1],"rb");
         header head;
@@ -93,7 +93,9 @@ int main(int argvc,char **argv)
                     if (head.xor_key != 0)
                         unxor(bytes,fil.size,head.xor_key);
 
-                    FILE *ff=fopen(fil.name,"wb");
+                    char buff[512];
+                    sprintf(buff,"%s/%s",argv[2],fil.name);
+                    FILE *ff=fopen(buff,"wb");
                     fwrite(bytes,fil.size,1,ff);
                     fclose(ff);
 
@@ -105,7 +107,7 @@ int main(int argvc,char **argv)
         fclose(f);
     }
     else
-        printf("Specify file\n");
+        printf("Specify file and path for extracting.\n");
 
     return 0;
 }
