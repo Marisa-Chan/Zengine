@@ -234,9 +234,9 @@ sub ParseScriptFile
 	foreach(@f_files)
 	{
 		local $dig = substr($_,-3); 
-		if ($dig eq "avi_strm")
+		if (substr($_,-8) eq "avi_strm")
 		{
-			print substr($_,0,-5)." 2 0\n";
+			print substr($_,0,-5)." 2 5\n";
 		}
 		elsif ($dig eq "avi")
 		{

@@ -8,6 +8,14 @@ if (! -e $mencoder)
 	exit();
 }
 
+$mpla=`which mplayer 2>/dev/null`;
+chomp($mpla);
+if (! -e $mpla)
+{
+	print("Mplayer not found.\n");
+	exit();
+}
+
 $imgmgk=`which convert 2>/dev/null`;
 chomp($imgmgk);
 if (! -e $imgmgk)
@@ -69,7 +77,15 @@ $dirname2 = $ARGV[2];
 $en=substr($dirname2,-1,1);
 if (($en eq "\\") or ($en eq "/")) 
 	{chop $dirname2;}
-	
+
+$toonedir = 0;
+$simpleoutdir = $dirname2;
+if ($#ARGV == 3)
+{
+	if ($ARGV[3] eq "simple")
+		{$toonedir = 1;}
+}
+
 open (file,"<",$ARGV[0]);
 @txt = <file>;
 close file;
@@ -86,10 +102,12 @@ foreach(@txt)
 	push @filtp,$b[1];
 	push @filarg,$b[2];	
 }
-	
+if ($toonedir == 0)
+{
 print "Creating directories structure ";
 CreateDestDirs($dirname,$dirname2);
 print "[OK]\n";
+}
 print "Start conversion\n";
 ConvertDirSubDir($dirname,$dirname2);
 print "Conversion is done\n";
@@ -147,7 +165,10 @@ sub ConvertDirSubDir
 		{
 			$tmp2 = lc($filename); 
 			$tmp = $_[0]."/".$filename;
-			$pth2 = $_[1]."/".$filename;
+			if ($toonedir == 1)
+			{$pth2 = $simpleoutdir."/".$filename;}
+			else
+			{$pth2 = $_[1]."/".$filename;}
 			if (-d $tmp)
 			{
 				ConvertDirSubDir($tmp,$pth2);
@@ -165,18 +186,24 @@ sub ConvertDirSubDir
 				}
 				if ($j != -1)
 				{
-					if ($filtp[$j] == 0) #tgz
+					if (-s $tmp > 16) #files smaller than 16 bytes - dummy
 					{
-						ConvertTGZ($tmp,$pth2,$filarg[$j]);
-					}
-					elsif ($filtp[$j] == 1) # rlf
-					{
-					}
-					elsif ($filtp[$j] == 2) # avi
-					{
-					}
-					elsif ($filtp[$j] == 4) # sound
-					{
+						if ($filtp[$j] == 0) #tgz
+						{
+							ConvertTGZ($tmp,$pth2,$filarg[$j]);
+						}
+						elsif ($filtp[$j] == 1) # rlf
+						{
+							ConvertRLF($tmp,$pth2,$filarg[$j]);
+						}
+						elsif ($filtp[$j] == 2) # avi
+						{
+							ConvertAVI($tmp,$pth2,$filarg[$j]);
+						}
+						elsif ($filtp[$j] == 4) # sound
+						{
+							ConvertSFX($tmp,$pth2,$filarg[$j]);
+						}
 					}
 					
 				}
@@ -221,6 +248,103 @@ sub ConvertTGZ #0 - src file, 1 - dst file, 2 - renderer
 	}
 	if ($btst ne "")
 		{print "$_[0] not converted!\n";}
-	system("rm ./temp/tmp.tga");
-	system("mv ./temp/tmp.png \"$dst\"");
+	system("mv -n ./temp/tmp.png \"$dst\"");
+	system("rm -f ./temp/tmp.tga ./temp/tmp.png");
+}
+
+sub ConvertRLF #0 - src file, 1 - dst file, 2 - renderer 
+{
+	local $btst = "";
+	if (! -f "./temp")
+		{mkdir "./temp";}
+	local $dst = Replacer($_[1],"rlf","png");
+	local $dst2 = Replacer($_[1],"rlf","anm");
+		
+	if ($_[2] eq "0") # flat
+	{
+		system("./progs/_rlf 0 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+	}
+	elsif ($_[2] eq "1") # pana
+	{
+		system("./progs/_rlf 1 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+	}
+	elsif ($_[2] eq "2") # tilt
+	{
+		system("./progs/_rlf 0 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+	}
+	$btst = `$imgmgk ./temp/tmp.tga ./temp/tmp.png 2>&1`;
+	if ($btst ne "")
+		{print "$_[0] not converted!\n";}
+	
+	system("mv -n ./temp/tmp.png \"$dst\"");
+	system("mv -n ./temp/tmp.anm \"$dst2\"");
+	system("rm -f ./temp/tmp.tga ./temp/tmp.png ./temp/tmp.anm");
+}
+
+sub ConvertAVI #0 - src file, 1 - dst file, 2 - renderer 
+{
+	if (! -f "./temp")
+		{mkdir "./temp";}
+	local $dst = Replacer($_[1],"avi","mpg");
+	local $dst2 = Replacer($_[1],"avi","wav");
+		
+	if ($_[2] eq "0") # flat
+	{
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+	}
+	elsif ($_[2] eq "1") # pana
+	{
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+	}
+	elsif ($_[2] eq "2") # tilt
+	{
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+	}
+	elsif ($_[2] eq "5") # streamvideo (with audio!)
+	{
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+		system("$mpla -dumpaudio \"$_[0]\" -dumpfile ./temp/tmp.dump &>/dev/null");
+		system("./progs/_sfx ./temp/tmp.dump ./temp/tmp.wav 1 22050 1");
+		system("rm -f ./temp/tmp.dump");
+	}
+	
+	if (-e "./temp/tmp.mpg")
+		{system("mv -n ./temp/tmp.mpg \"$dst\"");}
+	if (-e "./temp/tmp.wav")
+		{system("mv -n ./temp/tmp.wav \"$dst2\"");}
+		
+	system("rm -f ./temp/tmp.wav ./temp/tmp.mpg");
+}
+
+sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
+{
+	if (! -f "./temp")
+		{mkdir "./temp";}
+	local $dst = Replacer($_[1],"ifp","wav");
+	$dst = Replacer($dst,"raw","wav");
+	$dst = Replacer($dst,"src","wav");
+	
+	if ($_[2] eq "0") # adpcm 22050 mono
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+	}
+	elsif ($_[2] eq "1") # adpcm 22050 stereo
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+	}
+	elsif ($_[2] eq "2") # adpcm 44100 stereo
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+	}
+	elsif ($_[2] eq "3") # adpcm 11025 stereo
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+	}
+	elsif ($_[2] eq "4") # raw 22050 stereo
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 0 22050 0");
+	}
+
+	system("mv -n ./temp/tmp.wav \"$dst\"");
+	system("rm -f ./temp/tmp.wav");
 }
