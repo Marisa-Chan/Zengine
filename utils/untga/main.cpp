@@ -75,6 +75,7 @@ int main(int argc, char **argv)
     FILE *f=fopen(argv[1],"rb");
 
     fseek(f,0,SEEK_END);
+    int fl_size=ftell(f);
     int pa_size=ftell(f)-16;
     int magic=0;
     fseek(f,0,SEEK_SET);
@@ -128,7 +129,15 @@ int main(int argc, char **argv)
         free(packed);
     }
     else
+    {
+        void * unp=malloc(fl_size);
+        fread(unp,fl_size,1,f);
         fclose(f);
+        FILE *ff=fopen(argv[2],"wb");
+        fwrite(unp,fl_size,1,ff);
+        fclose(ff);
+        free(unp);
+    }
 
     return 0;
 }
