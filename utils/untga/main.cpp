@@ -117,7 +117,7 @@ int main(int argc, char **argv)
         fwrite(&hi,2,1,ff);
         tmp=16;
         fwrite(&tmp,1,1,ff);
-        tmp=0x00;  //For nemesis 0x00!
+        tmp=0x20;  //For nemesis 0x20!
         fwrite(&tmp,1,1,ff);
 
         fwrite(unp,unp_size,1,ff);
@@ -130,9 +130,10 @@ int main(int argc, char **argv)
     }
     else
     {
-        void * unp=malloc(fl_size);
+        uint8_t * unp=(uint8_t *)malloc(fl_size);
         fread(unp,fl_size,1,f);
         fclose(f);
+        unp[17] = 0x20;
         FILE *ff=fopen(argv[2],"wb");
         fwrite(unp,fl_size,1,ff);
         fclose(ff);
