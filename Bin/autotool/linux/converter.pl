@@ -344,6 +344,70 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	{
 		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 0 22050 0");
 	}
+	elsif ($_[2] eq "10") # adpcm 8000 mono 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 0");
+	}
+	elsif ($_[2] eq "11") # adpcm 8000 stereo 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 1");
+	}
+	elsif ($_[2] eq "12") # adpcm 8000 mono 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 0");
+	}
+	elsif ($_[2] eq "13") # adpcm 8000 stereo 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 1");
+	}
+	elsif ($_[2] eq "14") # adpcm 11025 mono 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 0");
+	}
+	elsif ($_[2] eq "15") # adpcm 11025 stereo 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+	}
+	elsif ($_[2] eq "16") # adpcm 11025 mono 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 0");
+	}
+	elsif ($_[2] eq "17") # adpcm 11025 stereo 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+	}
+	elsif ($_[2] eq "18") # adpcm 22050 mono 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+	}
+	elsif ($_[2] eq "19") # adpcm 22050 stereo 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+	}
+	elsif ($_[2] eq "20") # adpcm 22050 mono 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+	}
+	elsif ($_[2] eq "21") # adpcm 22050 stereo 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+	}
+	elsif ($_[2] eq "22") # adpcm 44100 mono 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 0");
+	}
+	elsif ($_[2] eq "23") # adpcm 44100 stereo 8bit
+	{
+		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+	}
+	elsif ($_[2] eq "24") # adpcm 44100 mono 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 0");
+	}
+	elsif ($_[2] eq "25") # adpcm 44100 stereo 16bit
+	{
+		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+	}
 
 	system("mv -n ./temp/tmp.wav \"$dst\"");
 	system("rm -f ./temp/tmp.wav");

@@ -130,6 +130,7 @@ int main(int argc, char **argv)
     }
     else
     {
+	fseek(f,0,SEEK_SET);
         uint8_t * unp=(uint8_t *)malloc(fl_size);
         fread(unp,fl_size,1,f);
         fclose(f);
