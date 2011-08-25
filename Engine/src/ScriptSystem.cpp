@@ -1011,7 +1011,7 @@ while(!feof(fl))
                 }
                 break;
             }
-}
+};
 
 fclose(fl);
 }

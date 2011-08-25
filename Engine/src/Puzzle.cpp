@@ -829,6 +829,9 @@ bool ProcessCriteries(MList *lst)
 
 bool examine_criterias(puzzlenode *nod)
 {
+    if (nod->CritList->count == 0)
+        return true;
+
     StartMList(nod->CritList);
 
     while (!eofMList(nod->CritList))

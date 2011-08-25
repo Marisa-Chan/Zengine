@@ -510,7 +510,9 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
         }
         else
         {
+
             buf[txtpos++]=text[i];
+
             if (text[i] == ' ')
             {
                 prevbufspace = txtpos-1;
@@ -528,7 +530,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
                         prevtxtspace = i;
                         prevbufspace = txtpos-1;
                     }
-                    memcpy(buf2,buf,prevbufspace);
+                    memcpy(buf2,buf,prevbufspace+1);
                     buf2[prevbufspace+1] = 0x0;
 
                     if (strlen(buf2)>0)

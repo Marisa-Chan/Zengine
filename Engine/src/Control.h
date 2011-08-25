@@ -37,7 +37,7 @@ struct slotnode
     bool flat; //true - flat, false - warp
     Rect rectangle;
     //int warp;
-    //int distance_id;
+    char distance_id[MINIBUFSZ];
     Rect hotspot;
     //int do_skip;
     int32_t *eligible_objects;

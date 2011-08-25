@@ -182,9 +182,9 @@ void Rend_ProcessCursor()
     if (Renderer == RENDER_PANA)
         if (Rend_MouseInGamescr())
         {
-            if (MouseX() < GAMESCREEN_P)
+            if (MouseX() < GAMESCREEN_X+GAMESCREEN_P)
                 Mouse_SetCursor(CURSOR_LEFT);
-            if (MouseX() > GAMESCREEN_W - GAMESCREEN_P)
+            if (MouseX() > GAMESCREEN_X+GAMESCREEN_W - GAMESCREEN_P)
                 Mouse_SetCursor(CURSOR_RIGH);
         }
     if (Renderer == RENDER_TILT)

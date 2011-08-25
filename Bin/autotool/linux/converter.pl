@@ -347,10 +347,12 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	elsif ($_[2] eq "10") # adpcm 8000 mono 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 0");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "11") # adpcm 8000 stereo 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 1");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "12") # adpcm 8000 mono 16bit
 	{
@@ -363,10 +365,12 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	elsif ($_[2] eq "14") # adpcm 11025 mono 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 0");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "15") # adpcm 11025 stereo 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "16") # adpcm 11025 mono 16bit
 	{
@@ -379,10 +383,12 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	elsif ($_[2] eq "18") # adpcm 22050 mono 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "19") # adpcm 22050 stereo 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "20") # adpcm 22050 mono 16bit
 	{
@@ -395,10 +401,12 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	elsif ($_[2] eq "22") # adpcm 44100 mono 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 0");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "23") # adpcm 44100 stereo 8bit
 	{
 		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "24") # adpcm 44100 mono 16bit
 	{

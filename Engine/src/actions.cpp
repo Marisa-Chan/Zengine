@@ -436,7 +436,7 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
     char file[16];
     char loop[16];
     char vol[16];
-    sscanf(params,"%d %s %s %s", &type, file, loop, vol);
+    int8_t read_params = sscanf(params,"%d %s %s %s", &type, file, loop, vol);
 
     //printf ("%s %d %d\n",file,GetIntVal(vol),SoundVol[GetIntVal(vol)]);
 
@@ -477,6 +477,12 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
     Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
 
+    if (read_params == 4)
+        nod->nodes.node_music->volume = GetIntVal(vol);
+    else
+        nod->nodes.node_music->volume = 100;
+
+    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
 
     if (GetIntVal(loop)==1)
     {
@@ -489,9 +495,7 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
         nod->nodes.node_music->looped = false;
     }
 
-    nod->nodes.node_music->volume = GetIntVal(vol);
 
-    Mix_Volume( nod->nodes.node_music->chn, nod->nodes.node_music->volume);
 
 
     LockChan(nod->nodes.node_music->chn);

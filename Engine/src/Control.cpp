@@ -45,7 +45,7 @@ slotnode * CreateSlotNode()
     __InitRect(&tmp->rectangle);
     __InitRect(&tmp->hotspot);
     tmp->flat = false;
-
+    memset((void *)&tmp->distance_id,0,MINIBUFSZ);
     return tmp;
 }
 
@@ -143,7 +143,7 @@ void control_slot_draw(ctrlnode *nod)
         if (slut->srf==NULL)
         {
             char bff[16];
-            sprintf(bff,"G0ZYU%2.2x1.tga",tmp1);
+            sprintf(bff,"G0Z%sU%2.2x1.tga",slut->distance_id,tmp1);
             char *fil = GetFilePath(bff);
             if (fil)
                 slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
@@ -818,6 +818,11 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
                     slut->cursor = i;
                     break;
                 }
+        }
+        else if (strCMP(str,"distance_id")==0)
+        {
+            str=GetParams(str);
+            strcpy(slut->distance_id,str);
         }
         else if (strCMP(str,"eligible_objects")==0)
         {
