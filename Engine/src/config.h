@@ -72,6 +72,9 @@
 
 #define SYS_STRINGS_FILE    "INQUIS.STR"
 
+//Slot-controls
+#define CTRL_SLOT_FILE_NAME "g0z%1.1su%2.2x1.tga"
+
 #endif
 
 
@@ -144,6 +147,9 @@
 #define SAVE_NAME_MAX_LEN   20
 
 #define SYS_STRINGS_FILE    "NEMESIS.STR"
+
+//Slot-controls
+#define CTRL_SLOT_FILE_NAME "%d%sOBJ.TGA"
 
 #endif
 

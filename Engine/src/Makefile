@@ -30,11 +30,17 @@ OBJS =  \
 WINOBJ = \
 	win_funct.cpp
 
-pc: $(OBJS)
-	$(CXX) -Wno-write-strings -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+linux_zgi: $(OBJS)
+	$(CXX) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
-win32: $(OBJS) $(WINOBJ)
-	$(CXX_WIN) -Wno-write-strings -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+linux_znem: $(OBJS)
+	$(CXX) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+
+win32_zgi: $(OBJS) $(WINOBJ)
+	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+
+win32_znem: $(OBJS) $(WINOBJ)
+	$(CXX_WIN) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 clean:
 	rm -f $(TARGET) $(TARGET_DINGOO) *.o

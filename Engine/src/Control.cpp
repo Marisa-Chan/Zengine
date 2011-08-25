@@ -143,7 +143,12 @@ void control_slot_draw(ctrlnode *nod)
         if (slut->srf==NULL)
         {
             char bff[16];
-            sprintf(bff,"G0Z%sU%2.2x1.tga",slut->distance_id,tmp1);
+#ifdef GAME_ZGI
+            sprintf(bff,CTRL_SLOT_FILE_NAME,slut->distance_id,tmp1);
+#endif
+#ifdef GAME_NEMESIS
+            sprintf(bff,CTRL_SLOT_FILE_NAME,tmp1,slut->distance_id);
+#endif
             char *fil = GetFilePath(bff);
             if (fil)
                 slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
