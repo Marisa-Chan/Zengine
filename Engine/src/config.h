@@ -75,10 +75,7 @@
 //Slot-controls
 #define CTRL_SLOT_FILE_NAME "g0z%1.1su%2.2x1.tga"
 
-#endif
-
-
-#ifdef GAME_NEMESIS
+#elif GAME_NEMESIS
 //TITLE
 #define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
 
@@ -150,6 +147,10 @@
 
 //Slot-controls
 #define CTRL_SLOT_FILE_NAME "%d%sOBJ.TGA"
+
+#else
+
+#error Please specify game.
 
 #endif
 
