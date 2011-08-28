@@ -82,6 +82,8 @@ if (! -f $dirname2)
 	
 mkdir $dirname2."/RESOURCES";
 
+system("./to_upper.pl \"$dirname\"");
+
 system("./converter.pl ./files_zgi.db \"$dirname\" \"$dirname2/RESOURCES\" simple");
 
 mkdir $dirname2."/FONTS";
@@ -103,6 +105,8 @@ system("cp -f \"$dirname/ADDON/\"*\".scr\" \"$dirname2/ADDON/\" &>/dev/null");
 system("cp -f \"$dirname/ADDON/\"*\".SCR\" \"$dirname2/ADDON/\" &>/dev/null");
 
 system("cp -f \"$dirname/INQUIS.INI\" \"$dirname2/INQUIS.INI\"");
+
+system("cp -f \"$dirname/R.SVR\" \"$dirname2/r.svr\"");
 
 system("./progs/_zfs \"$dirname/SCRIPTS.ZFS\" \"$dirname2/SCRIPTS/\"");
 system("./progs/_zfs \"$dirname/SUBTITLE.ZFS\" \"$dirname2/SUBTITLE/\"");
