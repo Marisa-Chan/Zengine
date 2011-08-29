@@ -306,7 +306,7 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         UpdateKeyboard();
         if (KeyDown(SDLK_SPACE))
             SMPEG_stop(anm->mpg);
-        DrawImage(anm->img,GAMESCREEN_X+xx,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
+        DrawImage(anm->img,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
 
         if (subs != NULL)
         {

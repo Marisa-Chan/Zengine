@@ -14,12 +14,14 @@
 #define menu_MAIN_IMAGE_PREF   2
 #define menu_MAIN_IMAGE_EXIT   3
 
-#define menu_MAIN_CENTER       320
-
 #define menu_MAGIC_SPACE       28
 #define menu_MAGIC_ITEM_W      47
 
 #define menu_ITEM_SPACE        28
+
+#define menu_zgi_inv_hot_w     28
+#define menu_zgi_inv_h         32
+#define menu_zgi_inv_w         600
 
 uint16_t menu_bar_flag = 0xFFFF;
 
@@ -31,7 +33,8 @@ SDL_Surface *menuback[3][2];
 SDL_Surface *menupicto[256][2];
 
 
-int menu_MAIN_X = (640-580)/2;
+int16_t menu_MAIN_X = (GAME_W-580)/2;
+int16_t menu_MAIN_CENTER = GAME_W >> 1;
 
 int8_t menu_mousefocus = -1;
 
@@ -84,7 +87,7 @@ void menu_UpdateZGIMenuBar()
 
     mouse_on_item = -1;
 
-    if (MouseY() <= 40)
+    if (MouseY() <= menu_HOT_Y)
     {
         inmenu = true;
 
@@ -112,9 +115,9 @@ void menu_UpdateZGIMenuBar()
 
                 for (int i=0; i<item_count; i++)
                 {
-                    int itemspace = (600-menu_ITEM_SPACE) / item_count;
+                    int itemspace = (menu_zgi_inv_w-menu_ITEM_SPACE) / item_count;
 
-                    if (MouseInRect(menu_ScrollPos[menu_ITEM] + itemspace * i,0,28,32))
+                    if (MouseInRect(menu_ScrollPos[menu_ITEM] + itemspace * i,0,menu_zgi_inv_hot_w,menu_zgi_inv_h))
                     {
                         mouse_on_item = i;
 
@@ -161,7 +164,7 @@ void menu_UpdateZGIMenuBar()
                         itemnum = 0xE0 + i;
 
 
-                    if (MouseInRect(640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,28,32))
+                    if (MouseInRect(GAME_W + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0,menu_zgi_inv_hot_w,menu_zgi_inv_h))
                     {
                         mouse_on_item = i;
                         if (MouseUp(SDL_BUTTON_LEFT))
@@ -254,19 +257,19 @@ void menu_UpdateZGIMenuBar()
             }
 
             if (menu_bar_flag & menu_BAR_MAGIC)
-                if (MouseInRect(640-28,0,28,32))
+                if (MouseInRect(GAME_W-menu_zgi_inv_hot_w,0,menu_zgi_inv_hot_w,menu_zgi_inv_h))
                 {
                     menu_mousefocus = menu_MAGIC;
                     menu_Scrolled[menu_MAGIC]  = false;
-                    menu_ScrollPos[menu_MAGIC] = 28;
+                    menu_ScrollPos[menu_MAGIC] = menu_zgi_inv_hot_w;
                 }
 
             if (menu_bar_flag & menu_BAR_ITEM)
-                if (MouseInRect(0,0,28,32))
+                if (MouseInRect(0,0,menu_zgi_inv_hot_w,menu_zgi_inv_h))
                 {
                     menu_mousefocus = menu_ITEM;
                     menu_Scrolled[menu_ITEM]  = false;
-                    menu_ScrollPos[menu_ITEM] = menuback[menu_ITEM][1]->w - menuback[menu_ITEM][0]->w;
+                    menu_ScrollPos[menu_ITEM] = menu_zgi_inv_hot_w - menu_zgi_inv_w;
                 }
         }
     }
@@ -299,7 +302,7 @@ void menu_DrawZGIMenuBar()
 
                 for (int i=0; i<item_count; i++)
                 {
-                    int itemspace = (600-menu_ITEM_SPACE) / item_count;
+                    int itemspace = (menu_zgi_inv_w-menu_ITEM_SPACE) / item_count;
 
                     bool inrect = false;
 
@@ -335,7 +338,7 @@ void menu_DrawZGIMenuBar()
         case menu_MAGIC:
             if (menu_bar_flag & menu_BAR_MAGIC)
             {
-                DrawImage(menuback[menu_MAGIC][0],640-menu_ScrollPos[menu_MAGIC],0);
+                DrawImage(menuback[menu_MAGIC][0],GAME_W-menu_ScrollPos[menu_MAGIC],0);
 
                 for (int i=0; i<12; i++)
                 {
@@ -365,9 +368,9 @@ void menu_DrawZGIMenuBar()
                             menupicto[itemnum][1] = LoadConvertImg(GetFilePath(buf),0);
                         }
                         if (inrect)
-                            DrawImage(menupicto[itemnum][1],640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
+                            DrawImage(menupicto[itemnum][1],GAME_W + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
                         else
-                            DrawImage(menupicto[itemnum][0],640 + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
+                            DrawImage(menupicto[itemnum][0],GAME_W + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);
 
                     }
                 }
@@ -433,7 +436,7 @@ void menu_DrawZGIMenuBar()
                 DrawImage(menuback[menu_ITEM][1],0,0);
 
             if (menu_bar_flag & menu_BAR_MAGIC)
-                DrawImage(menuback[menu_MAGIC][1], 640-menuback[menu_MAGIC][1]->w, 0);
+                DrawImage(menuback[menu_MAGIC][1], GAME_W-menu_zgi_inv_hot_w, 0);
 
         }
     }

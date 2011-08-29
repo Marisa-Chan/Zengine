@@ -155,7 +155,7 @@ void control_slot_draw(ctrlnode *nod)
         }
 
         if (slut->srf)
-            Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x,  slut->rectangle.y);
+            Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x + GAMESCREEN_FLAT_X,  slut->rectangle.y);
     }
     else
     {
@@ -187,7 +187,7 @@ void control_input_draw(ctrlnode *ct)
 
             inp->textchanged = false;
         }
-        Rend_DrawImageUpGamescr(inp->rect,inp->rectangle.x,inp->rectangle.y);
+        Rend_DrawImageUpGamescr(inp->rect,inp->rectangle.x + GAMESCREEN_FLAT_X,inp->rectangle.y);
     }
     else
         inp->textwidth = 0;
@@ -206,7 +206,7 @@ void control_input_draw(ctrlnode *ct)
             if (inp->cursor != NULL)
             {
 
-                Rend_DrawImageUpGamescr(inp->cursor,inp->rectangle.x + inp->textwidth,inp->rectangle.y,inp->frame);
+                Rend_DrawImageUpGamescr(inp->cursor,inp->rectangle.x + GAMESCREEN_FLAT_X + inp->textwidth,inp->rectangle.y,inp->frame);
 
                 inp->period -= GetDTime();
 

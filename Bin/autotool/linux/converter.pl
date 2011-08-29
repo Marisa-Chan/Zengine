@@ -226,30 +226,43 @@ sub Replacer
 		{return $tmp;}	
 }
 
+sub GetFileName
+{
+	local $tmp1 = rindex($_[0],"\\");
+	local $tmp2 = rindex($_[0],"/");
+	if ($tmp1 < $tmp2)
+		{$tmp1 = $tmp2;}
+	
+	return substr($_[0],$tmp1+1);
+	
+}
+
 sub ConvertTGZ #0 - src file, 1 - dst file, 2 - renderer 
 {
 	local $btst = "";
 	if (! -f "./temp")
 		{mkdir "./temp";}
-	system("./progs/_tgz \"$_[0]\" ./temp/tmp.tga");
+	local $tempname = GetFileName($_[0]);
+	system("./progs/_tgz \"$_[0]\" ./temp/$tempname.tga");
 	local $dst = Replacer($_[1],"tga","png");
+	
 		
 	if ($_[2] eq "0") # flat
 	{
-		$btst = `$imgmgk ./temp/tmp.tga ./temp/tmp.png 2>&1`;
+		$btst = `$imgmgk ./temp/$tempname.tga ./temp/$tempname.png 2>&1`;
 	}
 	elsif ($_[2] eq "1") # pana
 	{
-		$btst = `$imgmgk -transpose ./temp/tmp.tga ./temp/tmp.png 2>&1`;
+		$btst = `$imgmgk -transpose ./temp/$tempname.tga ./temp/$tempname.png 2>&1`;
 	}
 	elsif ($_[2] eq "2") # tilt
 	{
-		$btst = `$imgmgk ./temp/tmp.tga ./temp/tmp.png 2>&1`;
+		$btst = `$imgmgk ./temp/$tempname.tga ./temp/$tempname.png 2>&1`;
 	}
 	if ($btst ne "")
 		{print "$_[0] not converted!\n";}
-	system("mv -n ./temp/tmp.png \"$dst\"");
-	system("rm -f ./temp/tmp.tga ./temp/tmp.png");
+	system("mv -n ./temp/$tempname.png \"$dst\"");
+	system("rm -f ./temp/$tempname.tga ./temp/$tempname.png");
 }
 
 sub ConvertRLF #0 - src file, 1 - dst file, 2 - renderer 
@@ -259,26 +272,27 @@ sub ConvertRLF #0 - src file, 1 - dst file, 2 - renderer
 		{mkdir "./temp";}
 	local $dst = Replacer($_[1],"rlf","png");
 	local $dst2 = Replacer($_[1],"rlf","anm");
+	local $tempname = GetFileName($_[0]);
 		
 	if ($_[2] eq "0") # flat
 	{
-		system("./progs/_rlf 0 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+		system("./progs/_rlf 0 \"$_[0]\" ./temp/$tempname.tga ./temp/$tempname.anm");
 	}
 	elsif ($_[2] eq "1") # pana
 	{
-		system("./progs/_rlf 1 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+		system("./progs/_rlf 1 \"$_[0]\" ./temp/$tempname.tga ./temp/$tempname.anm");
 	}
 	elsif ($_[2] eq "2") # tilt
 	{
-		system("./progs/_rlf 0 \"$_[0]\" ./temp/tmp.tga ./temp/tmp.anm");
+		system("./progs/_rlf 0 \"$_[0]\" ./temp/$tempname.tga ./temp/$tempname.anm");
 	}
-	$btst = `$imgmgk ./temp/tmp.tga ./temp/tmp.png 2>&1`;
+	$btst = `$imgmgk ./temp/$tempname.tga ./temp/$tempname.png 2>&1`;
 	if ($btst ne "")
 		{print "$_[0] not converted!\n";}
 	
-	system("mv -n ./temp/tmp.png \"$dst\"");
-	system("mv -n ./temp/tmp.anm \"$dst2\"");
-	system("rm -f ./temp/tmp.tga ./temp/tmp.png ./temp/tmp.anm");
+	system("mv -n ./temp/$tempname.png \"$dst\"");
+	system("mv -n ./temp/$tempname.anm \"$dst2\"");
+	system("rm -f ./temp/$tempname.tga ./temp/$tempname.png ./temp/$tempname.anm");
 }
 
 sub ConvertAVI #0 - src file, 1 - dst file, 2 - renderer 
@@ -287,33 +301,34 @@ sub ConvertAVI #0 - src file, 1 - dst file, 2 - renderer
 		{mkdir "./temp";}
 	local $dst = Replacer($_[1],"avi","mpg");
 	local $dst2 = Replacer($_[1],"avi","wav");
+	local $tempname = GetFileName($_[0]);
 		
 	if ($_[2] eq "0") # flat
 	{
-		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/$tempname.mpg &>/dev/null");
 	}
 	elsif ($_[2] eq "1") # pana
 	{
-		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/$tempname.mpg &>/dev/null");
 	}
 	elsif ($_[2] eq "2") # tilt
 	{
-		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/$tempname.mpg &>/dev/null");
 	}
 	elsif ($_[2] eq "5") # streamvideo (with audio!)
 	{
-		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/tmp.mpg &>/dev/null");
-		system("$mpla -dumpaudio \"$_[0]\" -dumpfile ./temp/tmp.dump &>/dev/null");
-		system("./progs/_sfx ./temp/tmp.dump ./temp/tmp.wav 1 22050 1");
-		system("rm -f ./temp/tmp.dump");
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/$tempname.mpg &>/dev/null");
+		system("$mpla -dumpaudio \"$_[0]\" -dumpfile ./temp/$tempname.dump &>/dev/null");
+		system("./progs/_sfx ./temp/$tempname.dump ./temp/$tempname.wav 1 22050 1");
+		system("rm -f ./temp/$tempname.dump");
 	}
 	
-	if (-e "./temp/tmp.mpg")
-		{system("mv -n ./temp/tmp.mpg \"$dst\"");}
+	if (-e "./temp/$tempname.mpg")
+		{system("mv -n ./temp/$tempname.mpg \"$dst\"");}
 	if (-e "./temp/tmp.wav")
-		{system("mv -n ./temp/tmp.wav \"$dst2\"");}
+		{system("mv -n ./temp/$tempname.wav \"$dst2\"");}
 		
-	system("rm -f ./temp/tmp.wav ./temp/tmp.mpg");
+	system("rm -f ./temp/$tempname.wav ./temp/$tempname.mpg");
 }
 
 sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
@@ -323,100 +338,101 @@ sub ConvertSFX #0 - src file, 1 - dst file, 2 - type
 	local $dst = Replacer($_[1],"ifp","wav");
 	$dst = Replacer($dst,"raw","wav");
 	$dst = Replacer($dst,"src","wav");
+	local $tempname = GetFileName($_[0]);
 	
 	if ($_[2] eq "0") # adpcm 22050 mono
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 0");
 	}
 	elsif ($_[2] eq "1") # adpcm 22050 stereo
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 1");
 	}
 	elsif ($_[2] eq "2") # adpcm 44100 stereo
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 44100 1");
 	}
 	elsif ($_[2] eq "3") # adpcm 11025 stereo
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 11025 1");
 	}
 	elsif ($_[2] eq "4") # raw 22050 stereo
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 0 22050 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 0 22050 0");
 	}
 	elsif ($_[2] eq "10") # adpcm 8000 mono 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 0");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 8000 0");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "11") # adpcm 8000 stereo 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 1");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 8000 1");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "12") # adpcm 8000 mono 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 8000 0");
 	}
 	elsif ($_[2] eq "13") # adpcm 8000 stereo 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 8000 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 8000 1");
 	}
 	elsif ($_[2] eq "14") # adpcm 11025 mono 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 0");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 11025 0");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "15") # adpcm 11025 stereo 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 11025 1");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "16") # adpcm 11025 mono 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 11025 0");
 	}
 	elsif ($_[2] eq "17") # adpcm 11025 stereo 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 11025 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 11025 1");
 	}
 	elsif ($_[2] eq "18") # adpcm 22050 mono 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 0");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "19") # adpcm 22050 stereo 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 1");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "20") # adpcm 22050 mono 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 0");
 	}
 	elsif ($_[2] eq "21") # adpcm 22050 stereo 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 22050 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 22050 1");
 	}
 	elsif ($_[2] eq "22") # adpcm 44100 mono 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 0");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 44100 0");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "23") # adpcm 44100 stereo 8bit
 	{
-		#system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+		#system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 44100 1");
 		print("Not supported sfx type $_[2]\n");
 	}
 	elsif ($_[2] eq "24") # adpcm 44100 mono 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 0");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 44100 0");
 	}
 	elsif ($_[2] eq "25") # adpcm 44100 stereo 16bit
 	{
-		system("./progs/_sfx \"$_[0]\" ./temp/tmp.wav 1 44100 1");
+		system("./progs/_sfx \"$_[0]\" ./temp/$tempname.wav 1 44100 1");
 	}
 
-	system("mv -n ./temp/tmp.wav \"$dst\"");
-	system("rm -f ./temp/tmp.wav");
+	system("mv -n ./temp/$tempname.wav \"$dst\"");
+	system("rm -f ./temp/$tempname.wav");
 }

@@ -207,18 +207,19 @@ bool Rend_MouseInGamescr()
 
 int Rend_GetMouseGameX()
 {
-    int tmpl;
-    int tmp;
+    int32_t tmpl;
+    int32_t tmp;
     switch(Renderer)
     {
     case RENDER_FLAT:
-        return MouseX() - GAMESCREEN_X;
+        return MouseX() - GAMESCREEN_X - GAMESCREEN_FLAT_X;
         break;
     case RENDER_PANA:
         tmp = MouseY() - GAMESCREEN_Y;
+        tmpl = MouseX() - GAMESCREEN_X;
 
-        if (tmp >= 0 && tmp < GAMESCREEN_H)
-            tmpl = render_table[MouseX()][tmp].x;
+        if (tmp >= 0 && tmp < GAMESCREEN_H && tmpl >= 0 && tmpl < GAMESCREEN_W)
+            tmpl = render_table[tmpl][tmp].x;
         else
             tmpl = 0;
 
@@ -233,9 +234,10 @@ int Rend_GetMouseGameX()
 
     case RENDER_TILT:
         tmp = MouseY() - GAMESCREEN_Y;
+        tmpl = MouseX() - GAMESCREEN_X;
 
-        if (tmp >= 0 && tmp < GAMESCREEN_H)
-            tmpl = render_table[MouseX()][tmp].x;
+        if (tmp >= 0 && tmp < GAMESCREEN_H && tmpl >= 0 && tmpl < GAMESCREEN_W)
+            tmpl = render_table[tmpl][tmp].x;
         else
             tmpl = 0;
 
@@ -257,8 +259,8 @@ int Rend_GetMouseGameX()
 
 int Rend_GetMouseGameY()
 {
-    int tmpl;
-    int tmp;
+    int32_t tmpl;
+    int32_t tmp;
     switch(Renderer)
     {
     case RENDER_FLAT:
@@ -267,9 +269,9 @@ int Rend_GetMouseGameY()
 
     case RENDER_PANA:
         tmp = MouseY() - GAMESCREEN_Y;
-
-        if (tmp >= 0 && tmp < GAMESCREEN_H)
-            return render_table[MouseX()][tmp].y;
+        tmpl = MouseX() - GAMESCREEN_X;
+        if (tmp >= 0 && tmp < GAMESCREEN_H && tmpl >= 0 && tmpl < GAMESCREEN_W)
+            return render_table[tmpl][tmp].y;
         else
             return tmp;
 
@@ -277,9 +279,9 @@ int Rend_GetMouseGameY()
 
     case RENDER_TILT:
         tmp = MouseY() - GAMESCREEN_Y;
-
-        if (tmp >= 0 && tmp < GAMESCREEN_H)
-            tmpl = render_table[MouseX()][tmp].y;
+        tmpl = MouseX() - GAMESCREEN_X;
+        if (tmp >= 0 && tmp < GAMESCREEN_H && tmpl >= 0 && tmpl < GAMESCREEN_W)
+            tmpl = render_table[tmpl][tmp].y;
         else
             tmpl = 0;
 
@@ -317,7 +319,7 @@ int Rend_GetRenderer()
 
 void Rend_FlatRender()
 {
-    DrawImageToSurf(scrbuf,0,0,tempbuf);
+    DrawImageToSurf(scrbuf,GAMESCREEN_FLAT_X,0,tempbuf);
 }
 
 //void Rend_DrawPanorama2()
@@ -626,7 +628,7 @@ void Rend_ProcessSubs()
             DeleteCurrent(sublist);
         }
         else
-            DrawImage(subrec->img,subrec->x,subrec->y);
+            DrawImage(subrec->img,subrec->x+GAMESCREEN_FLAT_X,subrec->y);
 
         NextMList(sublist);
     }

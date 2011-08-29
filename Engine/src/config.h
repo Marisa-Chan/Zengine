@@ -1,7 +1,6 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-
 #ifdef GAME_ZGI
 //TITLE
 #define TITLE       "Z-Engine: Zork Grand Inquisitor (RC1) [build: "__DATE__" "__TIME__"]"
@@ -20,6 +19,7 @@
 //MENU//
 #define menu_UpdateMenuBar menu_UpdateZGIMenuBar
 #define menu_DrawMenuBar   menu_DrawZGIMenuBar
+#define menu_HOT_Y         40
 
 //Preferences
 #define pref_FileName      "./INQUIS.INI"
@@ -36,9 +36,25 @@
 #define GAMESCREEN_H   344
 #define GAMESCREEN_X   0
 #define GAMESCREEN_Y   68
+#define GAMESCREEN_FLAT_X 0
 
 #define GAMESCREEN_H_2  (GAMESCREEN_H >> 1)
 #define GAMESCREEN_W_2  (GAMESCREEN_W >> 1)
+
+
+//// WIDESCREEN SUPPORT
+#ifdef WIDESCREEN
+
+#undef GAME_W
+#define GAME_W 854
+
+#undef GAMESCREEN_W
+#define GAMESCREEN_W 854
+
+#undef GAMESCREEN_FLAT_X
+#define GAMESCREEN_FLAT_X 107
+#endif
+
 
 
 //Script names
@@ -75,6 +91,10 @@
 //Slot-controls
 #define CTRL_SLOT_FILE_NAME "g0z%1.1su%2.2x1.tga"
 
+
+
+
+
 #elif GAME_NEMESIS
 //TITLE
 #define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
@@ -109,6 +129,7 @@
 #define GAMESCREEN_H   320
 #define GAMESCREEN_X   64     //(640-512)/2
 #define GAMESCREEN_Y   80    //(480-320)/2
+#define GAMESCREEN_FLAT_X 0
 
 #define GAMESCREEN_H_2  (GAMESCREEN_H >> 1)
 #define GAMESCREEN_W_2  (GAMESCREEN_W >> 1)
