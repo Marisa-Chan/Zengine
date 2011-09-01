@@ -1,4 +1,5 @@
 #include "System.h"
+#include <errno.h>
 
 int FocusInput=0;
 bool pushChangeMouse=false;
@@ -49,6 +50,38 @@ slotnode * CreateSlotNode()
     return tmp;
 }
 
+levernode * CreateLeverNode()
+{
+    levernode *tmp = new(levernode);
+    tmp->cursor = CURSOR_IDLE;
+    __InitRect(&tmp->AnimCoords);
+    tmp->anm = NULL;
+    tmp->curfrm = 0;
+    tmp->delta_x = 0;
+    tmp->delta_y = 0;
+    tmp->frames = 0;
+    tmp->startpos = 0;
+    tmp->mirrored = 0;
+    tmp->rendfrm = -1;
+    tmp->last_mouse_x = 0;
+    tmp->last_mouse_y = 0;
+    tmp->mouse_angle = 0;
+    tmp->mouse_count = 0;
+    tmp->mouse_captured = false;
+    for (int16_t i=0; i< CTRL_LEVER_MAX_FRAMES; i++)
+    {
+        tmp->hotspots[i].x = 0;
+        tmp->hotspots[i].y = 0;
+        tmp->hotspots[i].angles = 0;
+        for (int16_t j=0; j< CTRL_LEVER_MAX_DIRECTS; j++)
+        {
+            tmp->hotspots[i].directions[j].angle = 0;
+            tmp->hotspots[i].directions[j].toframe = -1;
+        }
+    }
+    return tmp;
+}
+
 saveloadnode * CreateSaveNode()
 {
     saveloadnode *tmp = new(saveloadnode);
@@ -60,6 +93,7 @@ saveloadnode * CreateSaveNode()
         tmp->inputslot[i] = -1;
         tmp->input_nodes[i] = NULL;
         memset(tmp->Names[i],0,SAVE_NAME_MAX_LEN+1);
+
     }
 
     return tmp;
@@ -99,7 +133,11 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->node.svld = CreateSaveNode();
         tmp->func = control_save;
         break;
-
+    case CTRL_LEVER:
+        tmp->type = CTRL_LEVER;
+        tmp->node.lev = CreateLeverNode();
+        tmp->func = control_lever;
+        break;
     };
     return tmp;
 }
@@ -224,6 +262,17 @@ void control_input_draw(ctrlnode *ct)
     }
 }
 
+void control_lever_draw(ctrlnode *ct)
+{
+    levernode *lev = ct->node.lev;
+    if (lev->curfrm == lev->rendfrm)
+        return;
+
+    lev->rendfrm = lev->curfrm;
+
+    anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->rendfrm);
+}
+
 void Ctrl_DrawControls()
 {
     MList *ctrl = Getctrl();
@@ -236,7 +285,8 @@ void Ctrl_DrawControls()
             control_slot_draw(nod);
         else if (nod->type == CTRL_INPUT)
             control_input_draw(nod);
-
+        else if (nod->type == CTRL_LEVER)
+            control_lever_draw(nod);
 
         NextMList(ctrl);
     }
@@ -475,12 +525,236 @@ void control_save(ctrlnode *ct)
 
 }
 
+void control_lever(ctrlnode *ct)
+{
+    levernode *lev = ct->node.lev;
+    if (lev->curfrm < CTRL_LEVER_MAX_FRAMES)
+    {
+        if (!lev->mouse_captured)
+        {
+
+            if (lev->hotspots[lev->curfrm].x                <= Rend_GetMouseGameX() &&\
+                lev->hotspots[lev->curfrm].x + lev->delta_x >= Rend_GetMouseGameX() &&\
+                lev->hotspots[lev->curfrm].y                <= Rend_GetMouseGameY() &&\
+                lev->hotspots[lev->curfrm].y + lev->delta_y >= Rend_GetMouseGameY())
+            {
+                Mouse_SetCursor(lev->cursor);
+
+                if (MouseDown(SDL_BUTTON_LEFT))
+                    lev->mouse_captured = true;
+            }
+        }
+        else
+        {
+            if (MouseUp(SDL_BUTTON_LEFT))
+                lev->mouse_captured = false;
+            else
+            {
+                Mouse_SetCursor(lev->cursor);
+
+                if (lev->mouse_count == CTRL_LEVER_ANGL_FRAMES && lev->mouse_angle != -1)
+                    for (int16_t j=0; j<CTRL_LEVER_MAX_DIRECTS; j++)
+                    {
+                        int16_t angl = lev->hotspots[lev->curfrm].directions[j].angle;
+
+                        if (angl + CTRL_LEVER_ANGL_DELTA  >  lev->mouse_angle   &&
+                            angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
+                            {
+                                lev->curfrm = lev->hotspots[lev->curfrm].directions[j].toframe;
+                                break;
+                            }
+
+                    }
+            }
+        }
+
+    }
+
+    if (lev->mouse_count >= CTRL_LEVER_ANGL_FRAMES)
+    {
+        lev->mouse_count = 0;
+        lev->mouse_angle = -1;
+    }
+    else
+    {
+        int16_t tmp = Mouse_GetAngle(lev->last_mouse_x,
+                                     lev->last_mouse_y,
+                                     MouseX(), MouseY());
+        if (tmp >= 0)
+        {
+            if (lev->mouse_count > 1)
+                lev->mouse_angle = (lev->mouse_angle + tmp) >> 1;
+            else
+                lev->mouse_angle = tmp;
+        }
+
+    }
+
+    lev->mouse_count++;
+    lev->last_mouse_x = MouseX();
+    lev->last_mouse_y = MouseY();
+
+}
+
 
 int Parse_Control_Flat()
 {
     Rend_SetRenderer (RENDER_FLAT);
 }
 
+int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
+{
+    char buf[FILE_LN_BUF];
+    char *str;
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_LEVER);
+    levernode *lev = ctnode->node.lev;
+
+    AddToMList(controlst,ctnode);
+
+    ctnode->slot      = slot;
+    //SetDirectgVarInt(slot,0);
+
+    char filename[MINIBUFSZ];
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            break;
+        }
+        else if (strCMP(str,"descfile")==0)
+        {
+            str   = GetParams(str);
+            strcpy(filename,str);
+        }
+        else if (strCMP(str,"cursor")==0)
+        {
+            str   = GetParams(str);
+            lev->cursor = Mouse_GetCursorIndex(str);
+        }
+    }
+
+    char *descfile = GetFilePath(filename);
+
+    if (!descfile)
+        return 0; //FAIL
+
+    FILE *file2 = fopen(descfile,"rb");
+
+    while (!feof(file2))
+    {
+        fgets(buf,FILE_LN_BUF,file2);
+        str = PrepareString(buf);
+
+        if (strCMP(str,"animation_id")==0)
+        {
+            //sscanf(str,"animation_id:%d",);
+        }
+        else if (strCMP(str,"filename")==0)
+        {
+            char minbuf[MINIBUFSZ];
+            sscanf(str,"filename:%s",minbuf);
+            int16_t ln = strlen(minbuf);
+            if (minbuf[ln-1] == '~')
+                minbuf[ln-1] = 0;
+            lev->anm = anim_CreateAnim();
+            anim_LoadAnim(lev->anm,minbuf,0,0,0,0);
+
+        }
+        else if (strCMP(str,"skipcolor")==0)
+        {
+
+        }
+        else if (strCMP(str,"anim_coords")==0)
+        {
+            int32_t t1,t2,t3,t4;
+            sscanf(str,"anim_coords:%d %d %d %d~",&t1,&t2,&t3,&t4);
+            lev->AnimCoords.x = t1;
+            lev->AnimCoords.y = t2;
+            lev->AnimCoords.w = t3-t1+1;
+            lev->AnimCoords.h = t4-t2+1;
+        }
+        else if (strCMP(str,"mirrored")==0)
+        {
+            int32_t t1;
+            sscanf(str,"mirrored:%d",&t1);
+            if (t1 == 1)
+                lev->mirrored = true;
+            else
+                lev->mirrored = false;
+        }
+        else if (strCMP(str,"frames")==0)
+        {
+            int32_t t1;
+            sscanf(str,"frames:%d",&t1);
+            lev->frames = t1;
+        }
+        else if (strCMP(str,"elsewhere")==0)
+        {
+
+        }
+        else if (strCMP(str,"out_of_control")==0)
+        {
+
+        }
+        else if (strCMP(str,"start_pos")==0)
+        {
+            int32_t t1;
+            sscanf(str,"start_pos:%d",&t1);
+            lev->startpos = t1;
+            lev->curfrm = lev->startpos;
+        }
+        else if (strCMP(str,"hotspot_deltas") == 0)
+        {
+            int32_t t1,t2;
+            sscanf(str,"hotspot_deltas:%d %d",&t1, &t2);
+            lev->delta_x = t1;
+            lev->delta_y = t2;
+        }
+        else
+        {
+            int32_t t1,t2,t3;
+            if (sscanf(str,"%d:%d %d", &t1, &t2, &t3) == 3);
+            {
+                if (t1 < CTRL_LEVER_MAX_FRAMES)
+                {
+                lev->hotspots[t1].x = t2;
+                lev->hotspots[t1].y = t3;
+                char *token;
+                char *find = " ";
+                char tmpbuf[FILE_LN_BUF];
+                strcpy(tmpbuf,str);
+                token = strtok(tmpbuf,find);
+                while (token != NULL)
+                {
+                    if( strCMP(token,"d") == 0 )
+                    {
+                        int32_t t4,t5;
+                        sscanf(token,"d=%d,%d",&t4,&t5);
+                        if (lev->hotspots[t1].angles < CTRL_LEVER_MAX_DIRECTS)
+                        {
+                            int16_t angles = lev->hotspots[t1].angles;
+                            lev->hotspots[t1].directions[angles].toframe = t4;
+                            lev->hotspots[t1].directions[angles].angle   = t5;
+                            lev->hotspots[t1].angles++;
+                        }
+                    }
+                    token = strtok(NULL,find);
+                }
+                }
+            }
+        }
+
+    }//while (!feof(file2))
+
+    fclose(file2);
+
+    return 1;
+}
 
 
 int Parse_Control_Panorama(FILE *fl)
@@ -724,6 +998,7 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
                    &inp->rectangle.h);
 
             inp->rect = CreateSurface(inp->rectangle.w-inp->rectangle.x,inp->rectangle.h-inp->rectangle.y);
+            SetColorKey(inp->rect,0,0,0);
         }
         else if (strCMP(str,"aux_hotspot")==0)
         {
@@ -980,6 +1255,10 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     {
         Parse_Control_Slot(controlst,fl,slot);
     }
+    else if (strCMP(ctrltp,"lever")==0)
+    {
+        Parse_Control_Lever(controlst,fl,slot);
+    }
 
     return good;
 }
@@ -1038,6 +1317,14 @@ void ctrl_Delete_SaveNode(ctrlnode *nod)
     delete nod->node.svld;
 }
 
+void ctrl_Delete_LeverNode(ctrlnode *nod)
+{
+    if (nod->node.lev->anm != NULL)
+        anim_DeleteAnim(nod->node.lev->anm);
+    delete nod->node.lev;
+}
+
+
 void DeleteSelControl(ctrlnode *nod)
 {
     switch (nod->type)
@@ -1053,6 +1340,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_SAVE:
         ctrl_Delete_SaveNode(nod);
+        break;
+    case CTRL_LEVER:
+        ctrl_Delete_LeverNode(nod);
         break;
     }
 
@@ -1081,7 +1371,6 @@ void FlushControlList(MList *lst)
     while (!eofMList(lst))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(lst);
-
 
         DeleteSelControl(nod);
 

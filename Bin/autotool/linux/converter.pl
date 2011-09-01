@@ -325,7 +325,7 @@ sub ConvertAVI #0 - src file, 1 - dst file, 2 - renderer
 	
 	if (-e "./temp/$tempname.mpg")
 		{system("mv -n ./temp/$tempname.mpg \"$dst\"");}
-	if (-e "./temp/tmp.wav")
+	if (-e "./temp/$tempname.wav")
 		{system("mv -n ./temp/$tempname.wav \"$dst2\"");}
 		
 	system("rm -f ./temp/$tempname.wav ./temp/$tempname.mpg");

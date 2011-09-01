@@ -91,8 +91,11 @@
 //Slot-controls
 #define CTRL_SLOT_FILE_NAME "g0z%1.1su%2.2x1.tga"
 
-
-
+//Lever-control
+#define CTRL_LEVER_MAX_FRAMES  128
+#define CTRL_LEVER_MAX_DIRECTS 4
+#define CTRL_LEVER_ANGL_FRAMES 4
+#define CTRL_LEVER_ANGL_DELTA  15
 
 
 #elif GAME_NEMESIS
@@ -113,6 +116,7 @@
 //MENU//
 #define menu_UpdateMenuBar menu_UpdateZGIMenuBar
 #define menu_DrawMenuBar   menu_DrawZGIMenuBar
+#define menu_HOT_Y         40
 
 //Preferences
 #define pref_FileName      "./ZNEMESIS.INI"
@@ -168,6 +172,14 @@
 
 //Slot-controls
 #define CTRL_SLOT_FILE_NAME "%d%sOBJ.TGA"
+
+//Lever-control
+#define CTRL_LEVER_MAX_FRAMES  128
+#define CTRL_LEVER_MAX_DIRECTS 4
+#define CTRL_LEVER_ANGL_FRAMES 4
+#define CTRL_LEVER_ANGL_DELTA  15
+
+
 
 #else
 

@@ -293,3 +293,13 @@ if (!surf)
     //SDL_StretchSurfaceBlit(surf,0,dest,0);
     SDL_BlitSurface(surf,0,dest,&tmp);
 }
+
+void SetColorKey(SDL_Surface *surf,int8_t r, int8_t g, int8_t b)
+{
+    SDL_SetColorKey(surf,SDL_SRCCOLORKEY,Rend_MapScreenRGB(r,g,b));
+}
+
+void ClearColorKey(SDL_Surface *surf)
+{
+    SDL_SetColorKey(surf,0,0);
+}

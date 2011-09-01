@@ -86,6 +86,15 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
 
         nod->anim.avi->mpg=SMPEG_new(GetFilePath(filename),&nod->anim.avi->inf,0);
         nod->anim.avi->img = NULL;
+        int16_t w,h;
+
+        w = nod->anim.avi->inf.width;
+        h = nod->anim.avi->inf.height;
+
+        nod->anim.avi->img = CreateSurface(w,h);
+
+        SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
+        SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
 
         if (nod->framerate == 0)
             nod->framerate = FPS_DELAY; //~15fps
@@ -110,56 +119,56 @@ void anim_ProcessAnim(animnode *mnod)
     if (mnod)
     {
 
-            mnod->nexttick -= GetDTime();
+        mnod->nexttick -= GetDTime();
 
-            if (mnod->nexttick <= 0)
+        if (mnod->nexttick <= 0)
+        {
+            mnod->nexttick = mnod->framerate;
+
+            if (mnod->vid)
             {
-                mnod->nexttick = mnod->framerate;
+                SMPEG_renderFrame(mnod->anim.avi->mpg,
+                                  mnod->CurFr+1);
 
-                if (mnod->vid)
-                {
-                    SMPEG_renderFrame(mnod->anim.avi->mpg,
-                                      mnod->CurFr+1);
-
-                    Rend_DrawImageToGamescr(mnod->anim.avi->img,
-                                            mnod->x,
-                                            mnod->y);
-                    mnod->CurFr++;
-                }
-                else
-                    Rend_DrawImageToGamescr(mnod->anim.rlf,
-                                            mnod->x,
-                                            mnod->y,
-                                            mnod->CurFr);
-
+                Rend_DrawImageToGamescr(mnod->anim.avi->img,
+                                        mnod->x,
+                                        mnod->y);
                 mnod->CurFr++;
+            }
+            else
+                Rend_DrawImageToGamescr(mnod->anim.rlf,
+                                        mnod->x,
+                                        mnod->y,
+                                        mnod->CurFr);
 
-                if (mnod->CurFr > mnod->end)
+            mnod->CurFr++;
+
+            if (mnod->CurFr > mnod->end)
+            {
+                mnod->loops++;
+
+                if (mnod->loops < mnod->loopcnt || mnod->loopcnt == 0)
                 {
-                    mnod->loops++;
+                    mnod->CurFr=mnod->start;
+                    /*                            if (nod->vid)
+                                                {
+                                                    //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
+                                                    nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
+                                                }
+                                                else
+                                                    nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;*/
+                }
 
-                    if (mnod->loops < mnod->loopcnt || mnod->loopcnt == 0)
-                    {
-                        mnod->CurFr=mnod->start;
-                        /*                            if (nod->vid)
-                                                    {
-                                                        //nod->nexttick=millisec() + 1.0/(((anim_avi *)nod->anim)->inf.current_fps) * 1000.0;
-                                                        nod->nexttick=millisec() + (1.0/30.0) * 1000.0;
-                                                    }
-                                                    else
-                                                        nod->nexttick=millisec()+((anim_surf *)nod->anim)->info.time;*/
-                    }
-
-                    else
-                    {
+                else
+                {
 #ifdef TRACE
 //                        printf ("Animplay #%d End's\n",nod->slot);
 #endif
 //                        anim_DeleteAnimNod(nod);
-                          mnod->playing = false;
-                    }
+                    mnod->playing = false;
                 }
             }
+        }
     }
 }
 
@@ -199,12 +208,12 @@ int anim_ProcessAnimPrePlayNode(struct_action_res *nod)
     if (pre->playerid == 0)
     {
         pre->playerid = anim_PlayAnim(pre->point,pre->x,
-                                                 pre->y,
-                                                 pre->w,
-                                                 pre->h,
-                                                 pre->start,
-                                                 pre->end,
-                                                 pre->loop);
+                                      pre->y,
+                                      pre->w,
+                                      pre->h,
+                                      pre->start,
+                                      pre->end,
+                                      pre->loop);
         SetgVarInt(pre->pointingslot,1);
         if (nod->slot > 0)
             SetgVarInt(nod->slot,1);
@@ -260,6 +269,26 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
     nod->loopcnt = loop;
 
     return nod->playID;
+}
+
+int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame)
+{
+
+    if (mnod)
+    {
+        if (mnod->vid)
+        {
+            if (mnod->anim.avi != NULL)
+            {
+                SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2+1);
+
+                Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
+            }
+        }
+        else
+            if (mnod->anim.rlf != NULL)
+                Rend_DrawImageToGamescr(mnod->anim.rlf, x, y, frame);
+    }
 }
 
 void anim_DeleteAnim(animnode *nod)

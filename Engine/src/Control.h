@@ -7,8 +7,10 @@
 #define CTRL_INPUT    2
 #define CTRL_SLOT     3
 #define CTRL_SAVE     4
+#define CTRL_LEVER    5
 #define CTRL_PANA    10
 #define CTRL_FLAT    11
+#define CTRL_TILT    12
 
 
 struct Rect
@@ -76,6 +78,38 @@ struct saveloadnode
     char     Names[MAX_SAVES][SAVE_NAME_MAX_LEN+1];
 };
 
+struct levernode
+{
+    int16_t cursor;
+    //int32_t animation_id;
+    bool mirrored;
+    //uint32_t skipcolor;
+    Rect AnimCoords;
+    int16_t frames;
+    int16_t startpos;
+    animnode *anm;
+    int16_t curfrm;
+    int16_t rendfrm;
+    struct hotspots
+    {
+        int16_t x;
+        int16_t y;
+        int16_t angles;
+        struct directions
+        {
+            int16_t toframe;
+            int16_t angle;
+        } directions[CTRL_LEVER_MAX_DIRECTS];
+    } hotspots[CTRL_LEVER_MAX_FRAMES];
+    int16_t delta_x;
+    int16_t delta_y;
+    int16_t last_mouse_x;
+    int16_t last_mouse_y;
+    int16_t mouse_angle;
+    int8_t mouse_count;
+    bool   mouse_captured;
+};
+
 struct ctrlnode
 {
     int32_t slot;
@@ -86,6 +120,7 @@ struct ctrlnode
         pushnode     *push;
         inputnode    *inp;
         saveloadnode *svld;
+        levernode    *lev;
 
         void  *unknown;
     } node;
@@ -109,6 +144,7 @@ void control_slot(ctrlnode *ct);
 void control_push(ctrlnode *ct);
 void control_input(ctrlnode *ct);
 void control_save(ctrlnode *ct);
+void control_lever(ctrlnode *ct);
 
 ctrlnode *GetControlByID(int32_t id);
 

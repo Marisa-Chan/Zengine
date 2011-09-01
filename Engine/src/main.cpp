@@ -85,8 +85,6 @@ int main(int argc, char **argv)
 
     InitGameLoop();
 
-
-
     int bl=0;
 
     InitMTime(35.0);

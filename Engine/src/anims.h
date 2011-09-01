@@ -40,10 +40,10 @@ struct anim_preplay_node{
     int32_t  start;
     int32_t    end;
     int32_t   loop;
-    animnode *point; //pointer to direct access
+    animnode *point; //pointer for direct access
 };
 
-
+animnode *anim_CreateAnim();
 struct_action_res *anim_CreateAnimPlayNode();
 struct_action_res *anim_CreateAnimPreNode();
 struct_action_res *anim_CreateAnimPlayPreNode();
@@ -62,5 +62,6 @@ int anim_DeleteAnimPlay(struct_action_res *nod);
 int anim_DeleteAnimPreNod(struct_action_res *nod);
 int anim_DeleteAnimPrePlayNode(struct_action_res *nod);
 
+int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame);
 
 #endif // ANIMS_H_INCLUDED

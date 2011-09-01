@@ -76,6 +76,7 @@ void Rend_ProcessSubs();
 struct_SubRect *Rend_GetSubById( int id);
 
 SDL_Surface *Rend_GetGameScreen();
+SDL_Surface *Rend_GetWindowSurface();
 
 uint32_t Rend_MapScreenRGB(int r, int g, int b);
 void Rend_ScreenFlip();

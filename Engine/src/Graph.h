@@ -17,6 +17,8 @@ SDL_Surface *CreateSurface(uint16_t w,uint16_t h);
 void DrawImage(SDL_Surface *surf, int16_t x, int16_t y);
 void DrawImageToSurf(SDL_Surface *surf, int16_t x, int16_t y,SDL_Surface *dest);
 
+void SetColorKey(SDL_Surface *surf,int8_t r, int8_t g, int8_t b);
+void ClearColorKey(SDL_Surface *surf);
 
 struct Anim_info
 {

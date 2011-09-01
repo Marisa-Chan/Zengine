@@ -163,6 +163,43 @@ void Mouse_HideCursor()
     DrawCursor = false;
 }
 
+int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2) //not exact but near and fast
+{
+    if (x == x2 && y == y2)
+        return -1;
+    else if (x2 >= x-5 && x2 <= x+5)
+    {
+        if (y > y2)
+            return 90;
+        else
+            return 270;
+    }
+    else if (y2 >= y-5 && y2 <= y+5)
+    {
+        if (x < x2)
+            return 0;
+        else
+            return 180;
+    }
+    else
+    {
+        if (y > y2)
+        {
+            if (x < x2)
+                return 45;
+            else
+                return 135;
+        }
+        else
+        {
+            if (x < x2)
+                return 315;
+            else
+                return 225;
+        }
+    }
+}
+
 void Mouse_LoadObjCursor(int num)
 {
     if (objcur[0][CURSOR_UP_STATE]!=NULL)

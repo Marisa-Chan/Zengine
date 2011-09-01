@@ -532,6 +532,8 @@ int Rend_GetPanaWidth()
 
 void Rend_RenderFunc()
 {
+    SDL_FillRect(screen,0,0);
+
     if (RenderDelay>0)
     {
         //if (GetBeat())
@@ -548,7 +550,7 @@ void Rend_RenderFunc()
 
     Ctrl_DrawControls();
 
-    SDL_FillRect(screen,0,0);
+
     DrawImage(tempbuf,GAMESCREEN_X,GAMESCREEN_Y);
 
 
@@ -654,6 +656,11 @@ struct_SubRect *Rend_GetSubById( int id)
 SDL_Surface *Rend_GetGameScreen()
 {
     return tempbuf;
+}
+
+SDL_Surface *Rend_GetWindowSurface()
+{
+    return screen;
 }
 
 uint32_t Rend_MapScreenRGB(int r, int g, int b)

@@ -160,10 +160,8 @@ void EasterEggsAndDebug()
     }
 }
 
-
 void GameLoop()
 {
-
 
     Mouse_SetCursor(CURSOR_IDLE);
 

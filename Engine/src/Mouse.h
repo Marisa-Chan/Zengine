@@ -36,5 +36,5 @@ int Mouse_GetCurrentObjCur();
 void Mouse_LoadObjCursor(int num);
 void Mouse_ShowCursor();
 void Mouse_HideCursor();
-
+int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2);
 #endif // MOUSE_H_INCLUDED
