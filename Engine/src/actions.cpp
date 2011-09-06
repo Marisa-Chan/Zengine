@@ -255,7 +255,9 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     if (fil == NULL)
         return ACTION_NORMAL;
     anm->mpg=SMPEG_new(fil,&anm->inf,0);
-    anm->img = CreateSurface(ww,hh);
+
+    anm->img = CreateSurface(anm->inf.width,anm->inf.height);
+    scaler *scl = CreateScaler(anm->img,ww,hh);
 
 
     tmp=strlen(file);
@@ -306,7 +308,7 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
         UpdateKeyboard();
         if (KeyDown(SDLK_SPACE))
             SMPEG_stop(anm->mpg);
-        DrawImage(anm->img,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
+        DrawScalerToScreen(scl,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
 
         if (subs != NULL)
         {
@@ -343,6 +345,8 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     SMPEG_stop(anm->mpg);
     SMPEG_delete(anm->mpg);
     delete anm;
+
+    DeleteScaler(scl);
 
     return ACTION_NORMAL;
 }

@@ -270,7 +270,7 @@ void control_lever_draw(ctrlnode *ct)
 
     lev->rendfrm = lev->curfrm;
 
-    anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->rendfrm);
+    anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->rendfrm);
 }
 
 void Ctrl_DrawControls()
@@ -561,6 +561,7 @@ void control_lever(ctrlnode *ct)
                             angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
                             {
                                 lev->curfrm = lev->hotspots[lev->curfrm].directions[j].toframe;
+                                SetgVarInt(ct->slot, lev->curfrm);
                                 break;
                             }
 
@@ -750,6 +751,8 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
         }
 
     }//while (!feof(file2))
+
+    SetgVarInt(ctnode->slot, lev->curfrm);
 
     fclose(file2);
 

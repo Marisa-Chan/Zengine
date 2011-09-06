@@ -49,6 +49,14 @@ struct struct_graph_font
     char path[255];
 };
 
+struct scaler
+{
+    int32_t *offsets;
+    uint16_t w;
+    uint16_t h;
+    SDL_Surface *surf;
+};
+
 anim_surf *LoadAnimImage(char *file,int32_t mask);
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame);
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf);
@@ -58,5 +66,10 @@ SDL_Surface *LoadConvertImg(char *file);
 SDL_Surface *LoadConvertImg(char *file,uint32_t key);
 
 TTF_Font *GetFontByName(char *name,int size);
+
+scaler *CreateScaler(SDL_Surface *src, uint16_t w, uint16_t h);
+void DeleteScaler(scaler *scal);
+void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst);
+void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y);
 
 #endif // GRAPH_H_INCLUDED

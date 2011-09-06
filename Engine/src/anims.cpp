@@ -7,7 +7,7 @@ animnode *anim_CreateAnim()
 {
     animnode *tmp;
     tmp = new (animnode);
-
+    tmp->scal    = NULL;
     tmp->anim.avi= NULL;
     tmp->CurFr   = 0;
     tmp->end     = 0;
@@ -85,7 +85,6 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         nod->vid=true;
 
         nod->anim.avi->mpg=SMPEG_new(GetFilePath(filename),&nod->anim.avi->inf,0);
-        nod->anim.avi->img = NULL;
         int16_t w,h;
 
         w = nod->anim.avi->inf.width;
@@ -130,7 +129,7 @@ void anim_ProcessAnim(animnode *mnod)
                 SMPEG_renderFrame(mnod->anim.avi->mpg,
                                   mnod->CurFr+1);
 
-                Rend_DrawImageToGamescr(mnod->anim.avi->img,
+                Rend_DrawScalerToGamescr(mnod->scal,
                                         mnod->x,
                                         mnod->y);
                 mnod->CurFr++;
@@ -245,13 +244,10 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
 
     if (nod->vid)
     {
-        if (nod->anim.avi->img)
-            SDL_FreeSurface(nod-> anim.avi ->img);
+        if (nod->scal != NULL)
+            DeleteScaler(nod->scal);
 
-        nod->anim.avi->img = CreateSurface(nod->w,nod->h);
-
-        SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
-        SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
+        nod->scal = CreateScaler(nod->anim.avi->img,nod->w,nod->h);
 
         nod->start= start *2;
         nod->end= end *2;
@@ -271,7 +267,7 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
     return nod->playID;
 }
 
-int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame)
+int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t h, int16_t frame)
 {
 
     if (mnod)
@@ -282,7 +278,22 @@ int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame)
             {
                 SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2+1);
 
-                Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
+                if (mnod->anim.avi->img->w != w ||
+                    mnod->anim.avi->img->h != h)
+                {
+                    scaler *tmp = CreateScaler(mnod->anim.avi->img,w,h);
+                    SDL_Surface *abcd = CreateSurface(w,h);
+                    DrawScaler(tmp,0,0,abcd);
+
+                    Rend_DrawImageToGamescr(abcd, 50, 50);
+
+                    DeleteScaler(tmp);
+                    SDL_FreeSurface(abcd);
+                }
+                else
+                    Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
+
+                //Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
             }
         }
         else
@@ -293,6 +304,8 @@ int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame)
 
 void anim_DeleteAnim(animnode *nod)
 {
+    if (nod->scal != NULL)
+        DeleteScaler(nod->scal);
 
     if (nod->vid)
     {

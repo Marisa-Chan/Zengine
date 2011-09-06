@@ -48,19 +48,19 @@ void LoadFonts(char *fontsdir)
         if (de->d_type==DT_REG)
             if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
 #endif
+        {
+            sprintf(buf,"%s/%s",fontsdir,de->d_name);
+            TTF_Font *fnt = TTF_OpenFont(buf,10);
+            if (fnt != NULL)
             {
-                sprintf(buf,"%s/%s",fontsdir,de->d_name);
-                TTF_Font *fnt = TTF_OpenFont(buf,10);
-                if (fnt != NULL)
-                {
-                    struct_graph_font *tmpfnt = new(struct_graph_font);
-                    strncpy(tmpfnt->Name,TTF_FontFaceFamilyName(fnt),63);
-                    strncpy(tmpfnt->path,buf,255);
-                    AddToMList(FontList,tmpfnt);
-                    TTF_CloseFont(fnt);
-                }
-
+                struct_graph_font *tmpfnt = new(struct_graph_font);
+                strncpy(tmpfnt->Name,TTF_FontFaceFamilyName(fnt),63);
+                strncpy(tmpfnt->path,buf,255);
+                AddToMList(FontList,tmpfnt);
+                TTF_CloseFont(fnt);
             }
+
+        }
         de=readdir(dr);
     }
     closedir(dr);
@@ -223,8 +223,8 @@ anim_surf *LoadAnimImage(char *file, int32_t mask)
 
 void DrawAnimImage(anim_surf *anim, int x, int y, int frame)
 {
-if (!anim)
-    return;
+    if (!anim)
+        return;
 
     if (frame >= anim->info.frames)
     {
@@ -237,8 +237,8 @@ if (!anim)
 
 void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *surf)
 {
-if (!anim)
-    return;
+    if (!anim)
+        return;
 
     if (frame >= anim->info.frames)
     {
@@ -251,8 +251,8 @@ if (!anim)
 
 void FreeAnimImage(anim_surf *anim)
 {
-if (!anim)
-    return;
+    if (!anim)
+        return;
 
     if (anim)
     {
@@ -269,8 +269,8 @@ if (!anim)
 
 void DrawImage(SDL_Surface *surf, int16_t x, int16_t y)
 {
-if (!surf)
-    return;
+    if (!surf)
+        return;
 
     SDL_Rect tmp;
     tmp.x=x;//ceil(x*sc_fac);
@@ -282,8 +282,8 @@ if (!surf)
 
 void DrawImageToSurf(SDL_Surface *surf, int16_t x, int16_t y,SDL_Surface *dest)
 {
-if (!surf)
-    return;
+    if (!surf)
+        return;
 
     SDL_Rect tmp;
     tmp.x=x;//ceil(x*sc_fac);
@@ -303,3 +303,215 @@ void ClearColorKey(SDL_Surface *surf)
 {
     SDL_SetColorKey(surf,0,0);
 }
+
+
+
+
+scaler *CreateScaler(SDL_Surface *src, uint16_t w, uint16_t h)
+{
+    scaler *tmp = new(scaler);
+    tmp->surf = src;
+
+    tmp->w = w;
+    tmp->h = h;
+    tmp->offsets = NULL;
+
+    if (w == src->w && h == src->h)
+        return tmp;
+
+    tmp->offsets = (int32_t *)malloc(tmp->w * tmp->h * sizeof(int32_t));
+
+    float xfac = tmp->surf->w / (float)tmp->w;
+    float yfac = tmp->surf->h / (float)tmp->h;
+
+    int32_t pos = 0;
+
+    int32_t *tmpofs = tmp->offsets;
+
+    for (int16_t yy = 0; yy < tmp->h; yy++)
+        for (int16_t xx = 0; xx < tmp->w; xx++)
+        {
+            int32_t newx = xx*xfac;
+            int32_t newy = yy*yfac;
+            int32_t posofs = newx + newy * tmp->surf->w;
+
+            *tmpofs = posofs-pos;
+
+            tmpofs++;
+
+            pos = posofs;
+        }
+
+    return tmp;
+}
+
+void DeleteScaler(scaler *scal)
+{
+    if (scal->offsets != NULL)
+        free(scal->offsets);
+
+    delete scal;
+}
+
+void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst)
+{
+    if ((scal->surf->format->BytesPerPixel != dst->format->BytesPerPixel) ||
+            x >= dst->w || y >= dst->h || x<= -scal->w || y<= -scal->h)
+        return;
+
+    if (scal->offsets == NULL)
+        DrawImageToSurf(scal->surf,x,y,dst);
+    else
+    {
+        if (x >= 0 && y >= 0 &&
+                x + scal->w  <=  dst->w &&
+                y + scal->h  <=  dst->h)
+        {
+            int32_t oneline = dst->w - scal->w;
+
+            SDL_LockSurface(scal->surf);
+            SDL_LockSurface(dst);
+
+            if (GAME_BPP == 32)
+            {
+                int32_t *ofs = (int32_t *)dst->pixels;
+
+                ofs += y * dst->w + x;
+
+                int32_t *ifs = (int32_t *)scal->surf->pixels;
+                int32_t *dlt = scal->offsets;
+
+                for (int16_t yy = 0; yy < scal->h; yy++)
+                {
+                    for (int16_t xx = 0; xx < scal->w; xx++)
+                    {
+                        ifs += *dlt;
+                        *ofs = *ifs;
+                        ofs++;
+                        dlt++;
+                    }
+
+                    ofs += oneline;
+                }
+            }
+            else if (GAME_BPP == 16)
+            {
+                int16_t *ofs = (int16_t *)dst->pixels;
+
+                ofs += y * dst->w + x;
+
+                int16_t *ifs = (int16_t *)scal->surf->pixels;
+                int32_t *dlt = scal->offsets;
+
+                for (int16_t yy = 0; yy < scal->h; yy++)
+                {
+                    for (int16_t xx = 0; xx < scal->w; xx++)
+                    {
+                        ifs += *dlt;
+                        *ofs = *ifs;
+                        ofs++;
+                        dlt++;
+                    }
+
+                    ofs += oneline;
+                }
+            }
+            else
+            {
+                printf("Produce your scaler code there \"%s\":%d\n",__FILE__, __LINE__);
+            }
+            SDL_UnlockSurface(scal->surf);
+            SDL_UnlockSurface(dst);
+        }
+        else
+        {
+            int32_t oneline = dst->w - scal->w;
+
+            SDL_LockSurface(scal->surf);
+            SDL_LockSurface(dst);
+
+            if (GAME_BPP == 32)
+            {
+                int32_t *ofs = (int32_t *)dst->pixels;
+                int32_t *maxofs = ofs, *minofs = ofs;
+
+                maxofs += dst->w * dst->h;
+
+                ofs += y * dst->w + x;
+
+                int16_t lx = 0 ,rx = scal->w;
+
+                if (x < 0)
+                    lx = -x;
+
+                if (x + scal->w >= dst->w)
+                    rx = dst->w - x;
+
+                int32_t *ifs = (int32_t *)scal->surf->pixels;
+                int32_t *dlt = scal->offsets;
+
+                for (int16_t yy = 0; yy < scal->h; yy++)
+                {
+                    for (int16_t xx = 0; xx < scal->w; xx++)
+                    {
+                        ifs += *dlt;
+                        if (ofs >= minofs && ofs < maxofs &&
+                                xx >= lx && xx < rx)
+                            *ofs = *ifs;
+                        ofs++;
+                        dlt++;
+                    }
+
+                    ofs += oneline;
+                }
+            }
+            else if (GAME_BPP == 16)
+            {
+                int16_t *ofs = (int16_t *)dst->pixels;
+                int16_t *maxofs = ofs, *minofs = ofs;
+
+                maxofs += dst->w * dst->h;
+
+                ofs += y * dst->w + x;
+
+                int16_t lx = 0 ,rx = scal->w;
+
+                if (x < 0)
+                    lx = -x;
+
+                if (x + scal->w >= dst->w)
+                    rx = dst->w - x;
+
+                int16_t *ifs = (int16_t *)scal->surf->pixels;
+                int32_t *dlt = scal->offsets;
+
+                for (int16_t yy = 0; yy < scal->h; yy++)
+                {
+                    for (int16_t xx = 0; xx < scal->w; xx++)
+                    {
+                        ifs += *dlt;
+                        if (ofs >= minofs && ofs < maxofs &&
+                                xx >= lx && xx < rx)
+                            *ofs = *ifs;
+                        ofs++;
+                        dlt++;
+                    }
+
+                    ofs += oneline;
+                }
+            }
+            else
+            {
+                printf("Produce your scaler code there \"%s\":%d\n",__FILE__, __LINE__);
+            }
+            SDL_UnlockSurface(scal->surf);
+            SDL_UnlockSurface(dst);
+        }
+    }
+}
+
+void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y)
+{
+    DrawScaler(scal,x,y,screen);
+}
+

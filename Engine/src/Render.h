@@ -54,6 +54,8 @@ void Rend_SetRendererTable();
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y);
 void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame);
 
+void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y);
+
 int  Rend_GetRenderer();
 void Rend_ProcessCursor();
 

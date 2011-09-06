@@ -921,3 +921,10 @@ int32_t Rend_DeleteDistortNode(struct_action_res *nod)
 
     return NODE_RET_DELETE;
 }
+
+
+void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y)
+{
+    if (scrbuf)
+        DrawScaler(scl,x,y,scrbuf);
+}

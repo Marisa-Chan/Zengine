@@ -25,6 +25,7 @@ struct animnode
         anim_surf *rlf;
         anim_avi  *avi;
     } anim;
+    scaler   *scal;
     bool   vid;
     int32_t  playID;
     bool playing;
@@ -62,6 +63,6 @@ int anim_DeleteAnimPlay(struct_action_res *nod);
 int anim_DeleteAnimPreNod(struct_action_res *nod);
 int anim_DeleteAnimPrePlayNode(struct_action_res *nod);
 
-int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y, int16_t frame);
+int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t h, int16_t frame);
 
 #endif // ANIMS_H_INCLUDED
