@@ -37,7 +37,7 @@
 #include "Game.h"
 
 
-void __END();
+void END();
 
 //System time functions
 //uint64_t millisec();

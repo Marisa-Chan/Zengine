@@ -21,6 +21,10 @@
 #define menu_DrawMenuBar   menu_DrawZGIMenuBar
 #define menu_HOT_Y         40
 
+//Mouse
+#define Mouse_LoadCursors      Mouse_LoadCursors_zgi
+
+
 //Preferences
 #define pref_FileName      "./INQUIS.INI"
 #define pref_TagString     "ZorkGrandInquisitor"
@@ -94,8 +98,8 @@
 //Lever-control
 #define CTRL_LEVER_MAX_FRAMES  128
 #define CTRL_LEVER_MAX_DIRECTS 4
-#define CTRL_LEVER_ANGL_FRAMES 4
-#define CTRL_LEVER_ANGL_DELTA  15
+#define CTRL_LEVER_ANGL_TIME   50
+#define CTRL_LEVER_ANGL_DELTA  30
 
 
 #elif GAME_NEMESIS
@@ -117,6 +121,10 @@
 #define menu_UpdateMenuBar menu_UpdateZGIMenuBar
 #define menu_DrawMenuBar   menu_DrawZGIMenuBar
 #define menu_HOT_Y         40
+
+//Mouse
+#define Mouse_LoadCursors      Mouse_LoadCursors_znemesis
+
 
 //Preferences
 #define pref_FileName      "./ZNEMESIS.INI"
@@ -176,8 +184,8 @@
 //Lever-control
 #define CTRL_LEVER_MAX_FRAMES  128
 #define CTRL_LEVER_MAX_DIRECTS 4
-#define CTRL_LEVER_ANGL_FRAMES 4
-#define CTRL_LEVER_ANGL_DELTA  45
+#define CTRL_LEVER_ANGL_TIME   50
+#define CTRL_LEVER_ANGL_DELTA  30
 
 
 
@@ -196,6 +204,6 @@
 #define FILE_LN_BUF 0x400
 
 #define CHANGELOCATIONDELAY 2
-#define MINIBUFSZ           16
+#define MINIBUFSZ           32
 
 #endif // CONFIG_H_INCLUDED

@@ -41,6 +41,7 @@ struct anim_avi
     SMPEG_Info   inf;
     bool         pld;
     bool        loop;
+    int32_t  lastfrm;
 };
 
 struct struct_graph_font

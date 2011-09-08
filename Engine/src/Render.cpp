@@ -532,14 +532,14 @@ int Rend_GetPanaWidth()
 
 void Rend_RenderFunc()
 {
-    SDL_FillRect(screen,0,0);
-
     if (RenderDelay>0)
     {
         //if (GetBeat())
         RenderDelay--;
         return;
     }
+
+    SDL_FillRect(screen,0,0);
 
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();

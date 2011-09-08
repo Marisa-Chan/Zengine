@@ -13,6 +13,7 @@ pushnode * CreatePushNode()
     tmp->y = 0;
     tmp->w = 0;
     tmp->h = 0;
+    tmp->downed = false;
     return tmp;
 }
 
@@ -268,9 +269,12 @@ void control_lever_draw(ctrlnode *ct)
     if (lev->curfrm == lev->rendfrm)
         return;
 
-    lev->rendfrm = lev->curfrm;
+    if ((lev->rendfrm > lev->curfrm) && lev->mirrored)
+        anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->frames*2 - lev->curfrm);
+    else
+        anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->curfrm);
 
-    anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->rendfrm);
+    lev->rendfrm = lev->curfrm;
 }
 
 void Ctrl_DrawControls()
@@ -472,18 +476,27 @@ void control_push(ctrlnode *ct)
                 pushChangeMouse = true;
             }
 
+        if (MouseHit(SDL_BUTTON_LEFT))
+            psh->downed = true;
+
         if (MouseUp(SDL_BUTTON_LEFT))
         {
+            if (psh->downed)
+            {
 #ifdef TRACE
-            printf("Pushed #%d\n",ct->slot);
+                printf("Pushed #%d\n",ct->slot);
 #endif
-            SetgVarInt(ct->slot,1);
+                SetgVarInt(ct->slot,1);
 
-            FlushMouseBtn(SDL_BUTTON_LEFT);
+                FlushMouseBtn(SDL_BUTTON_LEFT);
+            }
 
         }
 
     }
+    else
+        if (!MouseDown(SDL_BUTTON_LEFT) || MouseHit(SDL_BUTTON_LEFT))
+            psh->downed = false;
 }
 
 
@@ -527,6 +540,18 @@ void control_save(ctrlnode *ct)
 
 void control_lever(ctrlnode *ct)
 {
+    /*FILE *aaa = fopen("temp.txt","wb");
+
+    for (int16_t i=0;i<CTRL_LEVER_MAX_FRAMES;i++)
+    {
+        fprintf("Frame %d:\n",i);
+        for (int16_t j=0; j<CTRL_LEVER_MAX_DIRECTS; j++)
+
+    }
+
+    fclose(aaa);
+    exit(1);
+*/
     levernode *lev = ct->node.lev;
     if (lev->curfrm < CTRL_LEVER_MAX_FRAMES)
     {
@@ -541,40 +566,70 @@ void control_lever(ctrlnode *ct)
                 Mouse_SetCursor(lev->cursor);
 
                 if (MouseDown(SDL_BUTTON_LEFT))
+                {
                     lev->mouse_captured = true;
+                    lev->mouse_count = CTRL_LEVER_ANGL_TIME;
+                    lev->mouse_angle = -1;
+                    lev->last_mouse_x = MouseX();
+                    lev->last_mouse_y = MouseY();
+                }
+
             }
         }
         else
         {
-            if (MouseUp(SDL_BUTTON_LEFT))
+            if (!MouseDown(SDL_BUTTON_LEFT))
                 lev->mouse_captured = false;
             else
             {
                 Mouse_SetCursor(lev->cursor);
 
-                if (lev->mouse_count == CTRL_LEVER_ANGL_FRAMES && lev->mouse_angle != -1)
+                if (lev->mouse_angle != -1)
                     for (int16_t j=0; j<CTRL_LEVER_MAX_DIRECTS; j++)
-                    {
-                        int16_t angl = lev->hotspots[lev->curfrm].directions[j].angle;
+                        if (lev->hotspots[lev->curfrm].directions[j].toframe != -1)
+                        {
+                            int16_t angl = lev->hotspots[lev->curfrm].directions[j].angle;
 
-                        if (angl + CTRL_LEVER_ANGL_DELTA  >  lev->mouse_angle   &&
-                            angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
+                            if (angl + CTRL_LEVER_ANGL_DELTA  >  lev->mouse_angle   &&
+                                angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
                             {
                                 lev->curfrm = lev->hotspots[lev->curfrm].directions[j].toframe;
                                 SetgVarInt(ct->slot, lev->curfrm);
+
+                                lev->mouse_angle = -1;
+
                                 break;
                             }
+                        }
 
-                    }
             }
         }
 
     }
 
+    if (lev->mouse_count <= 0)
+    {
+        lev->mouse_count = CTRL_LEVER_ANGL_TIME;
+        lev->mouse_angle = Mouse_GetAngle(lev->last_mouse_x,
+                                          lev->last_mouse_y,
+                                          MouseX(),
+                                          MouseY());
+
+        lev->last_mouse_x = MouseX();
+        lev->last_mouse_y = MouseY();
+    }
+
+
+    lev->mouse_count -=GetDTime();
+
+
+    /*
     if (lev->mouse_count >= CTRL_LEVER_ANGL_FRAMES)
     {
+        printf("mouse %d\n",lev->mouse_angle);
         lev->mouse_count = 0;
         lev->mouse_angle = -1;
+
     }
     else
     {
@@ -593,7 +648,7 @@ void control_lever(ctrlnode *ct)
 
     lev->mouse_count++;
     lev->last_mouse_x = MouseX();
-    lev->last_mouse_y = MouseY();
+    lev->last_mouse_y = MouseY(); */
 
 }
 
@@ -752,7 +807,8 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 
     }//while (!feof(file2))
 
-    SetgVarInt(ctnode->slot, lev->curfrm);
+    //SetgVarInt(ctnode->slot, lev->curfrm);
+    lev->curfrm = GetgVarInt(ctnode->slot);
 
     fclose(file2);
 

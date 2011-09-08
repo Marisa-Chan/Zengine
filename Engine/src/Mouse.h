@@ -21,7 +21,9 @@ struct Cursor
 #define CURSOR_OBJ_0  -1
 #define CURSOR_OBJ_1  -2
 
-void Mouse_LoadCursors();
+void Mouse_LoadCursors_zgi();
+void Mouse_LoadCursors_znemesis();
+
 void Mouse_SetCursor(int indx);
 Cursor *Mouse_GetCursor(int indx);
 Cursor *Mouse_GetCurrentCursor();
@@ -30,8 +32,11 @@ bool Mouse_IsCurrentCur(int indx);
 void Mouse_LoadCursor(char *file, Cursor *cur);
 void Mouse_DrawCursor(int x, int y);
 void Mouse_DeleteCursor(Cursor *cur);
+
+
 char *Mouse_GetName(int indx);
 int Mouse_GetCursorIndex(char *name);
+
 int Mouse_GetCurrentObjCur();
 void Mouse_LoadObjCursor(int num);
 void Mouse_ShowCursor();

@@ -95,6 +95,8 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
         SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
 
+        nod->anim.avi->lastfrm = -1;
+
         if (nod->framerate == 0)
             nod->framerate = FPS_DELAY; //~15fps
 
@@ -276,22 +278,24 @@ int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16
         {
             if (mnod->anim.avi != NULL)
             {
+                SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2);
                 SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2+1);
+                if (mnod->anim.avi->lastfrm > frame)
+                    SMPEG_renderFinal(mnod->anim.avi->mpg,mnod->anim.avi->img,0,0);
 
-                if (mnod->anim.avi->img->w != w ||
-                    mnod->anim.avi->img->h != h)
-                {
-                    scaler *tmp = CreateScaler(mnod->anim.avi->img,w,h);
-                    SDL_Surface *abcd = CreateSurface(w,h);
-                    DrawScaler(tmp,0,0,abcd);
+                mnod->anim.avi->lastfrm = frame;
 
-                    Rend_DrawImageToGamescr(abcd, 50, 50);
+                if (mnod->scal)
+                    if (mnod->scal->w != w || mnod->scal->h != h)
+                    {
+                        DeleteScaler(mnod->scal);
+                        mnod->scal = NULL;
+                    }
 
-                    DeleteScaler(tmp);
-                    SDL_FreeSurface(abcd);
-                }
-                else
-                    Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
+                if (!mnod->scal)
+                    mnod->scal = CreateScaler(mnod->anim.avi->img,w,h);
+
+                Rend_DrawScalerToGamescr(mnod->scal,x,y);
 
                 //Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
             }

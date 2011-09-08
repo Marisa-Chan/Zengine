@@ -295,5 +295,5 @@ void ifquit()
     }
     Rend_DeleteSubRect(zzz);
     if (KeyDown(SDLK_y))
-        __END();
+        END();
 }

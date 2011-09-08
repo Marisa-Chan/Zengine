@@ -10,7 +10,7 @@ using namespace std;
 
 bool done = false;
 
-void __END()
+void END()
 {
     done = true;
 }
@@ -85,8 +85,6 @@ int main(int argc, char **argv)
 
     InitGameLoop();
 
-    int bl=0;
-
     InitMTime(35.0);
 
 
@@ -137,9 +135,6 @@ int main(int argc, char **argv)
         //printf ("\n\nloop #%d\n",i);
 
         //SDL_Flip;
-
-
-        bl++;
     }
 
     SDL_Quit();

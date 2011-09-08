@@ -11,13 +11,12 @@ char *(CurNames[])= {"active","arrow","backward","downarrow","forward","handpt",
                      "hright","hup","idle","leftarrow","rightarrow","suggest_surround","suggest_tilt","turnaround","zuparrow"
                     };
 
-char *(CurFiles[])= {"g0gbc011.zcr","g0gac001.zcr","g0gac021.zcr","g0gac031.zcr","g0gac041.zcr","g0gac051.zcr","g0gac061.zcr","g0gac071.zcr","g0gac081.zcr",\
+char *(CurFiles_zgi[])= {"g0gbc011.zcr","g0gac001.zcr","g0gac021.zcr","g0gac031.zcr","g0gac041.zcr","g0gac051.zcr","g0gac061.zcr","g0gac071.zcr","g0gac081.zcr",\
                      "g0gac091.zcr","g0gac101.zcr","g0gac011.zcr","g0gac111.zcr","g0gac121.zcr","g0gac131.zcr","g0gac141.zcr","g0gac151.zcr","g0gac161.zcr"
                     };
-
-char *(CurFilesDowned[])= {"g0gdc011.zcr","g0gac001.zcr","g0gcc021.zcr","g0gcc031.zcr","g0gcc041.zcr","g0gcc051.zcr","g0gcc061.zcr","g0gcc071.zcr","g0gcc081.zcr",\
-                           "g0gcc091.zcr","g0gcc101.zcr","g0gcc011.zcr","g0gcc111.zcr","g0gcc121.zcr","g0gcc131.zcr","g0gcc141.zcr","g0gcc151.zcr","g0gcc161.zcr"
-                          };
+char *(CurFiles_znemesis[])= {"00act","arrow","back","down","forw","handpt","handpu","hdown","hleft",\
+                     "hright","hup","00idle","left","right","ssurr","stilt","turn","up"
+                    };
 
 Cursor *CurDefault[NUM_CURSORS][CURSOR_STATES]; //0 - normal; 1 - downed
 
@@ -29,14 +28,33 @@ Cursor *objcur[2][CURSOR_STATES] = {NULL, NULL, NULL, NULL};
 
 static bool DrawCursor = true;
 
-void Mouse_LoadCursors()
+void Mouse_LoadCursors_zgi()
 {
     for (int i=0; i<18; i++)
     {
         CurDefault[i][CURSOR_UP_STATE]=new(Cursor);
-        Mouse_LoadCursor(CurFiles[i],CurDefault[i][CURSOR_UP_STATE]);
+        Mouse_LoadCursor(CurFiles_zgi[i],CurDefault[i][CURSOR_UP_STATE]);
         CurDefault[i][CURSOR_DW_STATE]=new(Cursor);
-        Mouse_LoadCursor(CurFilesDowned[i],CurDefault[i][CURSOR_DW_STATE]);
+        char buf[MINIBUFSZ];
+        strcpy(buf,CurFiles_zgi[i]);
+        buf[3]+=2;
+        Mouse_LoadCursor(buf,CurDefault[i][CURSOR_DW_STATE]);
+    }
+
+    cur = CurDefault[CURSOR_IDLE][0];
+}
+
+void Mouse_LoadCursors_znemesis()
+{
+    for (int i=0; i<18; i++)
+    {
+        CurDefault[i][CURSOR_UP_STATE]=new(Cursor);
+        Mouse_LoadCursor(CurFiles_znemesis[i],CurDefault[i][CURSOR_UP_STATE]);
+        CurDefault[i][CURSOR_DW_STATE]=new(Cursor);
+        char buf[MINIBUFSZ];
+        strcpy(buf,CurFiles_znemesis[i]);
+        buf[3]+=2;
+        Mouse_LoadCursor(buf,CurDefault[i][CURSOR_DW_STATE]);
     }
 
     cur = CurDefault[CURSOR_IDLE][0];
@@ -163,11 +181,59 @@ void Mouse_HideCursor()
     DrawCursor = false;
 }
 
+int16_t math_get_points_rotation_angle(int16_t x, int16_t y, int16_t x2, int16_t y2)
+{
+        // get angle in range (-90, 90) using arctangens
+        int16_t dist_x = x2-x;
+        int16_t dist_y = y2-y;
+        int16_t angle = atan(dist_y / (float)abs(dist_x)) * 57;
+
+        /* *(mul)57 ~ 180/3.1415 */
+
+        // do quarter modifications
+        int16_t quarter_index = (int16_t)(dist_x < 0) | ((int16_t)(dist_y > 0) << 1);
+
+        switch(quarter_index)
+        {
+            case 0:
+                angle = -angle;
+                break;
+            case 1:
+                angle = angle + 180;
+                break;
+            case 2:
+                angle = 360 - angle;
+                break;
+            case 3:
+                angle = 180 + angle;
+                break;
+        }
+
+        return angle;
+}
+
 int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2) //not exact but near and fast
 {
     if (x == x2 && y == y2)
         return -1;
-    else if (x2 >= x-5 && x2 <= x+5)
+    else if (x2 == x)
+    {
+        if (y > y2)
+            return 90;
+        else
+            return 270;
+    }
+    else if (y2 == y)
+    {
+        if (x < x2)
+            return 0;
+        else
+            return 180;
+    }
+    else
+        return math_get_points_rotation_angle(x,y,x2,y2);
+
+    /*if (x2 >= x-5 && x2 <= x+5)
     {
         if (y > y2)
             return 90;
@@ -197,7 +263,7 @@ int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2) //not exact
             else
                 return 225;
         }
-    }
+    }*/
 }
 
 void Mouse_LoadObjCursor(int num)

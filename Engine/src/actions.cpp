@@ -1275,7 +1275,7 @@ int action_quit(char *params, int aSlot , pzllst *owner)
 #endif
 
     if (atoi(params)==1)
-        __END();
+        END();
     else
         ifquit();
 

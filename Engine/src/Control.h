@@ -32,6 +32,7 @@ struct pushnode
     int32_t w;
     int32_t h;
     int16_t cursor;
+    bool downed;
 };
 
 struct slotnode
@@ -106,7 +107,7 @@ struct levernode
     int16_t last_mouse_x;
     int16_t last_mouse_y;
     int16_t mouse_angle;
-    int8_t mouse_count;
+    int32_t mouse_count;
     bool   mouse_captured;
 };
 
