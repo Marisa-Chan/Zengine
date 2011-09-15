@@ -48,12 +48,15 @@ void Mouse_LoadCursors_znemesis()
 {
     for (int i=0; i<18; i++)
     {
-        CurDefault[i][CURSOR_UP_STATE]=new(Cursor);
-        Mouse_LoadCursor(CurFiles_znemesis[i],CurDefault[i][CURSOR_UP_STATE]);
-        CurDefault[i][CURSOR_DW_STATE]=new(Cursor);
         char buf[MINIBUFSZ];
-        strcpy(buf,CurFiles_znemesis[i]);
-        buf[3]+=2;
+        sprintf(buf,"%sa.zcr",CurFiles_znemesis[i]);
+
+        CurDefault[i][CURSOR_UP_STATE]=new(Cursor);
+        Mouse_LoadCursor(buf,CurDefault[i][CURSOR_UP_STATE]);
+        CurDefault[i][CURSOR_DW_STATE]=new(Cursor);
+
+
+        sprintf(buf,"%sb.zcr",CurFiles_znemesis[i]);
         Mouse_LoadCursor(buf,CurDefault[i][CURSOR_DW_STATE]);
     }
 
@@ -266,7 +269,7 @@ int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2) //not exact
     }*/
 }
 
-void Mouse_LoadObjCursor(int num)
+void Mouse_LoadObjCursor_zgi(int num)
 {
     if (objcur[0][CURSOR_UP_STATE]!=NULL)
         Mouse_DeleteCursor(objcur[0][CURSOR_UP_STATE]);
@@ -293,5 +296,35 @@ void Mouse_LoadObjCursor(int num)
     sprintf(buf,"g0b%cc%2.2x1.tga",'c',current_obj_cur);
     Mouse_LoadCursor(buf,objcur[0][CURSOR_DW_STATE]);
     sprintf(buf,"g0b%cc%2.2x1.tga",'d',current_obj_cur);
+    Mouse_LoadCursor(buf,objcur[1][CURSOR_DW_STATE]);
+}
+
+void Mouse_LoadObjCursor_znemesis(int num)
+{
+    if (objcur[0][CURSOR_UP_STATE]!=NULL)
+        Mouse_DeleteCursor(objcur[0][CURSOR_UP_STATE]);
+    if (objcur[0][CURSOR_DW_STATE]!=NULL)
+        Mouse_DeleteCursor(objcur[0][CURSOR_DW_STATE]);
+
+    if (objcur[1][CURSOR_UP_STATE]!=NULL)
+        Mouse_DeleteCursor(objcur[1][CURSOR_UP_STATE]);
+    if (objcur[1][CURSOR_DW_STATE]!=NULL)
+        Mouse_DeleteCursor(objcur[1][CURSOR_DW_STATE]);
+
+    objcur[0][CURSOR_UP_STATE]=new(Cursor);
+    objcur[0][CURSOR_DW_STATE]=new(Cursor);
+    objcur[1][CURSOR_UP_STATE]=new(Cursor);
+    objcur[1][CURSOR_DW_STATE]=new(Cursor);
+
+    current_obj_cur=num;
+
+    char buf[16];
+    sprintf(buf,"%2.2didle%c.zcr",current_obj_cur,'a');
+    Mouse_LoadCursor(buf,objcur[0][CURSOR_UP_STATE]);
+    sprintf(buf,"%2.2didle%c.zcr",current_obj_cur,'b');
+    Mouse_LoadCursor(buf,objcur[1][CURSOR_UP_STATE]);
+    sprintf(buf,"%2.2dact%c.zcr",current_obj_cur,'a');
+    Mouse_LoadCursor(buf,objcur[0][CURSOR_DW_STATE]);
+    sprintf(buf,"%2.2dact%c.zcr",current_obj_cur,'b');
     Mouse_LoadCursor(buf,objcur[1][CURSOR_DW_STATE]);
 }

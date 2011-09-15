@@ -913,6 +913,8 @@ int action_stop(char *params, int aSlot , pzllst *owner)
 }
 
 
+
+
 void act_inv_drop(int item)
 {
     if (item == 0)

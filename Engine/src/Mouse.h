@@ -38,7 +38,8 @@ char *Mouse_GetName(int indx);
 int Mouse_GetCursorIndex(char *name);
 
 int Mouse_GetCurrentObjCur();
-void Mouse_LoadObjCursor(int num);
+void Mouse_LoadObjCursor_zgi(int num);
+void Mouse_LoadObjCursor_znemesis(int num);
 void Mouse_ShowCursor();
 void Mouse_HideCursor();
 int16_t Mouse_GetAngle(int16_t x, int16_t y, int16_t x2, int16_t y2);

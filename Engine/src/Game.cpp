@@ -285,7 +285,8 @@ void ifquit()
 {
     struct_SubRect *zzz=Rend_CreateSubRect(0,412,640,68);
     txt_DrawTxtInOneLine(GetSystemString(6),zzz->img);
-    Rend_ProcessSubs();
+    Rend_RenderFunc();
+    //Rend_ProcessSubs();
     Rend_ScreenFlip();
     while (!KeyDown(SDLK_y) && !KeyDown(SDLK_n))
     {

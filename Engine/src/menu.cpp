@@ -6,22 +6,34 @@
 #define menu_MAGIC 1
 #define menu_MAIN  2
 
-#define menu_MAIN_EL_W  135
-#define menu_MAIN_EL_H  32
+
 
 #define menu_MAIN_IMAGE_SAVE   0
 #define menu_MAIN_IMAGE_REST   1
 #define menu_MAIN_IMAGE_PREF   2
 #define menu_MAIN_IMAGE_EXIT   3
 
+#define menu_MAIN_EL_W     135
+#define menu_MAIN_EL_H     32
+
 #define menu_MAGIC_SPACE       28
 #define menu_MAGIC_ITEM_W      47
 
 #define menu_ITEM_SPACE        28
 
+
+#define menu_zgi_scrollby_main   2
+#define menu_zgi_scrollby_side   24
+
 #define menu_zgi_inv_hot_w     28
 #define menu_zgi_inv_h         32
 #define menu_zgi_inv_w         600
+
+#define menu_znemesis_butanim  200
+#define menu_znemesis_scrollby 4
+#define menu_znemesis_but_frames  6
+#define menu_znemesis_but_max_frm 4
+#define menu_znemesis_but_clk_frm 5
 
 uint16_t menu_bar_flag = 0xFFFF;
 
@@ -32,17 +44,23 @@ SDL_Surface *menubar[4][2];
 SDL_Surface *menuback[3][2];
 SDL_Surface *menupicto[256][2];
 
-
-int16_t menu_MAIN_X = (GAME_W-580)/2;
-int16_t menu_MAIN_CENTER = GAME_W >> 1;
-
 int8_t menu_mousefocus = -1;
 
 bool inmenu=false;
 
 int16_t mouse_on_item=-1;
 
+int32_t menu_scroll_time = menu_SCROLL_DELAY;
 
+SDL_Surface *menubar_znem;
+SDL_Surface *menubut_znem[4][menu_znemesis_but_frames];
+int16_t      scrollpos_znem;
+bool         scrolled_znem;
+
+int16_t      butframe_znem[4];
+int16_t      lastbut_znem = -1;
+
+int32_t      znem_but_anim = menu_znemesis_butanim;
 
 
 void menu_SetMenuBarVal(uint16_t val)
@@ -55,7 +73,7 @@ uint16_t menu_GetMenuBarVal()
     return menu_bar_flag;
 }
 
-void menu_LoadGraphics()
+void menu_LoadGraphics_zgi()
 {
     char buf[255];
     for (int i=1; i<4; i++)
@@ -81,7 +99,21 @@ void menu_LoadGraphics()
 
 }
 
-void menu_UpdateZGIMenuBar()
+void menu_LoadGraphics_znemesis()
+{
+    char buf[255];
+
+    for (int j=1; j<=4; j++)
+        for (int i=0; i<menu_znemesis_but_frames; i++)
+        {
+            sprintf(buf,"butfrm%d%d.tga",j,i);
+            menubut_znem[j-1][i] = LoadConvertImg(GetFilePath(buf));
+        }
+
+    menubar_znem = LoadConvertImg(GetFilePath("bar.tga"));
+}
+
+void menu_UpdateMenuBar_zgi()
 {
     char buf[255];
 
@@ -99,7 +131,15 @@ void menu_UpdateZGIMenuBar()
                 SetgVarInt(SLOT_MENU_STATE,1);
 
                 if (!menu_Scrolled[menu_ITEM])
-                    menu_ScrollPos [menu_ITEM]+=12;
+                {
+                    if (menu_scroll_time<0)
+                    {
+                        menu_ScrollPos [menu_ITEM] += menu_zgi_scrollby_side;
+                        menu_scroll_time = menu_SCROLL_DELAY;
+                    }
+                    else
+                        menu_scroll_time -= GetDTime();
+                }
 
                 if (menu_ScrollPos[menu_ITEM] >= 0)
                 {
@@ -146,7 +186,15 @@ void menu_UpdateZGIMenuBar()
                 SetgVarInt(SLOT_MENU_STATE,3);
 
                 if (!menu_Scrolled[menu_MAGIC])
-                    menu_ScrollPos [menu_MAGIC]+=12;
+                {
+                    if (menu_scroll_time<0)
+                    {
+                        menu_ScrollPos [menu_MAGIC] += menu_zgi_scrollby_side;
+                        menu_scroll_time = menu_SCROLL_DELAY;
+                    }
+                    else
+                        menu_scroll_time -= GetDTime();
+                }
 
                 if (menu_ScrollPos[menu_MAGIC] >= menuback[menu_MAGIC][0]->w)
                 {
@@ -182,7 +230,15 @@ void menu_UpdateZGIMenuBar()
             SetgVarInt(SLOT_MENU_STATE,2);
 
             if (!menu_Scrolled[menu_MAIN])
-                menu_ScrollPos [menu_MAIN]+=2;
+            {
+                if (menu_scroll_time<0)
+                {
+                    menu_ScrollPos [menu_MAIN] += menu_zgi_scrollby_main;
+                    menu_scroll_time = menu_SCROLL_DELAY;
+                }
+                else
+                    menu_scroll_time -= GetDTime();
+            }
 
             if (menu_ScrollPos[menu_MAIN] >= 0)
             {
@@ -249,11 +305,12 @@ void menu_UpdateZGIMenuBar()
 
             if (MouseInRect(menu_MAIN_X,0,\
                             menuback[menu_MAIN][1]->w,\
-                            4))
+                            8))
             {
                 menu_mousefocus = menu_MAIN;
                 menu_Scrolled[menu_MAIN]  = false;
                 menu_ScrollPos[menu_MAIN] = menuback[menu_MAIN][1]->h - menuback[menu_MAIN][0]->h;
+                menu_scroll_time = menu_SCROLL_DELAY;
             }
 
             if (menu_bar_flag & menu_BAR_MAGIC)
@@ -262,6 +319,7 @@ void menu_UpdateZGIMenuBar()
                     menu_mousefocus = menu_MAGIC;
                     menu_Scrolled[menu_MAGIC]  = false;
                     menu_ScrollPos[menu_MAGIC] = menu_zgi_inv_hot_w;
+                    menu_scroll_time = menu_SCROLL_DELAY;
                 }
 
             if (menu_bar_flag & menu_BAR_ITEM)
@@ -270,6 +328,7 @@ void menu_UpdateZGIMenuBar()
                     menu_mousefocus = menu_ITEM;
                     menu_Scrolled[menu_ITEM]  = false;
                     menu_ScrollPos[menu_ITEM] = menu_zgi_inv_hot_w - menu_zgi_inv_w;
+                    menu_scroll_time = menu_SCROLL_DELAY;
                 }
         }
     }
@@ -281,7 +340,163 @@ void menu_UpdateZGIMenuBar()
     }
 }
 
-void menu_DrawZGIMenuBar()
+
+#define znem_but1_w  120
+#define znem_but1_x  0
+#define znem_but2_w  144
+#define znem_but2_x  120
+#define znem_but3_w  128
+#define znem_but3_x  264
+#define znem_but4_w  120
+#define znem_but4_x  392
+
+void menu_UpdateMenuBar_znemesis()
+{
+    char buf[255];
+
+    mouse_on_item = -1;
+
+    if (MouseY() <= menu_HOT_Y)
+    {
+        inmenu = true;
+
+            SetgVarInt(SLOT_MENU_STATE,2);
+
+            if (!scrolled_znem)
+            {
+                if (menu_scroll_time<0)
+                {
+                    scrollpos_znem += menu_znemesis_scrollby;
+                    menu_scroll_time = menu_SCROLL_DELAY;
+                }
+                else
+                    menu_scroll_time -= GetDTime();
+            }
+
+            if (scrollpos_znem >= 0)
+            {
+                scrolled_znem = true;
+                scrollpos_znem = 0;
+            }
+
+            //EXIT
+            if (menu_bar_flag & menu_BAR_EXIT)
+                if (MouseInRect(menu_MAIN_X+znem_but4_x,
+                                menu_ScrollPos[menu_MAIN],
+                                znem_but4_w,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_EXIT;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                    {
+                        butframe_znem[menu_MAIN_IMAGE_EXIT] = menu_znemesis_but_clk_frm;
+                        ifquit();
+                    }
+
+                }
+
+
+            //SETTINGS
+            if (menu_bar_flag & menu_BAR_SETTINGS)
+                if (MouseInRect(menu_MAIN_X+znem_but3_x,
+                                menu_ScrollPos[menu_MAIN],
+                                znem_but3_w,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_PREF;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                    {
+                        butframe_znem[menu_MAIN_IMAGE_PREF] = menu_znemesis_but_clk_frm;
+                        SetNeedLocate(PrefWorld,PrefRoom,PrefNode,PrefView,0);
+                    }
+
+                }
+
+
+
+            //LOAD
+            if (menu_bar_flag & menu_BAR_RESTORE)
+                if (MouseInRect(menu_MAIN_X+znem_but2_x,
+                                menu_ScrollPos[menu_MAIN],
+                                znem_but2_w,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_REST;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                    {
+                        butframe_znem[menu_MAIN_IMAGE_REST] = menu_znemesis_but_clk_frm;
+                        SetNeedLocate(LoadWorld,LoadRoom,LoadNode,LoadView,0);
+                    }
+
+                }
+
+
+            //SAVE
+            if (menu_bar_flag & menu_BAR_SAVE)
+                if (MouseInRect(menu_MAIN_X+znem_but1_x,
+                                menu_ScrollPos[menu_MAIN],
+                                znem_but1_w,
+                                menu_MAIN_EL_H))
+                {
+                    mouse_on_item = menu_MAIN_IMAGE_SAVE;
+                    if (MouseUp(SDL_BUTTON_LEFT))
+                    {
+                        butframe_znem[menu_MAIN_IMAGE_SAVE] = menu_znemesis_but_clk_frm;
+                        SetNeedLocate(SaveWorld,SaveRoom,SaveNode,SaveView,0);
+                    }
+
+                }
+
+            if (lastbut_znem != mouse_on_item && mouse_on_item != -1)
+            {
+                butframe_znem[mouse_on_item] = 0;
+                znem_but_anim = 0;
+            }
+            else if (mouse_on_item != -1)
+            {
+                if (butframe_znem[mouse_on_item] < menu_znemesis_but_max_frm)
+                {
+                    znem_but_anim -= GetDTime();
+
+                    if (znem_but_anim < 0)
+                    {
+                        znem_but_anim = menu_znemesis_butanim;
+                        butframe_znem[mouse_on_item]++;
+                    }
+                }
+            }
+
+            lastbut_znem = mouse_on_item;
+
+    }
+    else
+    {
+        inmenu = false;
+        SetDirectgVarInt(SLOT_MENU_STATE,0);
+        menu_mousefocus = -1;
+        scrolled_znem  = false;
+        lastbut_znem = -1;
+        mouse_on_item = -1;
+
+        if (scrollpos_znem > -menubar_znem->h)
+        {
+            if (menu_scroll_time<0)
+                {
+                    scrollpos_znem -= menu_znemesis_scrollby;
+                    menu_scroll_time = menu_SCROLL_DELAY;
+                }
+                else
+                    menu_scroll_time -= GetDTime();
+        }
+        else
+            scrollpos_znem = -menubar_znem->h;
+    }
+}
+
+
+
+
+void menu_DrawMenuBar_zgi()
 {
     char buf[255];
 
@@ -441,4 +656,50 @@ void menu_DrawZGIMenuBar()
         }
     }
 
+}
+
+
+void menu_DrawMenuBar_znemesis()
+{
+    char buf[255];
+
+    if (inmenu)
+    {
+            DrawImage(menubar_znem,menu_MAIN_X,scrollpos_znem);
+
+            //EXIT
+            if (menu_bar_flag & menu_BAR_EXIT)
+            {
+                if (mouse_on_item == menu_MAIN_IMAGE_EXIT)
+                    DrawImage(menubut_znem[menu_MAIN_IMAGE_EXIT][butframe_znem[menu_MAIN_IMAGE_EXIT]],menu_MAIN_X+znem_but4_x,
+                              scrollpos_znem);
+            }
+
+            //SETTINGS
+            if (menu_bar_flag & menu_BAR_SETTINGS)
+            {
+                if (mouse_on_item == menu_MAIN_IMAGE_PREF)
+                    DrawImage(menubut_znem[menu_MAIN_IMAGE_PREF][butframe_znem[menu_MAIN_IMAGE_PREF]],menu_MAIN_X+znem_but3_x,
+                              scrollpos_znem);
+            }
+
+            //LOAD
+            if (menu_bar_flag & menu_BAR_RESTORE)
+            {
+                if (mouse_on_item == menu_MAIN_IMAGE_REST)
+                    DrawImage(menubut_znem[menu_MAIN_IMAGE_REST][butframe_znem[menu_MAIN_IMAGE_REST]],menu_MAIN_X+znem_but2_x,
+                              scrollpos_znem);
+            }
+
+            //SAVE
+            if (menu_bar_flag & menu_BAR_SAVE)
+            {
+                if (mouse_on_item == menu_MAIN_IMAGE_SAVE)
+                    DrawImage(menubut_znem[menu_MAIN_IMAGE_SAVE][butframe_znem[menu_MAIN_IMAGE_SAVE]],menu_MAIN_X+znem_but1_x,
+                              scrollpos_znem);
+            }
+
+    }
+    else if (scrollpos_znem > -menubar_znem->h)
+        DrawImage(menubar_znem,menu_MAIN_X,scrollpos_znem);
 }

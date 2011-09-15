@@ -16,13 +16,9 @@
 #define FPS         15
 #define FPS_DELAY   66 //millisecs  1000/FPS
 
-//MENU//
-#define menu_UpdateMenuBar menu_UpdateZGIMenuBar
-#define menu_DrawMenuBar   menu_DrawZGIMenuBar
-#define menu_HOT_Y         40
-
 //Mouse
 #define Mouse_LoadCursors      Mouse_LoadCursors_zgi
+#define Mouse_LoadObjCursor    Mouse_LoadObjCursor_zgi
 
 
 //Preferences
@@ -60,6 +56,15 @@
 #endif
 
 
+
+//MENU//
+#define menu_UpdateMenuBar menu_UpdateMenuBar_zgi
+#define menu_DrawMenuBar   menu_DrawMenuBar_zgi
+#define menu_LoadGraphics  menu_LoadGraphics_zgi
+#define menu_HOT_Y         40
+#define menu_MAIN_X        ((GAME_W-580)>>1)
+#define menu_MAIN_CENTER   (GAME_W >> 1)
+#define menu_SCROLL_DELAY  5
 
 //Script names
 #define SystemWorld 'g'
@@ -117,13 +122,9 @@
 #define FPS         15
 #define FPS_DELAY   66 //millisecs  1000/FPS
 
-//MENU//
-#define menu_UpdateMenuBar menu_UpdateZGIMenuBar
-#define menu_DrawMenuBar   menu_DrawZGIMenuBar
-#define menu_HOT_Y         40
-
 //Mouse
 #define Mouse_LoadCursors      Mouse_LoadCursors_znemesis
+#define Mouse_LoadObjCursor    Mouse_LoadObjCursor_znemesis
 
 
 //Preferences
@@ -145,6 +146,18 @@
 
 #define GAMESCREEN_H_2  (GAMESCREEN_H >> 1)
 #define GAMESCREEN_W_2  (GAMESCREEN_W >> 1)
+
+
+
+
+//MENU//
+#define menu_UpdateMenuBar menu_UpdateMenuBar_znemesis
+#define menu_DrawMenuBar   menu_DrawMenuBar_znemesis
+#define menu_LoadGraphics  menu_LoadGraphics_znemesis
+#define menu_HOT_Y         40
+#define menu_MAIN_X       ((GAME_W-512)>>1)
+#define menu_MAIN_CENTER  (GAME_W >> 1)
+#define menu_SCROLL_DELAY  15
 
 
 //Script names

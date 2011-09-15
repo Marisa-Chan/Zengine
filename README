@@ -16,7 +16,10 @@ Nemesis Code: [##------------------]
 
 *Use waver.pl for convert all sounds, but you must edit it's script for correct path's.
 
-Gameplay(on this engine) video: http://www.youtube.com/watch?v=a88-Jgt5Grw
+
+VIDEO: 
+29.10.2010: http://www.youtube.com/watch?v=a88-Jgt5Grw
+07.09.2011: http://www.youtube.com/watch?v=FY-epYjNAk8
 
 Screenshots:
 http://img850.imageshack.us/i/45844953.png/
@@ -31,8 +34,6 @@ P.S.
 Thanks w8m (for "unraw" code reverse)
 
 ------------------TODO------------------
-Mouse cursors and menu-bar(with animation) code for nemesis
-
 [Actions Functions]
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it

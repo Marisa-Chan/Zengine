@@ -152,6 +152,8 @@ void Rend_LoadGamescr(char *path)
 
     scrbuf=LoadConvertImg(path);
 
+    SDL_FillRect(tempbuf,0,0);
+
     if (!scrbuf)
         printf("ERROR:  IMG_Load(%s): %s\n\n",path, IMG_GetError());
 
