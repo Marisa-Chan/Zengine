@@ -43,7 +43,6 @@ action_display_message      :shows text line in box from titler-control
 [Controls Objects]
 control_titler              :contain message lines
 control_fist                :shows fingers in one scene in the Nemesis
-control_lever               :shows lever, that we can turn
 control_paint               :shows easel canvas
 control_hotmovie            :don't know
 control_safe                :shows safe circle
