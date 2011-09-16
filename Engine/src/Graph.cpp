@@ -242,7 +242,7 @@ void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *s
 
     if (frame >= anim->info.frames)
     {
-        printf("Error, required frame of animation is out of range\n");
+        printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
         return;
     }
 

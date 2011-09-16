@@ -131,4 +131,6 @@ void AddToBinTree(FManNode *nod);
 FManNode *FindInBinTree(char *chr);
 
 
+double round(double r);
+
 #endif // SYSTEM_H_INCLUDED

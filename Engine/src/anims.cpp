@@ -23,6 +23,8 @@ animnode *anim_CreateAnim()
     tmp->w       = 0;
     tmp->x       = 0;
     tmp->y       = 0;
+    tmp->rel_h   = 0;
+    tmp->rel_w   = 0;
     tmp->nexttick = 0;
     tmp->playID  = 0;
     tmp->playing  = false;
@@ -100,6 +102,9 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         if (nod->framerate == 0)
             nod->framerate = FPS_DELAY; //~15fps
 
+        nod->rel_h = h;
+        nod->rel_w = w;
+
     }
     else
     {
@@ -108,6 +113,9 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
 
         if (nod->framerate == 0)
             nod->framerate = nod->anim.rlf->info.time;
+
+        nod->rel_h = nod->anim.rlf->info.h;
+        nod->rel_w = nod->anim.rlf->info.w;
     }
 }
 

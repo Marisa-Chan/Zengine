@@ -69,6 +69,10 @@ levernode * CreateLeverNode()
     tmp->mouse_angle = 0;
     tmp->mouse_count = 0;
     tmp->mouse_captured = false;
+    tmp->autoout = false;
+    tmp->autoseq = -1;
+    tmp->autoseq_frm = 0;
+    tmp->autoseq_time = 0;
     for (int16_t i=0; i< CTRL_LEVER_MAX_FRAMES; i++)
     {
         tmp->hotspots[i].x = 0;
@@ -79,6 +83,8 @@ levernode * CreateLeverNode()
             tmp->hotspots[i].directions[j].angle = 0;
             tmp->hotspots[i].directions[j].toframe = -1;
         }
+
+        tmp->hasout[i] = 0;
     }
     return tmp;
 }
@@ -270,7 +276,7 @@ void control_lever_draw(ctrlnode *ct)
         return;
 
     if ((lev->rendfrm > lev->curfrm) && lev->mirrored)
-        anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->frames*2 - lev->curfrm);
+        anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->frames*2 -1 - lev->curfrm);
     else
         anim_RenderAnimFrame(lev->anm, lev->AnimCoords.x, lev->AnimCoords.y, lev->AnimCoords.w, lev->AnimCoords.h , lev->curfrm);
 
@@ -572,14 +578,46 @@ void control_lever(ctrlnode *ct)
                     lev->mouse_angle = -1;
                     lev->last_mouse_x = MouseX();
                     lev->last_mouse_y = MouseY();
+                    lev->autoout = false;
                 }
-
             }
+
+            //if (!lev->mouse_captured) /* if still not pressed*/
+                if (lev->autoout)
+                {
+                    if (lev->autoseq_frm < lev->hasout[lev->autoseq])
+                    {
+                        lev->autoseq_time -= GetDTime();
+
+                        if (lev->autoseq_time < 0)
+                        {
+                            lev->curfrm = lev->outproc[lev->autoseq][lev->autoseq_frm];
+                            SetgVarInt(ct->slot, lev->curfrm);
+                            lev->autoseq_frm++;
+                            lev->autoseq_time = CTRL_LEVER_AUTO_DELAY;
+                        }
+                    }
+                    else
+                        lev->autoout = false;
+                }
         }
         else
         {
             if (!MouseDown(SDL_BUTTON_LEFT))
+            {
                 lev->mouse_captured = false;
+
+                if (!lev->autoout) /* not initiated */
+                {
+                    if (lev->hasout[lev->curfrm] > 0) /* if has animation */
+                    {
+                        lev->autoseq = lev->curfrm;
+                        lev->autoseq_frm = 0;
+                        lev->autoseq_time = CTRL_LEVER_AUTO_DELAY;
+                        lev->autoout = true;
+                    }
+                }
+            }
             else
             {
                 Mouse_SetCursor(lev->cursor);
@@ -621,7 +659,6 @@ void control_lever(ctrlnode *ct)
 
 
     lev->mouse_count -=GetDTime();
-
 
     /*
     if (lev->mouse_count >= CTRL_LEVER_ANGL_FRAMES)
@@ -801,6 +838,18 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
                     }
                     token = strtok(NULL,find);
                 }
+                lev->hasout[t1] = 0;
+                for (int32_t g=0; g<strlen(str);g++)
+                    if (tolower(str[g]) == 'p')
+                    {
+                        int32_t tr1,tr2;
+                        int8_t num = sscanf(str+g+1,"(%d to %d)", &tr1, &tr2);
+                        if (num == 2)
+                        {
+                            lev->outproc[t1][ lev->hasout[t1] ] = tr2;
+                            lev->hasout[t1]++;
+                        }
+                    }
                 }
             }
         }
@@ -812,6 +861,24 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 
     fclose(file2);
 
+/*    if (lev->anm)
+    {
+        if (lev->AnimCoords.w > lev->anm->rel_w)
+            lev->AnimCoords.w = round((double)lev->AnimCoords.w / (double)lev->anm->rel_w) * lev->anm->rel_w;
+        else
+            lev->AnimCoords.w = lev->anm->rel_w / round((double)lev->anm->rel_w/(double)lev->AnimCoords.w);
+
+        if (lev->AnimCoords.h > lev->anm->rel_h)
+            lev->AnimCoords.h = round((double)lev->AnimCoords.h / (double)lev->anm->rel_h) * lev->anm->rel_h;
+        else
+            lev->AnimCoords.h = lev->anm->rel_h / round((double)lev->anm->rel_h/(double)lev->AnimCoords.h);
+
+        if (lev->AnimCoords.w == 0)
+            lev->AnimCoords.w = lev->anm->rel_w;
+        if (lev->AnimCoords.h == 0)
+            lev->AnimCoords.h = lev->anm->rel_h;
+    }
+*/
     return 1;
 }
 

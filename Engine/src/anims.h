@@ -10,6 +10,8 @@ struct animnode
     int32_t      y;
     int32_t      w;
     int32_t      h;
+    int32_t      rel_w;
+    int32_t      rel_h;
     int32_t  start;
     int32_t    end;
     int32_t   loopcnt;

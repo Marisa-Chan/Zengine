@@ -109,6 +109,12 @@ struct levernode
     int16_t mouse_angle;
     int32_t mouse_count;
     bool   mouse_captured;
+    int32_t hasout[CTRL_LEVER_MAX_FRAMES];  //seq's frame count
+    int32_t outproc[CTRL_LEVER_MAX_FRAMES][CTRL_LEVER_MAX_FRAMES];  //seq's for every frames
+    bool    autoout;      //seq initiated
+    int32_t autoseq;      //what frame initiate this seq
+    int32_t autoseq_frm;  //current seq frame
+    int32_t autoseq_time; //time leave to next seq frame
 };
 
 struct ctrlnode
