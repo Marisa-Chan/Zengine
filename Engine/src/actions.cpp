@@ -100,7 +100,7 @@ int action_timer(char *params, int aSlot, pzllst *owner)
     setGNode(aSlot, nod);
 
     s = PrepareString(tmp2);
-    nod->nodes.node_timer = GetIntVal(s) * 100;
+    nod->nodes.node_timer = GetIntVal(s) * TIMER_DELAY;
 //#ifdef TRACE
 //    printf(" %d\n",GetIntVal(s));
 //#endif

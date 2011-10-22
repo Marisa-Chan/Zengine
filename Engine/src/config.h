@@ -55,7 +55,8 @@
 #define GAMESCREEN_FLAT_X 107
 #endif
 
-
+//timer
+#define TIMER_DELAY   100
 
 //MENU//
 #define menu_UpdateMenuBar menu_UpdateMenuBar_zgi
@@ -119,6 +120,7 @@
 #define pzlSTACK 0x800
 
 
+
 //speed tune
 #define FPS         15
 #define FPS_DELAY   66 //millisecs  1000/FPS
@@ -149,6 +151,8 @@
 #define GAMESCREEN_W_2  (GAMESCREEN_W >> 1)
 
 
+//timer
+#define TIMER_DELAY   1000
 
 
 //MENU//
