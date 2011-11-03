@@ -104,4 +104,10 @@ struct_action_res *Rend_CreateDistortNode();
 int32_t Rend_ProcessDistortNode(struct_action_res *nod);
 int32_t Rend_DeleteDistortNode(struct_action_res *nod);
 
+
+
+
+
+void Rend_Effect(SDL_Surface *srf);//test-wave effect
+
 #endif // RENDER_H_INCLUDED

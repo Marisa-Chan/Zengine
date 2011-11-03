@@ -11,8 +11,9 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/166/Zengine_first_alpha/" />
+				<Option parameters="/media/files/Games/Zork" />
 				<Compiler>
+					<Add option="-march=core2" />
 					<Add option="-g" />
 					<Add option="-DTRACE" />
 					<Add option="-DGAME_ZGI" />
@@ -46,6 +47,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-fexpensive-optimizations" />
 			<Add option="-w" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
@@ -68,6 +70,8 @@
 		<Unit filename="Graph.h" />
 		<Unit filename="Mouse.cpp" />
 		<Unit filename="Mouse.h" />
+		<Unit filename="./Optimiz.cpp" />
+		<Unit filename="./Optimiz.h" />
 		<Unit filename="Puzzle.cpp" />
 		<Unit filename="Puzzle.h" />
 		<Unit filename="Render.cpp" />

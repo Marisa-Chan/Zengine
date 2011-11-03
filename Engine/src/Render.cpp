@@ -1,5 +1,5 @@
 #include "System.h"
-
+#include "Optimiz.h"
 
 
 uint8_t     Renderer = RENDER_FLAT;
@@ -8,10 +8,17 @@ uint8_t     Renderer = RENDER_FLAT;
 MList *sublist = NULL;
 int32_t subid=0;
 
-
+//Game window surface
 SDL_Surface *screen;
+
+//Surface loaded by setscreen, all changes by setpartialscreen and other similar modify this surface.
 SDL_Surface *scrbuf=NULL;
+
+//This surface used for effects(region action) and control draws.
 SDL_Surface *tempbuf=NULL;
+
+//This surface used for rendered viewport image with renderer processing.
+SDL_Surface *viewportbuf=NULL;
 
 int32_t RenderDelay = 0;
 
@@ -23,8 +30,9 @@ struct xy
 };
 
 xy render_table[GAMESCREEN_W][GAMESCREEN_H];
+int32_t new_render_table[GAMESCREEN_W*GAMESCREEN_H];
 
-int32_t  *_X;
+int32_t  *view_X;
 
 int32_t pana_PanaWidth=1800;
 bool    pana_ReversePana = false;
@@ -45,6 +53,18 @@ void Rend_pana_SetLinscale(float linscale)
 void Rend_SetDelay(int32_t delay)
 {
     RenderDelay = delay;
+}
+
+void Rend_indexer()
+{
+    int32_t previndx= new_render_table[0];
+
+    for(int32_t ff=1; ff<GAMESCREEN_H*GAMESCREEN_W; ff++)
+    {
+        int32_t curindx=new_render_table[ff];
+        new_render_table[ff]=curindx-previndx;
+        previndx = curindx;
+    }
 }
 
 void Rend_pana_SetTable()
@@ -81,11 +101,29 @@ void Rend_pana_SetTable()
         {
             double et1=(double)y*yk;
 
-            render_table[x][y].x = relx;
-            render_table[x][y].y = floor(et2+et1);
+            int32_t newx= relx;
+            render_table[x][y].x = newx; //pixel index
+
+            newx+=GAMESCREEN_W_2;
+
+            int32_t newy= floor(et2+et1);
+
+            render_table[x][y].y = newy; //pixel index
+
+            if (newx<0)
+                newx = 0;
+            if (newx>=GAMESCREEN_W)
+                newx = GAMESCREEN_W-1;
+            if (newy<0)
+                newy = 0;
+            if (newy>=GAMESCREEN_H)
+                newy = GAMESCREEN_H-1;
+
+            new_render_table[x+y*GAMESCREEN_W] = newx + newy*GAMESCREEN_W; //pixel index
         }
     }
 
+    Rend_indexer();
 }
 
 void Rend_InitGraphics(bool fullscreen, char *fontsdir)
@@ -95,18 +133,17 @@ void Rend_InitGraphics(bool fullscreen, char *fontsdir)
 
     Rend_InitSubList();
 
-    tempbuf=CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
-    //fish=SDL_CreateRGBSurface(SDL_SWSURFACE,640,480-68*2,32,0,0,0,255);
+    tempbuf = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
+    viewportbuf = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
-    //cur=new(Cursor);//"g0gac011.zcr"));
-    //LoadCursor("g0gac011.zcr",cur);
+
 
     Mouse_LoadCursors();
 
     SDL_ShowCursor(SDL_DISABLE);
 
-    _X = getdirectvar(SLOT_VIEW_POS);
+    view_X = getdirectvar(SLOT_VIEW_POS);
 
 }
 
@@ -156,6 +193,9 @@ void Rend_LoadGamescr(char *path)
 
     if (!scrbuf)
         printf("ERROR:  IMG_Load(%s): %s\n\n",path, IMG_GetError());
+
+    if (!scrbuf) // no errors if no screen
+        scrbuf=CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
     if (Renderer != RENDER_TILT)
         pana_PanaWidth = scrbuf->w;
@@ -225,7 +265,7 @@ int Rend_GetMouseGameX()
         else
             tmpl = 0;
 
-        tmpl += *_X;
+        tmpl += *view_X;
         if (tmpl < 0)
             tmpl += pana_PanaWidth;
         else if (tmpl > pana_PanaWidth)
@@ -287,7 +327,7 @@ int Rend_GetMouseGameY()
         else
             tmpl = 0;
 
-        tmpl+=*_X;
+        tmpl+=*view_X;
 
         if (tmpl>pana_PanaWidth)
             tmpl=pana_PanaWidth;
@@ -320,6 +360,11 @@ int Rend_GetRenderer()
 }
 
 void Rend_FlatRender()
+{
+    DrawImageToSurf(tempbuf,0,0,viewportbuf);
+}
+
+void Rend_FlatRender_pre()
 {
     DrawImageToSurf(scrbuf,GAMESCREEN_FLAT_X,0,tempbuf);
 }
@@ -427,59 +472,45 @@ void Rend_FlatRender()
 //    printf("%d\n",SDL_GetTicks()-asddsa);
 //}
 
+void Rend_DrawPanorama_pre()
+{
+    DrawImageToSurf(scrbuf,GAMESCREEN_W_2-*view_X,0,tempbuf);
+    if (*view_X<GAMESCREEN_W_2)
+        DrawImageToSurf(scrbuf,GAMESCREEN_W_2-(*view_X+pana_PanaWidth),0,tempbuf);
+    else if (pana_PanaWidth-*view_X<GAMESCREEN_W_2)
+        DrawImageToSurf(scrbuf,GAMESCREEN_W_2+pana_PanaWidth-*view_X,0,tempbuf);
+
+}
+
 void Rend_DrawPanorama()
 {
-    //int asddsa= SDL_GetTicks();
-    //hehe
-    //float hhx = (float)(rand()%6+3)/10.0;
-    /////
     SDL_LockSurface(tempbuf);
-    SDL_LockSurface(scrbuf);
+    SDL_LockSurface(viewportbuf);
     if (GAME_BPP == 32)
     {
-    int *nww = ((int *)tempbuf->pixels);
-    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
-    for(int y = 0; y < GAMESCREEN_H; y++)
-    {
-         // only for 32 bit color
-
-        for(int x = 0; x < GAMESCREEN_W; x++)
+        uint32_t *nww = (uint32_t *)viewportbuf->pixels;
+        uint32_t *old = (uint32_t *)tempbuf->pixels;
+        int32_t *ofs = new_render_table;
+        for (int32_t ai=0;ai<GAMESCREEN_H*GAMESCREEN_W;ai++)
         {
-            // int *nww = (int *)screen->pixels;
-
-            int newx = render_table[x][y].x  /* *hhx */  + *_X;
-
-            if (newx < 0)
-                newx += scrbuf->w;
-            else if (newx > scrbuf->w)
-                newx -= scrbuf->w;
-
-            *nww = old[newx + render_table[x][y].y * scrbuf->w];
-            nww++; //more faster than mul %)
+            old+=*ofs;
+            *nww = *old;
+            nww++;
+            ofs++;
         }
-    }
     }
     else if (GAME_BPP == 16)
     {
-    short *nww = ((short *)tempbuf->pixels); // only for 16 bit color
-    short *old = (short *)scrbuf->pixels;    // only for 16 bit color
-    for(int y = 0; y < GAMESCREEN_H; y++)
-    {
-        for(int x = 0; x < GAMESCREEN_W; x++)
+        uint16_t *nww = (uint16_t *)viewportbuf->pixels;
+        uint16_t *old = (uint16_t *)tempbuf->pixels;
+        int32_t *ofs = new_render_table;
+        for (int32_t ai=0;ai<GAMESCREEN_H*GAMESCREEN_W;ai++)
         {
-            // int *nww = (int *)screen->pixels;
-
-            int newx = render_table[x][y].x + *_X;
-
-            if (newx < 0)
-                newx += scrbuf->w;
-            else if (newx > scrbuf->w)
-                newx -= scrbuf->w;
-
-            *nww = old[newx + render_table[x][y].y * scrbuf->w];
-            nww++; //more faster than mul %)
+            old+=*ofs;
+            *nww = *old;
+            nww++;
+            ofs++;
         }
-    }
     }
     else
     {
@@ -487,7 +518,63 @@ void Rend_DrawPanorama()
         exit(0);
     }
     SDL_UnlockSurface(tempbuf);
-    SDL_UnlockSurface(scrbuf);
+    SDL_UnlockSurface(viewportbuf);
+
+//    SDL_LockSurface(tempbuf);
+//    SDL_LockSurface(viewportbuf);
+//    if (GAME_BPP == 32)
+//    {
+//    int *nww = ((int *)tempbuf->pixels);
+//    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
+//    for(int y = 0; y < GAMESCREEN_H; y++)
+//    {
+//         // only for 32 bit color
+//
+//        for(int x = 0; x < GAMESCREEN_W; x++)
+//        {
+//            // int *nww = (int *)screen->pixels;
+//
+//            int newx = render_table[x][y].x  /* *hhx */  + GAMESCREEN_W2;
+//
+//            if (newx < 0)
+//                newx += scrbuf->w;
+//            else if (newx > scrbuf->w)
+//                newx -= scrbuf->w;
+//
+//            *nww = old[newx + render_table[x][y].y * scrbuf->w];
+//            nww++; //more faster than mul %)
+//        }
+//    }
+//    }
+//    else if (GAME_BPP == 16)
+//    {
+//    short *nww = ((short *)tempbuf->pixels); // only for 16 bit color
+//    short *old = (short *)scrbuf->pixels;    // only for 16 bit color
+//    for(int y = 0; y < GAMESCREEN_H; y++)
+//    {
+//        for(int x = 0; x < GAMESCREEN_W; x++)
+//        {
+//            // int *nww = (int *)screen->pixels;
+//
+//            int newx = render_table[x][y].x + GAMESCREEN_W2;
+//
+//            if (newx < 0)
+//                newx += scrbuf->w;
+//            else if (newx > scrbuf->w)
+//                newx -= scrbuf->w;
+//
+//            *nww = old[newx + render_table[x][y].y * scrbuf->w];
+//            nww++; //more faster than mul %)
+//        }
+//    }
+//    }
+//    else
+//    {
+//        printf("Write panorama code for %d bpp\n",GAME_BPP);
+//        exit(0);
+//    }
+//    SDL_UnlockSurface(tempbuf);
+//    SDL_UnlockSurface(viewportbuf);
    // printf("%d\n",SDL_GetTicks()-asddsa);
 }
 
@@ -500,7 +587,7 @@ if (Rend_MouseInGamescr())
             int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
             int32_t param  = (((MouseX() - GAMESCREEN_X - GAMESCREEN_W + GAMESCREEN_P) << 7 ) / GAMESCREEN_P * mspeed) >> 7;
 
-            *_X += (pana_ReversePana == false ? param: -param);
+            *view_X += (pana_ReversePana == false ? param: -param);
         }
 
         if (MouseX() < GAMESCREEN_X + GAMESCREEN_P)
@@ -508,14 +595,14 @@ if (Rend_MouseInGamescr())
             int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
             int32_t param  = (((GAMESCREEN_X + GAMESCREEN_P - MouseX()) << 7) / GAMESCREEN_P * mspeed) >> 7;
 
-            *_X -= (pana_ReversePana == false ? param: -param);
+            *view_X -= (pana_ReversePana == false ? param: -param);
         }
     }
 
-    if (*_X >= pana_PanaWidth)
-        *_X %= pana_PanaWidth;
-    if (*_X < 0)
-        *_X += pana_PanaWidth;
+    if (*view_X >= pana_PanaWidth)
+        *view_X %= pana_PanaWidth;
+    if (*view_X < 0)
+        *view_X += pana_PanaWidth;
 }
 
 void Rend_MouseInteractOfRender()
@@ -543,6 +630,21 @@ void Rend_RenderFunc()
 
     SDL_FillRect(screen,0,0);
 
+    //pre-rendered
+    if (Renderer == RENDER_FLAT)
+        Rend_FlatRender_pre();
+    else if (Renderer == RENDER_PANA)
+        Rend_DrawPanorama_pre();
+    else if (Renderer == RENDER_TILT)
+        Rend_DrawTilt();
+
+    //draw dynamic controls
+    Ctrl_DrawControls();
+
+    //effect-processor
+    Rend_Effect(tempbuf);
+
+    //Apply renderer distortion
     if (Renderer == RENDER_FLAT)
         Rend_FlatRender();
     else if (Renderer == RENDER_PANA)
@@ -550,10 +652,8 @@ void Rend_RenderFunc()
     else if (Renderer == RENDER_TILT)
         Rend_DrawTilt();
 
-    Ctrl_DrawControls();
-
-
-    DrawImage(tempbuf,GAMESCREEN_X,GAMESCREEN_Y);
+    //output viewport
+    DrawImage(viewportbuf,GAMESCREEN_X,GAMESCREEN_Y);
 
 
     Rend_ProcessSubs();
@@ -727,45 +827,59 @@ void Rend_tilt_SetTable()
         {
             double et1=(double)x*xk;
 
-            render_table[x][y].y = rely;
-            render_table[x][y].x = floor(et2+et1);
+            int32_t newy= rely;
+            int32_t newx= floor(et2+et1);
+
+            render_table[x][y].y = newy;
+            render_table[x][y].x = newx;
+
+            newy+=GAMESCREEN_H_2;
+
+            if (newx<0)
+                newx = 0;
+            if (newx>=GAMESCREEN_W)
+                newx = GAMESCREEN_W-1;
+            if (newy<0)
+                newy = 0;
+            if (newy>=GAMESCREEN_H)
+                newy = GAMESCREEN_H-1;
+
+            new_render_table[x+y*GAMESCREEN_W] = newx + newy*GAMESCREEN_W; //pixel index
         }
     }
 
+    Rend_indexer();
 }
 
 void Rend_DrawTilt()
 {
-    //float hhx = (float)(rand()%5+1)/10.0;
     SDL_LockSurface(tempbuf);
-    SDL_LockSurface(scrbuf);
+    SDL_LockSurface(viewportbuf);
     if (GAME_BPP == 32)
     {
-        int32_t maxIndx = scrbuf->w*scrbuf->h;
-    int *nww = ((int *)tempbuf->pixels);
-    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
-    for(int y = 0; y < GAMESCREEN_H; y++)
-    {
-         // only for 32 bit color
-
-        for(int x = 0; x < GAMESCREEN_W; x++)
+        uint32_t *nww = (uint32_t *)viewportbuf->pixels;
+        uint32_t *old = (uint32_t *)tempbuf->pixels;
+        int32_t *ofs = new_render_table;
+        for (int32_t ai=0;ai<GAMESCREEN_H*GAMESCREEN_W;ai++)
         {
-            // int *nww = (int *)screen->pixels;
-
-            int newy = render_table[x][y].y  /* *hhx */  + *_X;
-
-            if (newy < 0)
-                newy += scrbuf->h;
-            else if (newy > scrbuf->h)
-                newy -= scrbuf->h;
-
-            int32_t index = render_table[x][y].x + newy * scrbuf->w;
-            if (index > maxIndx)
-                index %= maxIndx;
-            *nww = old[index];
-            nww++; //more faster than mul %)
+            old+=*ofs;
+            *nww = *old;
+            nww++;
+            ofs++;
         }
     }
+    else if (GAME_BPP == 16)
+    {
+        uint16_t *nww = (uint16_t *)viewportbuf->pixels;
+        uint16_t *old = (uint16_t *)tempbuf->pixels;
+        int32_t *ofs = new_render_table;
+        for (int32_t ai=0;ai<GAMESCREEN_H*GAMESCREEN_W;ai++)
+        {
+            old+=*ofs;
+            *nww = *old;
+            nww++;
+            ofs++;
+        }
     }
     else
     {
@@ -773,7 +887,45 @@ void Rend_DrawTilt()
         exit(0);
     }
     SDL_UnlockSurface(tempbuf);
-    SDL_UnlockSurface(scrbuf);
+    SDL_UnlockSurface(viewportbuf);
+//    //float hhx = (float)(rand()%5+1)/10.0;
+//    SDL_LockSurface(tempbuf);
+//    SDL_LockSurface(scrbuf);
+//    if (GAME_BPP == 32)
+//    {
+//        int32_t maxIndx = scrbuf->w*scrbuf->h;
+//    int *nww = ((int *)tempbuf->pixels);
+//    int *old = (int *)scrbuf->pixels;    // only for 32 bit color
+//    for(int y = 0; y < GAMESCREEN_H; y++)
+//    {
+//         // only for 32 bit color
+//
+//        for(int x = 0; x < GAMESCREEN_W; x++)
+//        {
+//            // int *nww = (int *)screen->pixels;
+//
+//            int newy = render_table[x][y].y  /* *hhx */  + *view_X;
+//
+//            if (newy < 0)
+//                newy += scrbuf->h;
+//            else if (newy > scrbuf->h)
+//                newy -= scrbuf->h;
+//
+//            int32_t index = render_table[x][y].x + newy * scrbuf->w;
+//            if (index > maxIndx)
+//                index %= maxIndx;
+//            *nww = old[index];
+//            nww++; //more faster than mul %)
+//        }
+//    }
+//    }
+//    else
+//    {
+//        printf("Write tilt code for %d bpp\n",GAME_BPP);
+//        exit(0);
+//    }
+//    SDL_UnlockSurface(tempbuf);
+//    SDL_UnlockSurface(scrbuf);
 }
 
 
@@ -784,23 +936,23 @@ if (Rend_MouseInGamescr())
         if (tilt_Reverse == false)
         {
             if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
-                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+                *view_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
             if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
-                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+                *view_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
         }
         else
         {
             if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
-                *_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+                *view_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
             if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
-                *_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+                *view_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
         }
     }
 
-    if (*_X >= (pana_PanaWidth - GAMESCREEN_H_2))
-        *_X = pana_PanaWidth - GAMESCREEN_H_2;
-    if (*_X <= GAMESCREEN_H_2)
-        *_X = GAMESCREEN_H_2;
+    if (*view_X >= (pana_PanaWidth - GAMESCREEN_H_2))
+        *view_X = pana_PanaWidth - GAMESCREEN_H_2;
+    if (*view_X <= GAMESCREEN_H_2)
+        *view_X = GAMESCREEN_H_2;
 }
 
 float Rend_GetRendererAngle()
@@ -929,4 +1081,123 @@ void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y)
 {
     if (scrbuf)
         DrawScaler(scl,x,y,scrbuf);
+}
+
+
+float phase = 0;
+SDL_Surface *am = NULL;
+
+int ss=0;
+
+void Rend_Effect(SDL_Surface *srf)//test-wave effect
+{
+    int tt=SDL_GetTicks();
+    if (!am)
+    am = CreateSurface(srf->w,srf->h);
+
+    SDL_LockSurface(am);
+    SDL_LockSurface(srf);
+
+    phase += 0.12;
+
+    int scalex=3;
+    int scaley=5;
+    float amplitude = 2;
+    float wavelength = 1.5;
+
+
+    int ww = (srf->w/2)/2;
+    int hh = (srf->h/2)/2;
+    int ww2 = srf->w/2;
+    int hh2 = srf->h/2;
+
+    for(int j=0;j<srf->h/2;j++)
+    {
+        int32_t *abc = ((int32_t *)am->pixels) + j*srf->w;
+        int32_t *abc2 = ((int32_t *)am->pixels) + (j+hh2)*srf->w;
+        int32_t *abc3 = ((int32_t *)am->pixels) + j*srf->w+ww2;
+        int32_t *abc4 = ((int32_t *)am->pixels) + (j+hh2)*srf->w+ww2;
+        for(int i=0;i<srf->w/2;i++)
+        {
+            int dx = (i - ww);
+            int dy = (j - hh);
+            float d = fastSqrt(dx * dx / scalex + dy * dy / scaley);
+
+            float pi = 3.1415926;
+            int amnt = amplitude * fastSin (d / (-wavelength * pi) + phase);
+
+            //int needx = (dx + amnt) + ww;
+            //int needy = (dy + amnt) + hh;
+            int needx = amnt+i;
+            int needy = amnt+j;
+
+            if (needx < 0 )
+                needx=0;
+            if (needx >= srf->w )
+                needx=srf->w-1;
+            if (needy < 0 )
+                needy=0;
+            if (needy >= srf->h )
+                needy=srf->h-1;
+            *abc = ((int32_t *)srf->pixels)[(int)needx + (int)needy*srf->w];
+
+            needx = amnt+i;
+            needy = amnt+j;
+
+            if (needx+ww2 < 0 )
+                needx=0;
+            if (needx+ww2 >= srf->w )
+                needx=srf->w-1;
+            if (needy < 0 )
+                needy=0;
+            if (needy >= srf->h )
+                needy=srf->h-1;
+            *abc3 = ((int32_t *)srf->pixels)[(int)needx+ww2+ (int)needy*srf->w];
+
+            needx = amnt+i;
+            needy = amnt+j;
+
+            needy+=hh2;
+            if (needx < 0 )
+                needx=0;
+            if (needx >= srf->w )
+                needx=srf->w-1;
+            if (needy < 0 )
+                needy=0;
+            if (needy >= srf->h )
+                needy=srf->h-1;
+            *abc2 = ((int32_t *)srf->pixels)[needx+ needy*srf->w];
+
+            needx = amnt+i;
+            needy = amnt+j;
+
+            needy+=hh2;
+            if (needx+ww2 < 0 )
+                needx=0;
+            if (needx+ww2 >= srf->w )
+                needx=srf->w-1;
+            if (needy < 0 )
+                needy=0;
+            if (needy >= srf->h )
+                needy=srf->h-1;
+            *abc4 = ((int32_t *)srf->pixels)[(int)needx+ww2+ (int)(needy)*srf->w];
+            abc++;
+            abc2++;
+            abc3++;
+            abc4++;
+
+        }
+
+        }
+ss++;
+if (ss%100 == 0)
+ printf("%d\n",SDL_GetTicks()-tt);
+
+    SDL_UnlockSurface(am);
+    SDL_UnlockSurface(srf);
+
+    DrawImageToSurf(am,0,0,srf);
+   // SDL_FreeSurface(am);
+
+
 }

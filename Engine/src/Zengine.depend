@@ -230,3 +230,360 @@
 1297939939 source:/home/marisa/work/Zengine/Render.cpp
 	"System.h"
 
+1316516584 source:/home/zidane/Work/Zengine/Engine/src/Control.cpp
+	"System.h"
+	<errno.h>
+
+1316516584 /home/zidane/Work/Zengine/Engine/src/System.h
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<ctype.h>
+	<inttypes.h>
+	<SDL/SDL.h>
+	<SDL/SDL_ttf.h>
+	<errno.h>
+	"win_funct.h"
+	"mylist.h"
+	"config.h"
+	"types.h"
+	"Graph.h"
+	"Render.h"
+	"Text.h"
+	"Subtitles.h"
+	"Sound.h"
+	"Mouse.h"
+	"Puzzle.h"
+	"SoundFX.h"
+	"Timers.h"
+	"Control.h"
+	"ScriptSystem.h"
+	"actions.h"
+	"anims.h"
+	"menu.h"
+	"Game.h"
+
+1311843180 /home/zidane/Work/Zengine/Engine/src/win_funct.h
+
+1306121704 /home/zidane/Work/Zengine/Engine/src/mylist.h
+
+1320294442 /home/zidane/Work/Zengine/Engine/src/config.h
+
+1311843180 /home/zidane/Work/Zengine/Engine/src/types.h
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/Graph.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_gfxPrimitives.h>
+	<SDL/SDL_rotozoom.h>
+	<SDL/SDL_ttf.h>
+	<smpeg/smpeg.h>
+
+1319775524 /home/zidane/Work/Zengine/Engine/src/Render.h
+	"Subtitles.h"
+
+1309869150 /home/zidane/Work/Zengine/Engine/src/Subtitles.h
+	"Render.h"
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/Text.h
+
+1311843180 /home/zidane/Work/Zengine/Engine/src/Sound.h
+	<SDL/SDL.h>
+	<SDL/SDL_audio.h>
+	<SDL/SDL_mixer.h>
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/Mouse.h
+
+1309869150 /home/zidane/Work/Zengine/Engine/src/Puzzle.h
+	"config.h"
+	"types.h"
+	"ScriptSystem.h"
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/ScriptSystem.h
+	"types.h"
+	"config.h"
+	"Puzzle.h"
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/SoundFX.h
+
+1306385406 /home/zidane/Work/Zengine/Engine/src/Timers.h
+
+1316516584 /home/zidane/Work/Zengine/Engine/src/Control.h
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/actions.h
+	"Puzzle.h"
+
+1316516584 /home/zidane/Work/Zengine/Engine/src/anims.h
+
+1316100830 /home/zidane/Work/Zengine/Engine/src/menu.h
+
+1311843180 /home/zidane/Work/Zengine/Engine/src/Game.h
+	<inttypes.h>
+	"mylist.h"
+	"Graph.h"
+	"Sound.h"
+	<math.h>
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Game.cpp
+	"System.h"
+
+1316516584 source:/home/zidane/Work/Zengine/Engine/src/Graph.cpp
+	"Graph.h"
+	"System.h"
+	"Sound.h"
+	<dirent.h>
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Mouse.cpp
+	"System.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Puzzle.cpp
+	"System.h"
+
+1320294402 source:/home/zidane/Work/Zengine/Engine/src/Render.cpp
+	"System.h"
+	"Optimiz.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/ScriptSystem.cpp
+	"System.h"
+
+1311843180 source:/home/zidane/Work/Zengine/Engine/src/Sound.cpp
+	"System.h"
+	"Sound.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/SoundFX.cpp
+	"System.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Subtitles.cpp
+	"System.h"
+	"SDL_ttf.h"
+	<string.h>
+
+1278670255 /usr/include/SDL/SDL_ttf.h
+	"SDL.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL.h
+	"SDL_main.h"
+	"SDL_stdinc.h"
+	"SDL_audio.h"
+	"SDL_cdrom.h"
+	"SDL_cpuinfo.h"
+	"SDL_endian.h"
+	"SDL_error.h"
+	"SDL_events.h"
+	"SDL_loadso.h"
+	"SDL_mutex.h"
+	"SDL_rwops.h"
+	"SDL_thread.h"
+	"SDL_timer.h"
+	"SDL_video.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_main.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_stdinc.h
+	"SDL_config.h"
+	<sys/types.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdarg.h>
+	<stdlib.h>
+	<malloc.h>
+	<stddef.h>
+	<stdarg.h>
+	<memory.h>
+	<string.h>
+	<strings.h>
+	<inttypes.h>
+	<stdint.h>
+	<ctype.h>
+	<iconv.h>
+	"begin_code.h"
+	<alloca.h>
+	<malloc.h>
+	<malloc.h>
+	<malloc.h>
+	<stdlib.h>
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_config.h
+	"SDL_platform.h"
+	<stdarg.h>
+
+1316607939 /usr/include/SDL/SDL_platform.h
+
+1316607939 /usr/include/SDL/begin_code.h
+
+1316607939 /usr/include/SDL/close_code.h
+
+1316607939 /usr/include/SDL/SDL_audio.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_endian.h"
+	"SDL_mutex.h"
+	"SDL_thread.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_error.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_endian.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_mutex.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_thread.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_mutex.h"
+	"begin_code.h"
+	<process.h>
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_rwops.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_cdrom.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_cpuinfo.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_events.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_active.h"
+	"SDL_keyboard.h"
+	"SDL_mouse.h"
+	"SDL_joystick.h"
+	"SDL_quit.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_active.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_keyboard.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_keysym.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_keysym.h
+
+1316607939 /usr/include/SDL/SDL_mouse.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_video.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_joystick.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_quit.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+
+1316607939 /usr/include/SDL/SDL_loadso.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_timer.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316607939 /usr/include/SDL/SDL_version.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1316516584 source:/home/zidane/Work/Zengine/Engine/src/System.cpp
+	<SDL/SDL.h>
+	<inttypes.h>
+	<time.h>
+	<dirent.h>
+	"System.h"
+	"mylist.h"
+	"VkKeys.h"
+
+1296553850 /home/zidane/Work/Zengine/Engine/src/VkKeys.h
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Text.cpp
+	"System.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/Timers.cpp
+	"System.h"
+
+1319438528 source:/home/zidane/Work/Zengine/Engine/src/actions.cpp
+	"System.h"
+
+1316516584 source:/home/zidane/Work/Zengine/Engine/src/anims.cpp
+	"System.h"
+	"anims.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"System.h"
+	"Game.h"
+	"Graph.h"
+
+1316100830 source:/home/zidane/Work/Zengine/Engine/src/menu.cpp
+	"System.h"
+	"menu.h"
+
+1306122572 source:/home/zidane/Work/Zengine/Engine/src/mylist.cpp
+	<stdlib.h>
+	"mylist.h"
+
+1320225331 source:/home/zidane/Work/Zengine/Engine/src/Optimiz.cpp
+
+1319775847 /home/zidane/Work/Zengine/Engine/src/Optimiz.h
+
