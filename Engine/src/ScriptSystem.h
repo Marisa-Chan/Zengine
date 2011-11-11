@@ -125,6 +125,7 @@ struct struct_action_res
         struct_distort  *distort;
 
         int          node_pantracking;
+        int          node_region;
         void        *node_unknow;
     } nodes;
     bool       need_delete;

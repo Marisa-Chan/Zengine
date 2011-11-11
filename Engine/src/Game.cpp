@@ -71,6 +71,7 @@ void InitGameLoop()
     //\Hack
 
 
+   // Rend_EF_Wave_Setup(10,360,3,5,4,1,0.1);
 }
 
 

@@ -1405,3 +1405,72 @@ int action_preferences(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+
+//Graphic effects
+int action_region(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:region(%s)\n",params);
+#endif
+
+    char    art[64];
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
+    int32_t delay;
+    // type:
+    // 0 - water waves
+    // 1 - brightness
+    // 9 - compositing
+    int32_t type;
+    int32_t unk1; //0 or 1
+    int32_t unk2;
+    char    addition[128];
+
+    if (sscanf(params,"%s %d %d %d %d %d %d %d %d %s",art,&x,&y,&w,&h,&delay,&type,&unk1,&unk2,addition)== 10 )
+    {
+        switch(type)
+        {
+            case 0: //water affect
+
+//            struct_action_res *nod = new (struct_action_res);
+//            nod->nodes.node_region = 0;
+//
+//            nod->slot = aSlot;
+//            nod->owner = owner;
+//            nod->node_type = NODE_TYPE_REGION;
+//            nod->need_delete     = false;
+//
+//            setGNode(aSlot, nod);
+//
+//            ScrSys_AddToActResList(nod);
+
+            int32_t s_x,s_y;
+            int32_t frames;
+            float amplitude,
+                  waveln,
+                  speed;
+
+            sscanf(addition,"%d,%d,%d,%f,%f,%f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
+
+            Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
+
+
+            break;
+
+            case 1: //lightning effect
+
+
+            break;
+
+            case 9: //
+
+
+            break;
+        }
+    }
+
+    return ACTION_NORMAL;
+}
+

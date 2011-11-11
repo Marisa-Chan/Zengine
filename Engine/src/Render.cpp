@@ -23,6 +23,14 @@ SDL_Surface *viewportbuf=NULL;
 int32_t RenderDelay = 0;
 
 
+
+#define REG_EF_WAVE  1
+#define REG_EF_LIGH  2
+#define REG_EF_9     4
+
+uint8_t Effects = 0;
+
+
 struct xy
 {
     int32_t x;
@@ -201,6 +209,8 @@ void Rend_LoadGamescr(char *path)
         pana_PanaWidth = scrbuf->w;
     else
         pana_PanaWidth = scrbuf->h;
+
+   // Effects = 0;
 }
 
 
@@ -636,13 +646,14 @@ void Rend_RenderFunc()
     else if (Renderer == RENDER_PANA)
         Rend_DrawPanorama_pre();
     else if (Renderer == RENDER_TILT)
-        Rend_DrawTilt();
+        Rend_DrawTilt_pre();
 
     //draw dynamic controls
     Ctrl_DrawControls();
 
     //effect-processor
-    Rend_Effect(tempbuf);
+    ProcessEffects();
+
 
     //Apply renderer distortion
     if (Renderer == RENDER_FLAT)
@@ -851,6 +862,11 @@ void Rend_tilt_SetTable()
     Rend_indexer();
 }
 
+void Rend_DrawTilt_pre()
+{
+    DrawImageToSurf(scrbuf,0,GAMESCREEN_H_2-*view_X,tempbuf);
+}
+
 void Rend_DrawTilt()
 {
     SDL_LockSurface(tempbuf);
@@ -933,19 +949,19 @@ void Rend_tilt_MouseInteract()
 {
 if (Rend_MouseInGamescr())
     {
-        if (tilt_Reverse == false)
+        if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
         {
-            if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
-                *view_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
-            if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
-                *view_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+            int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
+            int32_t param  = (((MouseY() - GAMESCREEN_Y - GAMESCREEN_H + GAMESCREEN_P) << 7 ) / GAMESCREEN_P * mspeed) >> 7;
+
+            *view_X += (pana_ReversePana == false ? param: -param);
         }
-        else
+        if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
         {
-            if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
-                *view_X -=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
-            if (MouseY() < GAMESCREEN_Y + GAMESCREEN_P)
-                *view_X +=GetgVarInt(SLOT_PANAROTATE_SPEED)/100;
+            int32_t mspeed = GetgVarInt(SLOT_PANAROTATE_SPEED) >> 4;
+            int32_t param  = (((GAMESCREEN_Y + GAMESCREEN_P - MouseY()) << 7) / GAMESCREEN_P * mspeed) >> 7;
+
+            *view_X -= (pana_ReversePana == false ? param: -param);
         }
     }
 
@@ -1084,10 +1100,181 @@ void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y)
 }
 
 
+
+
+
+
+
+
 float phase = 0;
 SDL_Surface *am = NULL;
 
 int ss=0;
+
+
+
+
+int32_t Ef_wave_frame       = 0;
+int32_t Ef_wave_frame_cnt   = 0;
+int32_t Ef_wave_delay       = 100;
+int32_t Ef_wave_time        = 0;
+int8_t  **Ef_wave_ampls     = NULL;
+SDL_Surface *Ef_wave_surface    = NULL;
+//int32_t Ef_wave_scale_x     = 1;
+//int32_t Ef_wave_scale_y     = 1;
+//float   Ef_wave_wave_ln     = 1.0;
+//float   Ef_wave_wave_ln     = 1.0;
+
+
+
+void Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd)
+{
+
+    Effects |= REG_EF_WAVE;
+
+    if (Ef_wave_ampls)
+    {
+        for(int32_t i=0; i<Ef_wave_frame_cnt; i++)
+            free(Ef_wave_ampls[i]);
+        free(Ef_wave_ampls);
+    }
+
+    if (!Ef_wave_surface)
+        Ef_wave_surface = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
+
+    Ef_wave_frame = -1;
+    Ef_wave_frame_cnt = frames;
+
+    Ef_wave_delay = delay;
+    Ef_wave_time  = 0;
+
+    Ef_wave_ampls = (int8_t **)malloc(frames * sizeof(int8_t *));
+
+    int32_t frmsize = GAMESCREEN_H_2 * GAMESCREEN_W_2;
+
+    float phase = 0;
+
+    int32_t w_4 = GAMESCREEN_W / 4;
+    int32_t h_4 = GAMESCREEN_H / 4;
+
+    for(int32_t i=0; i<Ef_wave_frame_cnt; i++)
+    {
+        Ef_wave_ampls[i] = (int8_t *)malloc(frmsize*sizeof(int8_t));
+
+        for(int y=0;y<GAMESCREEN_H_2;y++)
+            for(int x=0;x<GAMESCREEN_W_2;x++)
+            {
+                int32_t dx = (x - w_4);
+                int32_t dy = (y - h_4);
+
+                Ef_wave_ampls[i][x+y*GAMESCREEN_W_2] = apml * fastSin ( fastSqrt(dx * dx / (float)s_x + dy * dy / (float)s_y)/ (-waveln * 3.1415926) + phase);;
+            }
+        phase += spd;
+    }
+
+}
+
+void Rend_EF_Wave_Draw()
+{
+    if (!Ef_wave_surface)
+        return;
+
+    Ef_wave_time -= GetDTime();
+
+    if (Ef_wave_time<0)
+    {
+        Ef_wave_time = Ef_wave_delay;
+        Ef_wave_frame++;
+        if (Ef_wave_frame >= Ef_wave_frame_cnt)
+            Ef_wave_frame = 0;
+    }
+
+    SDL_LockSurface(Ef_wave_surface);
+    SDL_LockSurface(tempbuf);
+
+    for(int y=0;y<GAMESCREEN_H_2;y++)
+    {
+        int32_t *abc  = ((int32_t *)Ef_wave_surface->pixels) + y*GAMESCREEN_W;
+        int32_t *abc2 = ((int32_t *)Ef_wave_surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W;
+        int32_t *abc3 = ((int32_t *)Ef_wave_surface->pixels) + y*GAMESCREEN_W + GAMESCREEN_W_2;
+        int32_t *abc4 = ((int32_t *)Ef_wave_surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W + GAMESCREEN_W_2;
+        for(int x=0;x<GAMESCREEN_W_2;x++)
+        {
+            int8_t amnt = Ef_wave_ampls[Ef_wave_frame][x+y*GAMESCREEN_W_2];
+            int32_t n_x = x+amnt;
+            int32_t n_y = y+amnt;
+
+            if (n_x < 0 )
+                n_x=0;
+            if (n_x >= GAMESCREEN_W )
+                n_x=GAMESCREEN_W-1;
+            if (n_y < 0 )
+                n_y=0;
+            if (n_y >= GAMESCREEN_H )
+                n_y=GAMESCREEN_H-1;
+            *abc = ((int32_t *)tempbuf->pixels)[n_x + n_y*GAMESCREEN_W];
+
+            n_x = x+amnt + GAMESCREEN_W_2;
+            n_y = y+amnt;
+
+            if (n_x < 0 )
+                n_x=0;
+            if (n_x >= GAMESCREEN_W )
+                n_x=GAMESCREEN_W-1;
+            if (n_y < 0 )
+                n_y=0;
+            if (n_y >= GAMESCREEN_H )
+                n_y=GAMESCREEN_H-1;
+            *abc3 = ((int32_t *)tempbuf->pixels)[n_x + n_y*GAMESCREEN_W];
+
+            n_x = x+amnt;
+            n_y = y+amnt + GAMESCREEN_H_2;
+
+            if (n_x < 0 )
+                n_x=0;
+            if (n_x >= GAMESCREEN_W )
+                n_x=GAMESCREEN_W-1;
+            if (n_y < 0 )
+                n_y=0;
+            if (n_y >= GAMESCREEN_H )
+                n_y=GAMESCREEN_H-1;
+            *abc2 = ((int32_t *)tempbuf->pixels)[n_x + n_y*GAMESCREEN_W];
+
+            n_x = x+amnt + GAMESCREEN_W_2;
+            n_y = y+amnt + GAMESCREEN_H_2;
+
+            if (n_x < 0 )
+                n_x=0;
+            if (n_x >= GAMESCREEN_W )
+                n_x=GAMESCREEN_W-1;
+            if (n_y < 0 )
+                n_y=0;
+            if (n_y >= GAMESCREEN_H )
+                n_y=GAMESCREEN_H-1;
+            *abc4 = ((int32_t *)tempbuf->pixels)[n_x + n_y*GAMESCREEN_W];
+
+            abc++;
+            abc2++;
+            abc3++;
+            abc4++;
+        }
+    }
+
+    SDL_UnlockSurface(Ef_wave_surface);
+    SDL_UnlockSurface(tempbuf);
+
+    DrawImageToSurf(Ef_wave_surface,0,0,tempbuf);
+}
+
+
+
+
+
+void ProcessEffects()
+{
+    if (Effects & REG_EF_WAVE)
+        Rend_EF_Wave_Draw();
+}
 
 void Rend_Effect(SDL_Surface *srf)//test-wave effect
 {
@@ -1200,4 +1387,29 @@ if (ss%100 == 0)
    // SDL_FreeSurface(am);
 
 
+}
+
+
+struct_action_res *rgn_CreateRegion()
+{
+    struct_action_res *tmp;
+    tmp = ScrSys_CreateActRes(NODE_TYPE_REGION);
+
+    tmp->nodes.tty_text = new (struct_ttytext);
+    tmp->nodes.tty_text->delay = 0;
+    txt_init_txt_struct(&tmp->nodes.tty_text->style);
+    tmp->nodes.tty_text->fnt = NULL;
+    tmp->nodes.tty_text->x = 0;
+    tmp->nodes.tty_text->y = 0;
+    tmp->nodes.tty_text->w = 0;
+    tmp->nodes.tty_text->h = 0;
+    tmp->nodes.tty_text->txtbuf = NULL;
+    tmp->nodes.tty_text->txtpos = 0;
+    tmp->nodes.tty_text->img = NULL;
+    tmp->nodes.tty_text->nexttime =0;
+    tmp->nodes.tty_text->dx = 0;
+    tmp->nodes.tty_text->dy = 0;
+    tmp->nodes.tty_text->txtsize = 0;
+
+    return tmp;
 }

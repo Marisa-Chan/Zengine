@@ -44,6 +44,7 @@ void Rend_tilt_SetTable();
 void Rend_tilt_SetAngle(float angle);
 void Rend_tilt_SetLinscale(float linscale);
 void Rend_DrawTilt();
+void Rend_DrawTilt_pre();
 
 float Rend_GetRendererAngle();
 float Rend_GetRendererLinscale();
@@ -105,7 +106,8 @@ int32_t Rend_ProcessDistortNode(struct_action_res *nod);
 int32_t Rend_DeleteDistortNode(struct_action_res *nod);
 
 
-
+void ProcessEffects();
+void Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd);
 
 
 void Rend_Effect(SDL_Surface *srf);//test-wave effect

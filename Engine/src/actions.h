@@ -44,4 +44,5 @@ int action_quit(char *params, int aSlot , pzllst *owner);
 int action_rotate_to(char *params, int aSlot , pzllst *owner);
 int action_distort(char *params, int aSlot , pzllst *owner);
 int action_preferences(char *params, int aSlot , pzllst *owner);
+int action_region(char *params, int aSlot , pzllst *owner);
 #endif // ACTIONS_H_INCLUDED
