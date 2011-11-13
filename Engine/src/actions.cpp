@@ -1432,19 +1432,19 @@ int action_region(char *params, int aSlot , pzllst *owner)
     {
         switch(type)
         {
-            case 0: //water affect
+            case 0: //water effect
+	    {
+            struct_action_res *nod = new (struct_action_res);
+            nod->nodes.node_region = 0;
 
-//            struct_action_res *nod = new (struct_action_res);
-//            nod->nodes.node_region = 0;
-//
-//            nod->slot = aSlot;
-//            nod->owner = owner;
-//            nod->node_type = NODE_TYPE_REGION;
-//            nod->need_delete     = false;
-//
-//            setGNode(aSlot, nod);
-//
-//            ScrSys_AddToActResList(nod);
+            nod->slot = aSlot;
+            nod->owner = owner;
+            nod->node_type = NODE_TYPE_REGION;
+            nod->need_delete     = false;
+
+            setGNode(aSlot, nod);
+
+            ScrSys_AddToActResList(nod);
 
             int32_t s_x,s_y;
             int32_t frames;
@@ -1456,10 +1456,22 @@ int action_region(char *params, int aSlot , pzllst *owner)
 
             Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
 
-
+            }
             break;
 
             case 1: //lightning effect
+
+//	    struct_action_res *nod = new (struct_action_res);
+//            nod->nodes.node_region = 1;
+
+//            nod->slot = aSlot;
+//            nod->owner = owner;
+//            nod->node_type = NODE_TYPE_REGION;
+//            nod->need_delete     = false;
+
+//            setGNode(aSlot, nod);
+
+//            ScrSys_AddToActResList(nod);
 
 
             break;

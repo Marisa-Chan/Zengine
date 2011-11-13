@@ -120,12 +120,12 @@ struct struct_action_res
         animnode        *node_animpre;
         anim_preplay_node *node_animpreplay;
         struct_syncnode *node_sync;
-        int          node_timer;
+        int32_t          node_timer;
         struct_ttytext  *tty_text;
         struct_distort  *distort;
 
-        int          node_pantracking;
-        int          node_region;
+        int32_t          node_pantracking;
+        int32_t          node_region;
         void        *node_unknow;
     } nodes;
     bool       need_delete;

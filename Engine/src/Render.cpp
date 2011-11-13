@@ -1389,27 +1389,3 @@ if (ss%100 == 0)
 
 }
 
-
-struct_action_res *rgn_CreateRegion()
-{
-    struct_action_res *tmp;
-    tmp = ScrSys_CreateActRes(NODE_TYPE_REGION);
-
-    tmp->nodes.tty_text = new (struct_ttytext);
-    tmp->nodes.tty_text->delay = 0;
-    txt_init_txt_struct(&tmp->nodes.tty_text->style);
-    tmp->nodes.tty_text->fnt = NULL;
-    tmp->nodes.tty_text->x = 0;
-    tmp->nodes.tty_text->y = 0;
-    tmp->nodes.tty_text->w = 0;
-    tmp->nodes.tty_text->h = 0;
-    tmp->nodes.tty_text->txtbuf = NULL;
-    tmp->nodes.tty_text->txtpos = 0;
-    tmp->nodes.tty_text->img = NULL;
-    tmp->nodes.tty_text->nexttime =0;
-    tmp->nodes.tty_text->dx = 0;
-    tmp->nodes.tty_text->dy = 0;
-    tmp->nodes.tty_text->txtsize = 0;
-
-    return tmp;
-}

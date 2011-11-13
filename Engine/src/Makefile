@@ -25,7 +25,8 @@ OBJS =  \
 	anims.cpp\
 	menu.cpp\
 	Subtitles.cpp\
-	Text.cpp
+	Text.cpp\
+	Optimiz.cpp
 	
 WINOBJ = \
 	win_funct.cpp
