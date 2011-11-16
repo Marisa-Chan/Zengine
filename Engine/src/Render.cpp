@@ -24,11 +24,9 @@ int32_t RenderDelay = 0;
 
 
 
-#define REG_EF_WAVE  1
-#define REG_EF_LIGH  2
-#define REG_EF_9     4
 
-uint8_t Effects = 0;
+
+struct_effect *Effects[EFFECTS_MAX_CNT];
 
 
 struct xy
@@ -146,13 +144,13 @@ void Rend_InitGraphics(bool fullscreen, char *fontsdir)
     viewportbuf = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
 
-
     Mouse_LoadCursors();
 
     SDL_ShowCursor(SDL_DISABLE);
 
     view_X = getdirectvar(SLOT_VIEW_POS);
 
+    Effects_Init();
 }
 
 void Rend_SwitchFullscreen()
@@ -652,7 +650,7 @@ void Rend_RenderFunc()
     Ctrl_DrawControls();
 
     //effect-processor
-    ProcessEffects();
+    Effects_Process();
 
 
     //Apply renderer distortion
@@ -1106,49 +1104,45 @@ void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y)
 
 
 
-float phase = 0;
-SDL_Surface *am = NULL;
-
-int ss=0;
 
 
 
-
-int32_t Ef_wave_frame       = 0;
-int32_t Ef_wave_frame_cnt   = 0;
-int32_t Ef_wave_delay       = 100;
-int32_t Ef_wave_time        = 0;
-int8_t  **Ef_wave_ampls     = NULL;
-SDL_Surface *Ef_wave_surface    = NULL;
-//int32_t Ef_wave_scale_x     = 1;
-//int32_t Ef_wave_scale_y     = 1;
-//float   Ef_wave_wave_ln     = 1.0;
-//float   Ef_wave_wave_ln     = 1.0;
-
-
-
-void Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd)
+int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd)
 {
 
-    Effects |= REG_EF_WAVE;
+//    Effects |= REG_EF_WAVE;
 
-    if (Ef_wave_ampls)
+    int32_t eftmp = Effects_AddEffect(EFFECT_WAVE);
+
+    if (eftmp == -1)
+        return -1;
+
+    struct_effect *ef = Effects_GetEf(eftmp);
+
+    if (ef == NULL)
     {
-        for(int32_t i=0; i<Ef_wave_frame_cnt; i++)
-            free(Ef_wave_ampls[i]);
-        free(Ef_wave_ampls);
+        Effects_Delete(eftmp);
+        return -1;
     }
 
-    if (!Ef_wave_surface)
-        Ef_wave_surface = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
-    Ef_wave_frame = -1;
-    Ef_wave_frame_cnt = frames;
+    if (ef->effect.ef0.ampls)
+    {
+        for(int32_t i=0; i<ef->effect.ef0.frame_cnt; i++)
+            free(ef->effect.ef0.ampls[i]);
+        free(ef->effect.ef0.ampls);
+    }
 
-    Ef_wave_delay = delay;
-    Ef_wave_time  = 0;
+    if (!ef->effect.ef0.surface)
+        ef->effect.ef0.surface = CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
 
-    Ef_wave_ampls = (int8_t **)malloc(frames * sizeof(int8_t *));
+    ef->effect.ef0.frame = -1;
+    ef->effect.ef0.frame_cnt = frames;
+
+    ef->effect.ef0.delay = delay;
+    ef->effect.ef0.time  = 0;
+
+    ef->effect.ef0.ampls = (int8_t **)malloc(frames * sizeof(int8_t *));
 
     int32_t frmsize = GAMESCREEN_H_2 * GAMESCREEN_W_2;
 
@@ -1157,9 +1151,9 @@ void Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y,
     int32_t w_4 = GAMESCREEN_W / 4;
     int32_t h_4 = GAMESCREEN_H / 4;
 
-    for(int32_t i=0; i<Ef_wave_frame_cnt; i++)
+    for(int32_t i=0; i<ef->effect.ef0.frame_cnt; i++)
     {
-        Ef_wave_ampls[i] = (int8_t *)malloc(frmsize*sizeof(int8_t));
+        ef->effect.ef0.ampls[i] = (int8_t *)malloc(frmsize*sizeof(int8_t));
 
         for(int y=0;y<GAMESCREEN_H_2;y++)
             for(int x=0;x<GAMESCREEN_W_2;x++)
@@ -1167,40 +1161,40 @@ void Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y,
                 int32_t dx = (x - w_4);
                 int32_t dy = (y - h_4);
 
-                Ef_wave_ampls[i][x+y*GAMESCREEN_W_2] = apml * fastSin ( fastSqrt(dx * dx / (float)s_x + dy * dy / (float)s_y)/ (-waveln * 3.1415926) + phase);;
+                ef->effect.ef0.ampls[i][x+y*GAMESCREEN_W_2] = apml * fastSin ( fastSqrt(dx * dx / (float)s_x + dy * dy / (float)s_y)/ (-waveln * 3.1415926) + phase);;
             }
         phase += spd;
     }
 
 }
 
-void Rend_EF_Wave_Draw()
+void Rend_EF_Wave_Draw(struct_effect *ef)
 {
-    if (!Ef_wave_surface)
+    if (!ef->effect.ef0.surface)
         return;
 
-    Ef_wave_time -= GetDTime();
+    ef->effect.ef0.time -= GetDTime();
 
-    if (Ef_wave_time<0)
+    if (ef->effect.ef0.time<0)
     {
-        Ef_wave_time = Ef_wave_delay;
-        Ef_wave_frame++;
-        if (Ef_wave_frame >= Ef_wave_frame_cnt)
-            Ef_wave_frame = 0;
+        ef->effect.ef0.time = ef->effect.ef0.delay;
+        ef->effect.ef0.frame++;
+        if (ef->effect.ef0.frame >= ef->effect.ef0.frame_cnt)
+            ef->effect.ef0.frame = 0;
     }
 
-    SDL_LockSurface(Ef_wave_surface);
+    SDL_LockSurface(ef->effect.ef0.surface);
     SDL_LockSurface(tempbuf);
 
     for(int y=0;y<GAMESCREEN_H_2;y++)
     {
-        int32_t *abc  = ((int32_t *)Ef_wave_surface->pixels) + y*GAMESCREEN_W;
-        int32_t *abc2 = ((int32_t *)Ef_wave_surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W;
-        int32_t *abc3 = ((int32_t *)Ef_wave_surface->pixels) + y*GAMESCREEN_W + GAMESCREEN_W_2;
-        int32_t *abc4 = ((int32_t *)Ef_wave_surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W + GAMESCREEN_W_2;
+        int32_t *abc  = ((int32_t *)ef->effect.ef0.surface->pixels) + y*GAMESCREEN_W;
+        int32_t *abc2 = ((int32_t *)ef->effect.ef0.surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W;
+        int32_t *abc3 = ((int32_t *)ef->effect.ef0.surface->pixels) + y*GAMESCREEN_W + GAMESCREEN_W_2;
+        int32_t *abc4 = ((int32_t *)ef->effect.ef0.surface->pixels) + (y+GAMESCREEN_H_2)*GAMESCREEN_W + GAMESCREEN_W_2;
         for(int x=0;x<GAMESCREEN_W_2;x++)
         {
-            int8_t amnt = Ef_wave_ampls[Ef_wave_frame][x+y*GAMESCREEN_W_2];
+            int8_t amnt = ef->effect.ef0.ampls[ef->effect.ef0.frame][x+y*GAMESCREEN_W_2];
             int32_t n_x = x+amnt;
             int32_t n_y = y+amnt;
 
@@ -1260,132 +1254,140 @@ void Rend_EF_Wave_Draw()
         }
     }
 
-    SDL_UnlockSurface(Ef_wave_surface);
+    SDL_UnlockSurface(ef->effect.ef0.surface);
     SDL_UnlockSurface(tempbuf);
 
-    DrawImageToSurf(Ef_wave_surface,0,0,tempbuf);
+    DrawImageToSurf(ef->effect.ef0.surface,0,0,tempbuf);
 }
 
 
-
-
-
-void ProcessEffects()
+//Function used to get region for apply post-process effects
+//returns 0 if postprocessing region is out of screen
+//returns 1 if region visable, and copy this part to *dst surface.
+int8_t Rend_GetScreenPart(int32_t x, int32_t y, int32_t w, int32_t h, SDL_Surface *dst)
 {
-    if (Effects & REG_EF_WAVE)
-        Rend_EF_Wave_Draw();
-}
-
-void Rend_Effect(SDL_Surface *srf)//test-wave effect
-{
-    int tt=SDL_GetTicks();
-    if (!am)
-    am = CreateSurface(srf->w,srf->h);
-
-    SDL_LockSurface(am);
-    SDL_LockSurface(srf);
-
-    phase += 0.12;
-
-    int scalex=3;
-    int scaley=5;
-    float amplitude = 2;
-    float wavelength = 1.5;
-
-
-    int ww = (srf->w/2)/2;
-    int hh = (srf->h/2)/2;
-    int ww2 = srf->w/2;
-    int hh2 = srf->h/2;
-
-    for(int j=0;j<srf->h/2;j++)
+    if (Renderer == RENDER_FLAT)
     {
-        int32_t *abc = ((int32_t *)am->pixels) + j*srf->w;
-        int32_t *abc2 = ((int32_t *)am->pixels) + (j+hh2)*srf->w;
-        int32_t *abc3 = ((int32_t *)am->pixels) + j*srf->w+ww2;
-        int32_t *abc4 = ((int32_t *)am->pixels) + (j+hh2)*srf->w+ww2;
-        for(int i=0;i<srf->w/2;i++)
-        {
-            int dx = (i - ww);
-            int dy = (j - hh);
-            float d = fastSqrt(dx * dx / scalex + dy * dy / scaley);
+     //   if (x<0 )
+    }
+    else if (Renderer == RENDER_PANA)
+    {
 
-            float pi = 3.1415926;
-            int amnt = amplitude * fastSin (d / (-wavelength * pi) + phase);
+    }
+    else if (Renderer == RENDER_TILT)
+    {
 
-            //int needx = (dx + amnt) + ww;
-            //int needy = (dy + amnt) + hh;
-            int needx = amnt+i;
-            int needy = amnt+j;
+    }
 
-            if (needx < 0 )
-                needx=0;
-            if (needx >= srf->w )
-                needx=srf->w-1;
-            if (needy < 0 )
-                needy=0;
-            if (needy >= srf->h )
-                needy=srf->h-1;
-            *abc = ((int32_t *)srf->pixels)[(int)needx + (int)needy*srf->w];
-
-            needx = amnt+i;
-            needy = amnt+j;
-
-            if (needx+ww2 < 0 )
-                needx=0;
-            if (needx+ww2 >= srf->w )
-                needx=srf->w-1;
-            if (needy < 0 )
-                needy=0;
-            if (needy >= srf->h )
-                needy=srf->h-1;
-            *abc3 = ((int32_t *)srf->pixels)[(int)needx+ww2+ (int)needy*srf->w];
-
-            needx = amnt+i;
-            needy = amnt+j;
-
-            needy+=hh2;
-            if (needx < 0 )
-                needx=0;
-            if (needx >= srf->w )
-                needx=srf->w-1;
-            if (needy < 0 )
-                needy=0;
-            if (needy >= srf->h )
-                needy=srf->h-1;
-            *abc2 = ((int32_t *)srf->pixels)[needx+ needy*srf->w];
-
-            needx = amnt+i;
-            needy = amnt+j;
-
-            needy+=hh2;
-            if (needx+ww2 < 0 )
-                needx=0;
-            if (needx+ww2 >= srf->w )
-                needx=srf->w-1;
-            if (needy < 0 )
-                needy=0;
-            if (needy >= srf->h )
-                needy=srf->h-1;
-            *abc4 = ((int32_t *)srf->pixels)[(int)needx+ww2+ (int)(needy)*srf->w];
-            abc++;
-            abc2++;
-            abc3++;
-            abc4++;
-
-        }
-
-        }
-ss++;
-if (ss%100 == 0)
- printf("%d\n",SDL_GetTicks()-tt);
-
-    SDL_UnlockSurface(am);
-    SDL_UnlockSurface(srf);
-
-    DrawImageToSurf(am,0,0,srf);
-   // SDL_FreeSurface(am);
-
-
+    return 0;
 }
+
+
+
+
+void Effects_Init()
+{
+    for (int32_t i=0; i<EFFECTS_MAX_CNT; i++)
+        Effects[i] = NULL;
+}
+
+
+
+void Effects_Process()
+{
+    for (int32_t i=0; i<EFFECTS_MAX_CNT; i++)
+        if (Effects[i] != NULL)
+        {
+            if (Effects[i]->type == EFFECT_WAVE)
+                Rend_EF_Wave_Draw(Effects[i]);
+
+            //if (Effects[i]->type == EFFECT_LIGH)
+
+            //if (Effects[i]->type == EFFECT_9)
+
+        }
+}
+
+int32_t Effects_FindFree()
+{
+    int32_t tmp = -1;
+
+    for (int32_t i=0; i<EFFECTS_MAX_CNT; i++)
+        if (Effects[i] == NULL)
+        {
+            tmp = i;
+            break;
+        }
+    return tmp;
+}
+
+int32_t Effects_AddEffect(int32_t type)
+{
+    int32_t s = Effects_FindFree();
+
+    if (s == -1)
+        return -1;
+
+    Effects[s] = new(struct_effect);
+    Effects[s]->type = type;
+    if (type == EFFECT_WAVE)
+    {
+        Effects[s]->effect.ef0.ampls = NULL;
+        Effects[s]->effect.ef0.delay = 100;
+        Effects[s]->effect.ef0.frame = 0;
+        Effects[s]->effect.ef0.frame_cnt = 0;
+        Effects[s]->effect.ef0.surface = NULL;
+        Effects[s]->effect.ef0.time  = 0;
+    }
+    else if (type == EFFECT_LIGH)
+    {
+
+    }
+    else if (type == EFFECT_9)
+    {
+
+    }
+    return s;
+}
+
+void Effects_Delete(uint32_t index)
+{
+    if (index < EFFECTS_MAX_CNT)
+        if (Effects[index] != NULL)
+        {
+            delete Effects[index];
+            Effects[index] = NULL;
+        }
+}
+
+struct_effect * Effects_GetEf(uint32_t index)
+{
+    if (index < EFFECTS_MAX_CNT)
+        return Effects[index];
+    else
+        return NULL;
+}
+
+
+int Rend_deleteRegion(struct_action_res *nod)
+{
+    if (nod->node_type != NODE_TYPE_REGION)
+        return NODE_RET_NO;
+
+
+    if (nod->nodes.node_region != -1)
+        Effects_Delete(nod->nodes.node_region);
+
+    if (nod->slot > 0)
+    {
+        SetgVarInt(nod->slot,2);
+        setGNode(nod->slot,NULL);
+    }
+
+    delete nod;
+
+    return NODE_RET_DELETE;
+}
+
+
 

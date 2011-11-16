@@ -225,4 +225,6 @@
 #define CHANGELOCATIONDELAY 2
 #define MINIBUFSZ           32
 
+#define EFFECTS_MAX_CNT     32
+
 #endif // CONFIG_H_INCLUDED

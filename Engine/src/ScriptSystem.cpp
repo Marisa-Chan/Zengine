@@ -799,6 +799,9 @@ void ScrSys_ProcessAllRes()
             case NODE_TYPE_DISTORT:
                 result = Rend_ProcessDistortNode(nod);
                 break;
+            case NODE_TYPE_REGION:
+                result = NODE_RET_OK;
+                break;
 
             default:
                 result=NODE_RET_OK;
@@ -865,6 +868,9 @@ int ScrSys_DeleteNode(struct_action_res *nod)
         break;
     case NODE_TYPE_DISTORT:
         return Rend_DeleteDistortNode(nod);
+        break;
+    case NODE_TYPE_REGION:
+        return Rend_deleteRegion(nod);
         break;
     }
 

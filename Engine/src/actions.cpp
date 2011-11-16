@@ -1435,7 +1435,6 @@ int action_region(char *params, int aSlot , pzllst *owner)
             case 0: //water effect
 	    {
             struct_action_res *nod = new (struct_action_res);
-            nod->nodes.node_region = 0;
 
             nod->slot = aSlot;
             nod->owner = owner;
@@ -1454,7 +1453,7 @@ int action_region(char *params, int aSlot , pzllst *owner)
 
             sscanf(addition,"%d,%d,%d,%f,%f,%f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
 
-            Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
+            nod->nodes.node_region = Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
 
             }
             break;

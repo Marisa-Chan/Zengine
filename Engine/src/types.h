@@ -15,5 +15,7 @@ struct struct_SubRect;
 struct struct_one_subtitle;
 struct struct_subtitles;
 
+struct struct_effect;
+
 struct ctrlnode;
 #endif
