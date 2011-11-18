@@ -1430,10 +1430,12 @@ int action_region(char *params, int aSlot , pzllst *owner)
 
     if (sscanf(params,"%s %d %d %d %d %d %d %d %d %s",art,&x,&y,&w,&h,&delay,&type,&unk1,&unk2,addition)== 10 )
     {
+        w-=(x-1);
+        h-=(y-1);
         switch(type)
         {
             case 0: //water effect
-	    {
+            {
             struct_action_res *nod = new (struct_action_res);
 
             nod->slot = aSlot;
@@ -1459,19 +1461,25 @@ int action_region(char *params, int aSlot , pzllst *owner)
             break;
 
             case 1: //lightning effect
+            {
+            struct_action_res *nod = new (struct_action_res);
 
-//	    struct_action_res *nod = new (struct_action_res);
-//            nod->nodes.node_region = 1;
+            nod->slot = aSlot;
+            nod->owner = owner;
+            nod->node_type = NODE_TYPE_REGION;
+            nod->need_delete     = false;
 
-//            nod->slot = aSlot;
-//            nod->owner = owner;
-//            nod->node_type = NODE_TYPE_REGION;
-//            nod->need_delete     = false;
+            setGNode(aSlot, nod);
 
-//            setGNode(aSlot, nod);
+            ScrSys_AddToActResList(nod);
 
-//            ScrSys_AddToActResList(nod);
+            int32_t d;
 
+            sscanf(addition,"%d",&d);
+
+            nod->nodes.node_region = Rend_EF_Light_Setup(art,x,y,w,h,delay,d);
+
+            }
 
             break;
 

@@ -107,6 +107,8 @@ int32_t Rend_DeleteDistortNode(struct_action_res *nod);
 int Rend_deleteRegion(struct_action_res *nod);
 
 
+int8_t Rend_GetScreenPart(int32_t *x, int32_t *y, int32_t w, int32_t h, SDL_Surface *dst);
+
 
 /***************Effects section******************/
 
@@ -120,18 +122,19 @@ int32_t Effects_FindFree();
 void Effects_Delete(uint32_t index);
 struct_effect * Effects_GetEf(uint32_t index);
 int32_t Effects_AddEffect(int32_t type);
+int32_t Effects_GetColor(uint32_t x, uint32_t y);
 
 int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd);
+int32_t Rend_EF_Light_Setup(char *string, int32_t x, int32_t y, int32_t w, int32_t h, int32_t delay,int32_t steps);
 
 void Rend_Effect(SDL_Surface *srf);//test-wave effect
+
 
 
 struct effect0 //water
 {
     int32_t frame;
     int32_t frame_cnt;
-    int32_t delay;
-    int32_t time;
     int8_t  **ampls;
     SDL_Surface *surface;
 };
@@ -144,11 +147,16 @@ struct effect1 //lightning
     int32_t x;
     int32_t y;
     int8_t  sign;
+    int32_t stp;
+    int32_t maxstp;
+    SDL_Surface *surface;
 };
 
 struct struct_effect
 {
     int32_t type;
+    int32_t delay;
+    int32_t time;
     union effect
     {
         effect0 ef0;

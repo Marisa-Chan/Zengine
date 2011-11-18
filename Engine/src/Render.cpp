@@ -1101,11 +1101,231 @@ void Rend_DrawScalerToGamescr(scaler *scl,int16_t x, int16_t y)
 
 
 
+int32_t Effects_GetColor(uint32_t x, uint32_t y)
+{
+    int32_t color = 0;
+
+    SDL_LockSurface(scrbuf);
+    if (GAME_BPP == 32)
+    {
+        if (x < scrbuf->w && y < scrbuf->h)
+        {
+            int32_t *pixels = (int32_t *)scrbuf->pixels;
+
+            color = pixels[scrbuf->w*y + x];
+        }
+    }
+    else if (GAME_BPP == 16)
+    {
+        if (x < scrbuf->w && y < scrbuf->h)
+        {
+            int16_t *pixels = (int16_t *)scrbuf->pixels;
+
+            color = pixels[scrbuf->w*y + x];
+        }
+    }
+    else
+    {
+        printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+        //exit()
+    }
+    SDL_UnlockSurface(scrbuf);
+
+    return color;
+}
+
+int8_t *Effects_Map_Useart(int32_t color, int32_t color_dlta, int32_t x, int32_t y, int32_t w, int32_t h)
+{
+    int8_t *tmp = (int8_t *)malloc(w*h);
+    memset(tmp,0,w*h);
+
+    SDL_LockSurface(scrbuf);
+    if (GAME_BPP == 32)
+    {
+        int32_t * scrn = (int32_t *)scrbuf->pixels;
+        for (int32_t j=y; j<y+h; j++)
+            for (int32_t i=x; i<x+w; i++)
+            {
+                if (i>=0 && i<scrbuf->w && j>=0 && j<scrbuf->h)
+                    //if ((color - color_dlta) < scrn[i+j*scrbuf->w] && (color + color_dlta) < scrn[i+j*scrbuf->w])
+                    if ((color - color_dlta) <= scrn[i+j*scrbuf->w])
+                        tmp[(i-x)+(j-y)*w] = 1;
+            }
+    }
+    else if (GAME_BPP == 16)
+    {
+        int16_t * scrn = (int16_t *)scrbuf->pixels;
+        for (int32_t j=y; j<y+h; j++)
+            for (int32_t i=x; i<x+w; i++)
+            {
+                if (i>=0 && i<scrbuf->w && j>=0 && j<scrbuf->h)
+                    if ((color - color_dlta) < scrn[i+j*scrbuf->w] && (color + color_dlta) > scrn[i+j*scrbuf->w])
+                        tmp[(i-x)+(j-y)*w] = 1;
+            }
+    }
+    else
+    {
+        printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+    }
+    SDL_UnlockSurface(scrbuf);
+
+    return tmp;
+}
+
+int32_t Rend_EF_Light_Setup(char *string, int32_t x, int32_t y, int32_t w, int32_t h, int32_t delay,int32_t steps)
+{
+    int32_t eftmp = Effects_AddEffect(EFFECT_LIGH);
+
+    if (eftmp == -1)
+        return -1;
+
+    struct_effect *ef = Effects_GetEf(eftmp);
+
+    if (ef == NULL)
+    {
+        Effects_Delete(eftmp);
+        return -1;
+    }
+
+    if (strCMP(string,"useart") == 0)
+    {
+        int32_t xx,yy,dlt;
+        sscanf(string,"useart[%d,%d,%d]",&xx,&yy,&dlt);
+
+        int32_t color = Effects_GetColor(xx,yy);
+
+        if (GAME_BPP == 32)
+        {
+            dlt = FiveBitToEightBitLookupTable[(dlt & 0x1F)];
+            dlt = SDL_MapRGB(scrbuf->format,dlt,dlt,dlt);
+        }
+        else if (GAME_BPP == 16)
+            dlt = ((dlt & 0x1F) << 10) | ((dlt & 0x1F) << 5) | (dlt & 0x1F);
+        else
+            printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+
+        ef->effect.ef1.map = Effects_Map_Useart(color,dlt,x,y,w,h);
+    }
+    else
+    {
+        //WRITE CODE FOR IMAGES.... but not want %)
+    }
+
+    ef->delay = delay;
+    ef->time = 0;
+
+    ef->effect.ef1.x = x;
+    ef->effect.ef1.w = w;
+    ef->effect.ef1.y = y;
+    ef->effect.ef1.h = h;
+    ef->effect.ef1.sign = 1;
+
+    ef->effect.ef1.maxstp = steps;
+    ef->effect.ef1.stp = 0;
+
+    ef->effect.ef1.surface = CreateSurface(w,h);
+
+    return eftmp;
+}
+
+void Rend_EF_Light_Draw(struct_effect *ef)
+{
+    if (!ef->effect.ef1.surface)
+        return;
+
+    ef->time -= GetDTime();
+
+    if (ef->time<0)
+    {
+        ef->time = ef->delay;
+        ef->effect.ef1.stp += ef->effect.ef1.sign;
+        if (ef->effect.ef1.stp == ef->effect.ef1.maxstp*ef->effect.ef1.sign)
+            ef->effect.ef1.sign = -ef->effect.ef1.sign;
+    }
+
+    int32_t x = ef->effect.ef1.x;
+    int32_t y = ef->effect.ef1.y;
+    int32_t w = ef->effect.ef1.w;
+    int32_t h = ef->effect.ef1.h;
+
+    if (Rend_GetScreenPart(&x,&y,w,h,ef->effect.ef1.surface) == 1)
+    {
+        SDL_Surface *srf = ef->effect.ef1.surface;
+
+        SDL_LockSurface(srf);
+
+        if (GAME_BPP == 32)
+        {
+            int32_t *px = (int32_t *)srf->pixels;
+            int32_t stp = ef->effect.ef1.stp;
+
+            int32_t color = SDL_MapRGB(srf->format,8,8,8);
+
+            for (int32_t j = 0; j< srf->h; j++)
+                for (int32_t i = 0; i< srf->w; i++)
+                    if (ef->effect.ef1.map[i+j*w] == 1)
+                    {
+
+                        if (stp < 0)
+                        {
+                            int32_t pixel = px[i+j*w];
+                            int32_t min = (pixel >> 16) & 0xFF;
+                            if (((pixel >> 8) & 0xFF) < min)
+                                min = (pixel >> 8) & 0xFF;
+                            if ((pixel & 0xFF) < min)
+                                min = pixel & 0xFF;
+
+                            int32_t minstp = min >> 3; //  min / 8
+                            if (minstp > -stp)
+                            {
+                                px[i+j*w] += stp*color;
+                            }
+                            else
+                            {
+                                px[i+j*w] -= minstp*color;
+                            }
+
+                        }
+                        else
+                        {
+                            int32_t pixel = px[i+j*w];
+                            int32_t max = (pixel >> 16) & 0xFF;
+                            if (((pixel >> 8) & 0xFF) > max)
+                                max = (pixel >> 8) & 0xFF;
+                            if ((pixel & 0xFF) > max)
+                                max = pixel  & 0xFF;
+
+                            int32_t maxstp = (0xFF-max) >> 3; //  (255-max) / 8
+                            if (maxstp > stp)
+                            {
+                                px[i+j*w] += stp*color;
+                            }
+                            else
+                            {
+                                px[i+j*w] += maxstp*color;
+                            }
+
+                        }
+                    }
+        }
+        else if (GAME_BPP == 16)
+        {
+            int32_t stp = ef->effect.ef1.stp * 0x821;
+            int16_t *px = (int16_t *)srf->pixels;
+
+        }
+        else
+        {
+            printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+        }
+
+        SDL_UnlockSurface(srf);
+
+        DrawImageToSurf(srf,x,y,tempbuf);
+    }
 
 
-
-
-
+}
 
 int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd)
 {
@@ -1139,8 +1359,8 @@ int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s
     ef->effect.ef0.frame = -1;
     ef->effect.ef0.frame_cnt = frames;
 
-    ef->effect.ef0.delay = delay;
-    ef->effect.ef0.time  = 0;
+    ef->delay = delay;
+    ef->time  = 0;
 
     ef->effect.ef0.ampls = (int8_t **)malloc(frames * sizeof(int8_t *));
 
@@ -1166,6 +1386,7 @@ int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s
         phase += spd;
     }
 
+    return eftmp;
 }
 
 void Rend_EF_Wave_Draw(struct_effect *ef)
@@ -1173,11 +1394,11 @@ void Rend_EF_Wave_Draw(struct_effect *ef)
     if (!ef->effect.ef0.surface)
         return;
 
-    ef->effect.ef0.time -= GetDTime();
+    ef->time -= GetDTime();
 
-    if (ef->effect.ef0.time<0)
+    if (ef->time<0)
     {
-        ef->effect.ef0.time = ef->effect.ef0.delay;
+        ef->time = ef->delay;
         ef->effect.ef0.frame++;
         if (ef->effect.ef0.frame >= ef->effect.ef0.frame_cnt)
             ef->effect.ef0.frame = 0;
@@ -1262,16 +1483,58 @@ void Rend_EF_Wave_Draw(struct_effect *ef)
 
 
 //Function used to get region for apply post-process effects
-//returns 0 if postprocessing region is out of screen
-//returns 1 if region visable, and copy this part to *dst surface.
-int8_t Rend_GetScreenPart(int32_t x, int32_t y, int32_t w, int32_t h, SDL_Surface *dst)
+
+int8_t Rend_GetScreenPart(int32_t *x, int32_t *y, int32_t w, int32_t h, SDL_Surface *dst)
 {
+    if (dst != NULL)
+    {
+        SDL_Rect rct;
+        rct.x = *x;
+        rct.y = *y;
+        rct.w = w;
+        rct.h = h;
+
+        SDL_BlitSurface(scrbuf,&rct,dst,NULL);
+    }
+
     if (Renderer == RENDER_FLAT)
     {
-     //   if (x<0 )
+        if ((*x + w )< 0    ||
+            (*x)>= scrbuf->w ||
+            (*y + h )< 0    ||
+            (*y)>= scrbuf->h )
+            return 0;
+        else
+            return 1;
     }
     else if (Renderer == RENDER_PANA)
     {
+        if ((*y + h )< 0    ||
+            (*y)>= scrbuf->h )
+            return 0;
+        else
+        {
+            int32_t xx = *x % scrbuf->w;
+            if (xx<0)
+                xx = *x+scrbuf->w;
+
+            if (xx+w >(*view_X-GAMESCREEN_W_2) && xx <(*view_X+GAMESCREEN_W_2))
+            {
+                *x -= *view_X-GAMESCREEN_W_2;
+                return 1;
+            }
+
+//            if ((*view_X<GAMESCREEN_W_2) && (((GAMESCREEN_W_2-(*view_X+pana_PanaWidth))+xx+w) >= 0))
+//            {
+//                *x = (GAMESCREEN_W_2-(*view_X+pana_PanaWidth))+xx;
+//                return 1;
+//            }
+//            else if ((pana_PanaWidth-*view_X<GAMESCREEN_W_2) && (((GAMESCREEN_W_2-(*view_X+pana_PanaWidth))+xx) < GAMESCREEN_W))
+//            {
+//                *x = (GAMESCREEN_W_2-(*view_X+pana_PanaWidth))+xx;
+//                return 1;
+//            }
+        }
 
     }
     else if (Renderer == RENDER_TILT)
@@ -1301,7 +1564,8 @@ void Effects_Process()
             if (Effects[i]->type == EFFECT_WAVE)
                 Rend_EF_Wave_Draw(Effects[i]);
 
-            //if (Effects[i]->type == EFFECT_LIGH)
+            if (Effects[i]->type == EFFECT_LIGH)
+                Rend_EF_Light_Draw(Effects[i]);
 
             //if (Effects[i]->type == EFFECT_9)
 
@@ -1330,14 +1594,14 @@ int32_t Effects_AddEffect(int32_t type)
 
     Effects[s] = new(struct_effect);
     Effects[s]->type = type;
+    Effects[s]->delay = 100;
+    Effects[s]->time  = 0;
     if (type == EFFECT_WAVE)
     {
         Effects[s]->effect.ef0.ampls = NULL;
-        Effects[s]->effect.ef0.delay = 100;
         Effects[s]->effect.ef0.frame = 0;
         Effects[s]->effect.ef0.frame_cnt = 0;
         Effects[s]->effect.ef0.surface = NULL;
-        Effects[s]->effect.ef0.time  = 0;
     }
     else if (type == EFFECT_LIGH)
     {
@@ -1355,6 +1619,28 @@ void Effects_Delete(uint32_t index)
     if (index < EFFECTS_MAX_CNT)
         if (Effects[index] != NULL)
         {
+            switch(Effects[index]->type)
+            {
+                case EFFECT_WAVE:
+                    if (Effects[index]->effect.ef0.ampls)
+                    {
+                        for(int32_t i=0; i<Effects[index]->effect.ef0.frame_cnt; i++)
+                            free(Effects[index]->effect.ef0.ampls[i]);
+                        free(Effects[index]->effect.ef0.ampls);
+                    }
+                    if (Effects[index]->effect.ef0.surface)
+                        SDL_FreeSurface(Effects[index]->effect.ef0.surface);
+                break;
+                case EFFECT_LIGH:
+                    if (Effects[index]->effect.ef1.map)
+                        free(Effects[index]->effect.ef1.map);
+
+                    if (Effects[index]->effect.ef1.surface)
+                        SDL_FreeSurface(Effects[index]->effect.ef1.surface);
+                break;
+                case EFFECT_9:
+                break;
+            }
             delete Effects[index];
             Effects[index] = NULL;
         }
