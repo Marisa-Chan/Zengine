@@ -8,6 +8,27 @@
 #define RENDER_TILT 2
 
 
+#define COLOR_RGBA32(a,r,g,b) \
+        r = a & 0xFF; \
+        g = (a >> 8)  & 0xFF; \
+        b = (a >> 16) & 0xFF;
+
+#define COLOR_RGB16_565(a,r,g,b) \
+        r = a & 0x1F; \
+        g = (a >> 5 ) & 0x3F; \
+        b = (a >> 11) & 0x1F;
+
+#define COLOR_RGBA16_5551(a,r,g,b) \
+        r = a & 0x1F; \
+        g = (a >> 5 ) & 0x1F; \
+        b = (a >> 10) & 0x1F;
+
+#define COLOR_RGBA16_4444(a,r,g,b) \
+        r = a & 0xF; \
+        g = (a >> 4 ) & 0xF; \
+        b = (a >> 8) & 0xF;
+
+
 struct struct_SubRect
 {
     int32_t x;
@@ -126,6 +147,9 @@ int32_t Effects_GetColor(uint32_t x, uint32_t y);
 
 int32_t Rend_EF_Wave_Setup(int32_t delay, int32_t frames, int32_t s_x, int32_t s_y, float apml, float waveln, float spd);
 int32_t Rend_EF_Light_Setup(char *string, int32_t x, int32_t y, int32_t w, int32_t h, int32_t delay,int32_t steps);
+int32_t Rend_EF_9_Setup(char *mask, char *clouds, int32_t delay,int32_t x, int32_t y, int32_t w, int32_t h);
+void Rend_EF_9_Draw(struct_effect *ef);
+
 
 void Rend_Effect(SDL_Surface *srf);//test-wave effect
 
@@ -142,14 +166,19 @@ struct effect0 //water
 struct effect1 //lightning
 {
     int8_t  *map; // 0 - no; !0 - draw
-    int32_t w;
-    int32_t h;
-    int32_t x;
-    int32_t y;
     int8_t  sign;
     int32_t stp;
     int32_t maxstp;
     SDL_Surface *surface;
+};
+
+
+struct effect9
+{
+    int8_t *cloud_mod;
+    SDL_Surface *cloud;
+    SDL_Surface *mask;
+    SDL_Surface *mapping;
 };
 
 struct struct_effect
@@ -157,10 +186,15 @@ struct struct_effect
     int32_t type;
     int32_t delay;
     int32_t time;
+    int32_t w;
+    int32_t h;
+    int32_t x;
+    int32_t y;
     union effect
     {
         effect0 ef0;
         effect1 ef1;
+        effect9 ef9;
     } effect;
 };
 

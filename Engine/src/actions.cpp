@@ -413,10 +413,10 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
     if (mask2 != -1 && mask2 != 0)
     {
-    b=FiveBitToEightBitLookupTable[((mask2 >> 10 ) & 0x1F)];
-    g=FiveBitToEightBitLookupTable[((mask2 >> 5 ) & 0x1F)];
-    r=FiveBitToEightBitLookupTable[(mask2 & 0x1F)];
-    mask2=r | g<<8 | b<<16;
+        b=FiveBitToEightBitLookupTable[((mask2 >> 10 ) & 0x1F)];
+        g=FiveBitToEightBitLookupTable[((mask2 >> 5 ) & 0x1F)];
+        r=FiveBitToEightBitLookupTable[(mask2 & 0x1F)];
+        mask2=r | g<<8 | b<<16;
     }
 
     anim_LoadAnim(nod,file,0,0,mask2,GetIntVal(framerate));
@@ -736,7 +736,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     if (fil == NULL)
     {
 #ifdef TRACE
-    printf("          +-> file (%s) not found\n",chars);
+        printf("          +-> file (%s) not found\n",chars);
 #endif
         SetgVarInt(aSlot,2);
         return ACTION_NORMAL;
@@ -856,7 +856,7 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
     slot = GetIntVal(chars);
 
     //if (getGNode(slot) == NULL)
-        //return ACTION_NOT_FOUND;
+    //return ACTION_NOT_FOUND;
 
     MList *all = GetAction_res_List();
 
@@ -1434,8 +1434,8 @@ int action_region(char *params, int aSlot , pzllst *owner)
         h-=(y-1);
         switch(type)
         {
-            case 0: //water effect
-            {
+        case 0: //water effect
+        {
             struct_action_res *nod = new (struct_action_res);
 
             nod->slot = aSlot;
@@ -1450,18 +1450,18 @@ int action_region(char *params, int aSlot , pzllst *owner)
             int32_t s_x,s_y;
             int32_t frames;
             float amplitude,
-                  waveln,
-                  speed;
+            waveln,
+            speed;
 
             sscanf(addition,"%d,%d,%d,%f,%f,%f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
 
             nod->nodes.node_region = Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
 
-            }
-            break;
+        }
+        break;
 
-            case 1: //lightning effect
-            {
+        case 1: //lightning effect
+        {
             struct_action_res *nod = new (struct_action_res);
 
             nod->slot = aSlot;
@@ -1479,14 +1479,34 @@ int action_region(char *params, int aSlot , pzllst *owner)
 
             nod->nodes.node_region = Rend_EF_Light_Setup(art,x,y,w,h,delay,d);
 
-            }
+        }
 
-            break;
+        break;
 
-            case 9: //
+        case 9:
+        {
+            struct_action_res *nod = new (struct_action_res);
+
+            nod->slot = aSlot;
+            nod->owner = owner;
+            nod->node_type = NODE_TYPE_REGION;
+            nod->need_delete     = false;
+
+            setGNode(aSlot, nod);
+
+            ScrSys_AddToActResList(nod);
+
+            int32_t d,d2;
+            char buff[MINIBUFSZ];
+
+            sscanf(addition,"%d,%d,%s",&d,&d2,buff);
+
+            nod->nodes.node_region = Rend_EF_9_Setup(art,buff,delay,x,y,w,h);
+
+        }
 
 
-            break;
+        break;
         }
     }
 
