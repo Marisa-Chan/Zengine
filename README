@@ -7,19 +7,18 @@ Progress:     [###############-----]
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [##------------------]
-             0%         10%        100%
+Nemesis Code: [########------------]
+             0%         40%        100%
 
 
-
-*untga will rewrite original file. After work of untga convert result to png.
-
-*Use waver.pl for convert all sounds, but you must edit it's script for correct path's.
 
 
 VIDEO: 
 29.10.2010: http://www.youtube.com/watch?v=a88-Jgt5Grw
 07.09.2011: http://www.youtube.com/watch?v=FY-epYjNAk8
+
+Action:Region in action: http://www.youtube.com/watch?v=CuQVI2QteCM
+(water ripple, blinking and clouds in the sphere)
 
 Screenshots:
 http://img850.imageshack.us/i/45844953.png/
@@ -37,14 +36,12 @@ Thanks w8m (for "unraw" code reverse)
 [Actions Functions]
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
-action_region               :reverse it
 action_display_message      :shows text line in box from titler-control
 
 [Controls Objects]
 control_titler              :contain message lines
 control_fist                :shows fingers in one scene in the Nemesis
 control_paint               :shows easel canvas
-control_hotmovie            :don't know
 control_safe                :shows safe circle
 control_push_toggle(venus_id): reverse what means "venus_id"
 
