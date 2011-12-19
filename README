@@ -7,8 +7,8 @@ Progress:     [###############-----]
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [########------------]
-             0%         40%        100%
+Nemesis Code: [##########----------]
+             0%         50%        100%
 
 
 
@@ -42,7 +42,6 @@ action_display_message      :shows text line in box from titler-control
 control_titler              :contain message lines
 control_fist                :shows fingers in one scene in the Nemesis
 control_paint               :shows easel canvas
-control_safe                :shows safe circle
 control_push_toggle(venus_id): reverse what means "venus_id"
 
 

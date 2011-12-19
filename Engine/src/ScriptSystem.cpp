@@ -692,13 +692,22 @@ void AddStateBoxToStk(puzzlenode *pzl)
 
 void ShakeStateBox(uint32_t indx)
 {
+//Nemesis don't use statebox, but this engine does, well make for nemesis it non revert.
     if (StateBox[indx] != NULL)
     {
+        #ifdef GAME_NEMESIS
+        for (int i=0; i < StateBox[indx]->cnt; i++)
+        {
+            //if (examine_criterias(StateBox[indx]->nod[i])) //may cause bug's
+            AddStateBoxToStk(StateBox[indx]->nod[i]);
+        }
+        #else
         for (int i=StateBox[indx]->cnt-1; i >= 0; i--)
         {
             //if (examine_criterias(StateBox[indx]->nod[i])) //may cause bug's
             AddStateBoxToStk(StateBox[indx]->nod[i]);
         }
+        #endif
     }
 }
 

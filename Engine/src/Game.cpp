@@ -158,6 +158,12 @@ void EasterEggsAndDebug()
             NeedToLoadScript  = true;
             SetNeedLocate('g', 'j', 't', 'm', 0);
         }
+
+        if (CheckKeyboardMessage("Q",1) )
+        {
+        //    printf("%d\n",GetgVarInt(6682));
+        //    printf("%d\n",GetgVarInt(6643));
+        }
     }
 }
 
@@ -230,12 +236,7 @@ void GameLoop()
         if (NeedToLoadScriptDelay <= 0)
         {
             NeedToLoadScript=false;
-            ScrSys_ChangeLocation(Need_Locate.World,
-                                  Need_Locate.Room,
-                                  Need_Locate.Node,
-                                  Need_Locate.View,
-                                  Need_Locate.X,
-                                  false);
+            ScrSys_ChangeLocation(Need_Locate.World,Need_Locate.Room,Need_Locate.Node,Need_Locate.View,Need_Locate.X, false);
             NeedToLoadScriptDelay = CHANGELOCATIONDELAY;
         }
         else

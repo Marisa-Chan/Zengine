@@ -8,6 +8,7 @@
 #define CTRL_SLOT     3
 #define CTRL_SAVE     4
 #define CTRL_LEVER    5
+#define CTRL_SAFE     6
 #define CTRL_PANA    10
 #define CTRL_FLAT    11
 #define CTRL_TILT    12
@@ -21,7 +22,7 @@ struct Rect
     int32_t h;
 };
 
-void __InitRect(Rect *rct);
+void InitRect(Rect *rct);
 
 
 struct pushnode
@@ -117,6 +118,25 @@ struct levernode
     int32_t autoseq_time; //time leave to next seq frame
 };
 
+struct safenode
+{
+    int16_t  num_states;
+    int16_t  cur_state;
+    animnode *anm;
+    int32_t  center_x;
+    int32_t  center_y;
+    Rect     rectangle;
+    int16_t  radius_inner;
+    int32_t  radius_inner_sq;
+    int16_t  radius_outer;
+    int32_t  radius_outer_sq;
+    int16_t  zero_pointer;
+    int16_t  start_pointer;
+    int32_t  cur_frame;
+    int32_t  to_frame;
+    int32_t  frame_time;
+};
+
 struct ctrlnode
 {
     int32_t slot;
@@ -128,6 +148,7 @@ struct ctrlnode
         inputnode    *inp;
         saveloadnode *svld;
         levernode    *lev;
+        safenode     *safe;
 
         void  *unknown;
     } node;
@@ -152,6 +173,9 @@ void control_push(ctrlnode *ct);
 void control_input(ctrlnode *ct);
 void control_save(ctrlnode *ct);
 void control_lever(ctrlnode *ct);
+
+void control_safe(ctrlnode *ct);
+void control_safe_draw(ctrlnode *ct);
 
 ctrlnode *GetControlByID(int32_t id);
 

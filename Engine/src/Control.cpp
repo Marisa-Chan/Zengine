@@ -1,5 +1,6 @@
 #include "System.h"
 #include <errno.h>
+#include <math.h>
 
 int FocusInput=0;
 bool pushChangeMouse=false;
@@ -21,8 +22,8 @@ inputnode * CreateInputNode()
 {
     inputnode *tmp = new(inputnode);
     tmp->rect = NULL;
-    __InitRect(&tmp->rectangle);
-    __InitRect(&tmp->hotspot);
+    InitRect(&tmp->rectangle);
+    InitRect(&tmp->hotspot);
     tmp->cursor = NULL;
     tmp->frame = 0;
     tmp->period = 0;
@@ -44,8 +45,8 @@ slotnode * CreateSlotNode()
     tmp->eligable_cnt = 0;
     tmp->eligible_objects = NULL;
     tmp->srf = NULL;
-    __InitRect(&tmp->rectangle);
-    __InitRect(&tmp->hotspot);
+    InitRect(&tmp->rectangle);
+    InitRect(&tmp->hotspot);
     tmp->flat = false;
     memset((void *)&tmp->distance_id,0,MINIBUFSZ);
     return tmp;
@@ -55,7 +56,7 @@ levernode * CreateLeverNode()
 {
     levernode *tmp = new(levernode);
     tmp->cursor = CURSOR_IDLE;
-    __InitRect(&tmp->AnimCoords);
+    InitRect(&tmp->AnimCoords);
     tmp->anm = NULL;
     tmp->curfrm = 0;
     tmp->delta_x = 0;
@@ -106,6 +107,26 @@ saveloadnode * CreateSaveNode()
     return tmp;
 }
 
+safenode * CreateSafeNode()
+{
+    safenode *tmp = new(safenode);
+
+    tmp->anm = NULL;
+    tmp->center_y  = 0;
+    tmp->center_x  = 0;
+    tmp->cur_state = 0;
+    tmp->num_states = 0;
+    tmp->radius_inner = 0;
+    tmp->radius_outer = 0;
+    tmp->radius_inner_sq = 0;
+    tmp->radius_outer_sq = 0;
+    tmp->cur_frame = 0;
+    tmp->to_frame = 0;
+    tmp->frame_time = 0;
+    InitRect(&tmp->rectangle);
+    return tmp;
+}
+
 ctrlnode *Ctrl_CreateNode(int type)
 {
     ctrlnode *tmp;
@@ -145,11 +166,16 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->node.lev = CreateLeverNode();
         tmp->func = control_lever;
         break;
+    case CTRL_SAFE:
+        tmp->type = CTRL_SAFE;
+        tmp->node.safe = CreateSafeNode();
+        tmp->func = control_safe;
+        break;
     };
     return tmp;
 }
 
-void __InitRect(Rect *rct)
+void InitRect(Rect *rct)
 {
     rct->h = 0;
     rct->w = 0;
@@ -297,6 +323,8 @@ void Ctrl_DrawControls()
             control_input_draw(nod);
         else if (nod->type == CTRL_LEVER)
             control_lever_draw(nod);
+        else if (nod->type == CTRL_SAFE)
+            control_safe_draw(nod);
 
         NextMList(ctrl);
     }
@@ -452,6 +480,94 @@ void control_slot(ctrlnode *ct)
 
         }
 
+    }
+}
+
+void control_safe(ctrlnode *ct)
+{
+    bool mousein=false;
+
+    if (!Rend_MouseInGamescr())
+        return;
+    safenode *safe = ct->node.safe;
+
+    int32_t mX = Rend_GetMouseGameX();
+    int32_t mY = Rend_GetMouseGameY();
+
+    if ( safe->rectangle.x                     <= mX &&\
+         safe->rectangle.x+safe->rectangle.w   >= mX &&\
+         safe->rectangle.y                     <= mY &&\
+         safe->rectangle.y+safe->rectangle.h   >= mY )
+    {
+        int32_t mR = (mX - safe->center_x) * (mX - safe->center_x) + (mY - safe->center_y) * (mY - safe->center_y);
+
+        if (mR < safe->radius_outer_sq &&\
+            mR > safe->radius_inner_sq)
+            mousein = true;
+    }
+
+    if (mousein)
+    {
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(CURSOR_ACTIVE);
+
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+            FlushMouseBtn(SDL_BUTTON_LEFT);
+
+            float raddeg = 57.29578;//180/3.1415926
+            float dd = atan2(mX - safe->center_x,mY - safe->center_y)*raddeg;
+
+            int32_t dp_state = 360 / safe->num_states;
+
+            int32_t m_state = (safe->num_states - ((((int32_t)dd + 540) % 360) / dp_state)) % safe->num_states;
+
+            int32_t v3 = (m_state + safe->cur_state - safe->zero_pointer + safe->num_states - 1 ) % safe->num_states;
+
+            int32_t dbl = safe->num_states * 2;
+
+            int32_t v11 = (dbl + v3) % safe->num_states;
+
+            int32_t v8 = (v11 + safe->num_states - safe->start_pointer) % safe->num_states;
+
+
+            safe->cur_state = v11;
+            safe->to_frame = v8;
+
+            SetgVarInt(ct->slot,v11);
+
+            printf("%d %d\n",ct->slot,GetgVarInt(ct->slot));
+
+        }
+
+    }
+
+
+
+}
+
+void control_safe_draw(ctrlnode *ct)
+{
+    safenode *safe = ct->node.safe;
+    if (safe->cur_frame == safe->to_frame)
+        return;
+
+    safe->frame_time -= GetDTime();
+
+    if (safe->frame_time <= 0)
+    {
+        if (safe->cur_frame < safe->to_frame)
+        {
+            safe->cur_frame++;
+            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->cur_frame+1);
+        }
+        else
+        {
+            safe->cur_frame--;
+            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->num_states*2 - safe->cur_frame + 1);
+        }
+
+        safe->frame_time = safe->anm->framerate;
     }
 }
 
@@ -1322,6 +1438,91 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
+int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
+{
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+
+    ctrlnode *ctnode  = Ctrl_CreateNode(CTRL_SAFE);
+    safenode *safe     = ctnode->node.safe;
+    ctnode->slot      = slot;
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"animation") == 0)
+        {
+            str = GetParams(str);
+
+            safe->anm = anim_CreateAnim();
+            anim_LoadAnim(safe->anm,str,0,0,0,0);
+        }
+        else if (strCMP(str,"rectangle") == 0)
+        {
+            str = GetParams(str);
+            sscanf(str,"%d %d %d %d",&safe->rectangle.x,&safe->rectangle.y,&safe->rectangle.w,&safe->rectangle.h);
+            safe->rectangle.w -= (safe->rectangle.x-1);
+            safe->rectangle.h -= (safe->rectangle.y-1);
+        }
+        else if (strCMP(str,"center") == 0)
+        {
+            str = GetParams(str);
+            sscanf(str,"%d %d",&safe->center_x,&safe->center_y);
+        }
+        else if (strCMP(str,"num_states") == 0)
+        {
+            str = GetParams(str);
+            safe->num_states = atoi(str);
+        }
+        else if (strCMP(str,"dial_inner_radius") == 0)
+        {
+            str = GetParams(str);
+            safe->radius_inner = atoi(str);
+            safe->radius_inner_sq = safe->radius_inner * safe->radius_inner;
+        }
+        else if (strCMP(str,"radius") == 0)
+        {
+            str = GetParams(str);
+            safe->radius_outer = atoi(str);
+            safe->radius_outer_sq = safe->radius_outer * safe->radius_outer;
+        }
+        else if (strCMP(str,"zero_radians_offset") == 0)
+        {
+            str = GetParams(str);
+            safe->zero_pointer = atoi(str);
+        }
+        else if (strCMP(str,"pointer_offset") == 0)
+        {
+            str = GetParams(str);
+            safe->start_pointer = atoi(str);
+            safe->cur_state = safe->start_pointer;
+        }
+        else if (strCMP(str,"cursor") == 0)
+        {
+            //not needed
+        }
+        else if (strCMP(str,"mirrored") == 0)
+        {
+            //not needed
+        }
+
+    }
+
+    if (good == 1)
+        AddToMList(controlst,ctnode);
+
+    return good;
+}
+
 int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 {
     int  good = 0;
@@ -1384,6 +1585,10 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     else if (strCMP(ctrltp,"lever")==0)
     {
         Parse_Control_Lever(controlst,fl,slot);
+    }
+    else if (strCMP(ctrltp,"safe")==0)
+    {
+        Parse_Control_Safe(controlst,fl,slot);
     }
 
     return good;
@@ -1450,6 +1655,13 @@ void ctrl_Delete_LeverNode(ctrlnode *nod)
     delete nod->node.lev;
 }
 
+void ctrl_Delete_SafeNode(ctrlnode *nod)
+{
+    if (nod->node.safe->anm != NULL)
+        anim_DeleteAnim(nod->node.safe->anm);
+    delete nod->node.safe;
+}
+
 
 void DeleteSelControl(ctrlnode *nod)
 {
@@ -1469,6 +1681,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_LEVER:
         ctrl_Delete_LeverNode(nod);
+        break;
+    case CTRL_SAFE:
+        ctrl_Delete_SafeNode(nod);
         break;
     }
 
@@ -1523,3 +1738,6 @@ ctrlnode *GetControlByID(int32_t id)
     return NULL;
 
 }
+
+
+
