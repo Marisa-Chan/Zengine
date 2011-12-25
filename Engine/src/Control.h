@@ -9,17 +9,27 @@
 #define CTRL_SAVE     4
 #define CTRL_LEVER    5
 #define CTRL_SAFE     6
-#define CTRL_PANA    10
-#define CTRL_FLAT    11
-#define CTRL_TILT    12
+#define CTRL_FIST     7
+#define CTRL_HOTMV    8
+#define CTRL_PANA     100
+#define CTRL_FLAT     101
+#define CTRL_TILT     102
 
 
 struct Rect
 {
     int32_t x;
     int32_t y;
+    union
+    {
     int32_t w;
+    int32_t x2;
+    };
+    union
+    {
     int32_t h;
+    int32_t y2;
+    };
 };
 
 void InitRect(Rect *rct);
@@ -137,6 +147,44 @@ struct safenode
     int32_t  frame_time;
 };
 
+struct fistnode
+{
+    uint32_t fiststatus;
+    uint8_t  fistnum;
+    int16_t  cursor;
+    struct   fists
+    {
+        int32_t num_box;
+        Rect boxes[CTRL_FIST_MAX_BOXES];
+    } fists[CTRL_FIST_MAX_FISTS];
+
+    struct   entries
+    {
+        uint32_t strt;
+        uint32_t send;
+        int32_t anm_str;
+        int32_t anm_end;
+        int32_t sound;
+    } entries[CTRL_FIST_MAX_ENTRS];
+
+    animnode *anm;
+    Rect     anm_rect;
+    int32_t  soundkey;
+};
+
+struct hotmvnode
+{
+    int32_t  num_frames;
+    int32_t  frame_time;
+    int32_t  cur_frame;
+    int32_t  rend_frame;
+    int32_t  cycle;
+    int32_t  num_cycles;
+    Rect    *frame_list;
+    animnode *anm;
+    Rect     rect;
+};
+
 struct ctrlnode
 {
     int32_t slot;
@@ -149,6 +197,8 @@ struct ctrlnode
         saveloadnode *svld;
         levernode    *lev;
         safenode     *safe;
+        fistnode     *fist;
+        hotmvnode    *hotmv;
 
         void  *unknown;
     } node;
@@ -176,6 +226,9 @@ void control_lever(ctrlnode *ct);
 
 void control_safe(ctrlnode *ct);
 void control_safe_draw(ctrlnode *ct);
+
+void control_hotmv(ctrlnode *ct);
+void control_hotmv_draw(ctrlnode *ct);
 
 ctrlnode *GetControlByID(int32_t id);
 

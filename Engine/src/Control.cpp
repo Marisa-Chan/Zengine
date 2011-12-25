@@ -52,6 +52,45 @@ slotnode * CreateSlotNode()
     return tmp;
 }
 
+fistnode * CreateFistNode()
+{
+    fistnode *tmp = new(fistnode);
+    tmp->cursor   = CURSOR_IDLE;
+    tmp->anm      = NULL;
+    tmp->soundkey = 0;
+    tmp->fiststatus = 0;
+    tmp->fistnum  = 0;
+    for (int32_t i=0; i<CTRL_FIST_MAX_FISTS;i++)
+        tmp->fists[i].num_box = 0;
+
+    for (int32_t i=0; i<CTRL_FIST_MAX_ENTRS;i++)
+    {
+        tmp->entries[i].anm_end = 0;
+        tmp->entries[i].anm_str = 0;
+        tmp->entries[i].sound   = 0;
+        tmp->entries[i].send    = 0;
+        tmp->entries[i].strt    = 0;
+    }
+
+    InitRect(&tmp->anm_rect);
+    return tmp;
+}
+
+hotmvnode * CreateHotMovieNode()
+{
+    hotmvnode *tmp = new(hotmvnode);
+    tmp->anm = NULL;
+    tmp->cycle = 0;
+    tmp->cur_frame = -1;
+    tmp->rend_frame = -1;
+    tmp->frame_list = NULL;
+    tmp->frame_time = 0;
+    tmp->num_cycles = 0;
+    tmp->num_frames = 0;
+    InitRect(&tmp->rect);
+    return tmp;
+}
+
 levernode * CreateLeverNode()
 {
     levernode *tmp = new(levernode);
@@ -170,6 +209,16 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->type = CTRL_SAFE;
         tmp->node.safe = CreateSafeNode();
         tmp->func = control_safe;
+        break;
+    case CTRL_FIST:
+        tmp->type = CTRL_FIST;
+        tmp->node.fist = CreateFistNode();
+//        tmp->func = control_fist;
+        break;
+    case CTRL_HOTMV:
+        tmp->type = CTRL_HOTMV;
+        tmp->node.hotmv = CreateHotMovieNode();
+        tmp->func = control_hotmv;
         break;
     };
     return tmp;
@@ -325,6 +374,8 @@ void Ctrl_DrawControls()
             control_lever_draw(nod);
         else if (nod->type == CTRL_SAFE)
             control_safe_draw(nod);
+        else if (nod->type == CTRL_HOTMV)
+            control_hotmv_draw(nod);
 
         NextMList(ctrl);
     }
@@ -483,6 +534,83 @@ void control_slot(ctrlnode *ct)
     }
 }
 
+void control_hotmv(ctrlnode *ct)
+{
+    bool mousein=false;
+
+    hotmvnode *hotm = ct->node.hotmv;
+
+    if (hotm->cycle < hotm->num_cycles)
+    {
+        hotm->frame_time-=GetDTime();
+        if (hotm->frame_time <= 0)
+        {
+            hotm->frame_time = hotm->anm->framerate;
+            hotm->cur_frame++;
+            if (hotm->cur_frame >= hotm->num_frames)
+            {
+                hotm->cycle++;
+                hotm->cur_frame = 0;
+                if (hotm->cycle == hotm->num_cycles)
+                {
+                    SetgVarInt(ct->slot,2);
+#ifdef TRACE
+                    printf("Max Cycles reached HotMov %d(Slot)\n",ct->slot);
+#endif
+                }
+            }
+        }
+    }
+
+    if (hotm->cycle < hotm->num_cycles)
+    {
+        if (!Rend_MouseInGamescr())
+            return;
+
+
+        int32_t mX = Rend_GetMouseGameX();
+        int32_t mY = Rend_GetMouseGameY();
+        int32_t curfr = hotm->cur_frame;
+
+        if (hotm->rect.x + hotm->frame_list[curfr].x    <= mX &&\
+            hotm->rect.x + hotm->frame_list[curfr].x2   >= mX &&\
+            hotm->rect.y + hotm->frame_list[curfr].y    <= mY &&\
+            hotm->rect.y + hotm->frame_list[curfr].y2   >= mY )
+            mousein = true;
+
+    if (mousein)
+    {
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(CURSOR_ACTIVE);
+
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+            FlushMouseBtn(SDL_BUTTON_LEFT);
+
+            SetgVarInt(ct->slot,1);
+
+#ifdef TRACE
+            printf("Pushed_HotMov %d(Slot)\n",ct->slot);
+#endif
+        }
+
+    }
+    }
+}
+
+void control_hotmv_draw(ctrlnode *ct)
+{
+    hotmvnode *hotm = ct->node.hotmv;
+    if (hotm->cur_frame == hotm->rend_frame)
+        return;
+
+    hotm->rend_frame = hotm->cur_frame;
+
+    if (hotm->cycle < hotm->num_cycles)
+        anim_RenderAnimFrame(hotm->anm, hotm->rect.x, hotm->rect.y, hotm->rect.w, hotm->rect.h , hotm->cur_frame);
+
+}
+
 void control_safe(ctrlnode *ct)
 {
     bool mousein=false;
@@ -535,8 +663,9 @@ void control_safe(ctrlnode *ct)
             safe->to_frame = v8;
 
             SetgVarInt(ct->slot,v11);
-
-            printf("%d %d\n",ct->slot,GetgVarInt(ct->slot));
+#ifdef TRACE
+            printf("Safe:%d(Slot) = %d\n",ct->slot,GetgVarInt(ct->slot));
+#endif
 
         }
 
@@ -999,6 +1128,93 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 }
 
 
+int Parse_Control_HotMov(MList *controlst, FILE *fl, uint32_t slot)
+{
+    char buf[FILE_LN_BUF];
+    char *str;
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_HOTMV);
+    hotmvnode *hotm = ctnode->node.hotmv;
+
+    AddToMList(controlst,ctnode);
+
+    ctnode->slot      = slot;
+    //SetDirectgVarInt(slot,0);
+
+    char filename[MINIBUFSZ];
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            break;
+        }
+        else if (strCMP(str,"hs_frame_list")==0)
+        {
+            str   = GetParams(str);
+            strcpy(filename,str);
+        }
+        else if (strCMP(str,"num_frames")==0)
+        {
+            str   = GetParams(str);
+            hotm->num_frames = atoi(str)+1;
+            hotm->frame_list = (Rect *)calloc(hotm->num_frames,sizeof(Rect));
+        }
+        else if (strCMP(str,"num_cycles")==0)
+        {
+            str   = GetParams(str);
+            hotm->num_cycles = atoi(str);
+        }
+        else if (strCMP(str,"animation")==0)
+        {
+            str   = GetParams(str);
+            char file[MINIBUFSZ];
+            sscanf(str,"%s",file);
+            hotm->anm = anim_CreateAnim();
+            anim_LoadAnim(hotm->anm,str,0,0,0,0);
+        }
+        else if (strCMP(str,"rectangle")==0)
+        {
+            str   = GetParams(str);
+            int32_t t1,t2,t3,t4;
+            sscanf(str,"%d %d %d %d",&t1,&t2,&t3,&t4);
+            hotm->rect.x = t1;
+            hotm->rect.y = t2;
+            hotm->rect.w = t3-t1+1;
+            hotm->rect.h = t4-t2+1;
+        }
+    }
+
+    char *descfile = GetFilePath(filename);
+
+    if (!descfile)
+        return 0; //FAIL
+
+    FILE *file2 = fopen(descfile,"rb");
+
+    while (!feof(file2))
+    {
+        fgets(buf,FILE_LN_BUF,file2);
+        int32_t t1,t2,t3,t4,tt;
+        sscanf(buf,"%d:%d %d %d %d~",&tt,&t1,&t2,&t3,&t4);
+        if (tt>=0 && tt<hotm->num_frames)
+        {
+            hotm->frame_list[tt].x = t1;
+            hotm->frame_list[tt].y = t2;
+            hotm->frame_list[tt].x2 = t3;
+            hotm->frame_list[tt].y2 = t4;
+        }
+    }
+
+
+    fclose(file2);
+
+    return 1;
+}
+
 int Parse_Control_Panorama(FILE *fl)
 {
     char  buf[FILE_LN_BUF];
@@ -1438,6 +1654,59 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
+int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
+{
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+
+    ctrlnode *ctnode  = Ctrl_CreateNode(CTRL_FIST);
+    fistnode *fist    = ctnode->node.fist;
+    ctnode->slot      = slot;
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"sound_key") == 0)
+        {
+            str = GetParams(str);
+            fist->soundkey = atoi(str);
+        }
+        else if (strCMP(str,"cursor") == 0)
+        {
+            str = GetParams(str);
+            fist->cursor = Mouse_GetCursorIndex(str);
+        }
+        else if (strCMP(str,"descfile") == 0)
+        {
+            str = GetParams(str);
+            char *pth = GetFilePath(str);
+
+            if (pth != NULL)
+            {
+                FILE *fil = fopen(pth,"rb");
+
+
+
+                fclose(fil);
+            }
+        }
+    }
+
+    if (good == 1)
+        AddToMList(controlst,ctnode);
+
+    return good;
+}
+
 int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
 {
     int good = 0;
@@ -1590,6 +1859,14 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     {
         Parse_Control_Safe(controlst,fl,slot);
     }
+    else if (strCMP(ctrltp,"fist")==0)
+    {
+        Parse_Control_Fist(controlst,fl,slot);
+    }
+    else if (strCMP(ctrltp,"hotmovie")==0)
+    {
+        Parse_Control_HotMov(controlst,fl,slot);
+    }
 
     return good;
 }
@@ -1662,6 +1939,14 @@ void ctrl_Delete_SafeNode(ctrlnode *nod)
     delete nod->node.safe;
 }
 
+void ctrl_Delete_HotmovNode(ctrlnode *nod)
+{
+    if (nod->node.hotmv->anm != NULL)
+        anim_DeleteAnim(nod->node.hotmv->anm);
+    if (nod->node.hotmv->frame_list != NULL)
+        free(nod->node.hotmv->frame_list);
+    delete nod->node.hotmv;
+}
 
 void DeleteSelControl(ctrlnode *nod)
 {
@@ -1684,6 +1969,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_SAFE:
         ctrl_Delete_SafeNode(nod);
+        break;
+    case CTRL_HOTMV:
+        ctrl_Delete_HotmovNode(nod);
         break;
     }
 
