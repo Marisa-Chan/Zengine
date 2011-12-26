@@ -152,12 +152,19 @@ struct fistnode
     uint32_t fiststatus;
     uint8_t  fistnum;
     int16_t  cursor;
-    struct   fists
+    int8_t   order;
+    struct   fists_up
     {
         int32_t num_box;
         Rect boxes[CTRL_FIST_MAX_BOXES];
-    } fists[CTRL_FIST_MAX_FISTS];
+    } fists_up[CTRL_FIST_MAX_FISTS];
+    struct   fists_dwn
+    {
+        int32_t num_box;
+        Rect boxes[CTRL_FIST_MAX_BOXES];
+    } fists_dwn[CTRL_FIST_MAX_FISTS];
 
+    int32_t num_entries;
     struct   entries
     {
         uint32_t strt;
@@ -170,6 +177,10 @@ struct fistnode
     animnode *anm;
     Rect     anm_rect;
     int32_t  soundkey;
+    int32_t  frame_cur;
+    int32_t  frame_end;
+    int32_t  frame_time;
+    int32_t  animation_id;
 };
 
 struct hotmvnode
@@ -226,6 +237,9 @@ void control_lever(ctrlnode *ct);
 
 void control_safe(ctrlnode *ct);
 void control_safe_draw(ctrlnode *ct);
+
+void control_fist(ctrlnode *ct);
+void control_fist_draw(ctrlnode *ct);
 
 void control_hotmv(ctrlnode *ct);
 void control_hotmv_draw(ctrlnode *ct);

@@ -59,10 +59,22 @@ fistnode * CreateFistNode()
     tmp->anm      = NULL;
     tmp->soundkey = 0;
     tmp->fiststatus = 0;
+    tmp->order    = 0;
     tmp->fistnum  = 0;
-    for (int32_t i=0; i<CTRL_FIST_MAX_FISTS;i++)
-        tmp->fists[i].num_box = 0;
 
+    tmp->frame_cur = -1;
+    tmp->frame_end = -1;
+    tmp->frame_time = 0;
+    tmp->animation_id = 0;
+
+    for (int32_t i=0; i<CTRL_FIST_MAX_FISTS;i++)
+    {
+        tmp->fists_up[i].num_box = 0;
+        tmp->fists_dwn[i].num_box = 0;
+    }
+
+
+    tmp->num_entries = 0;
     for (int32_t i=0; i<CTRL_FIST_MAX_ENTRS;i++)
     {
         tmp->entries[i].anm_end = 0;
@@ -213,7 +225,7 @@ ctrlnode *Ctrl_CreateNode(int type)
     case CTRL_FIST:
         tmp->type = CTRL_FIST;
         tmp->node.fist = CreateFistNode();
-//        tmp->func = control_fist;
+        tmp->func = control_fist;
         break;
     case CTRL_HOTMV:
         tmp->type = CTRL_HOTMV;
@@ -366,17 +378,22 @@ void Ctrl_DrawControls()
     while (!eofMList(ctrl))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(ctrl);
-        if (nod->type == CTRL_SLOT)
-            control_slot_draw(nod);
-        else if (nod->type == CTRL_INPUT)
-            control_input_draw(nod);
-        else if (nod->type == CTRL_LEVER)
-            control_lever_draw(nod);
-        else if (nod->type == CTRL_SAFE)
-            control_safe_draw(nod);
-        else if (nod->type == CTRL_HOTMV)
-            control_hotmv_draw(nod);
 
+        if (!(ScrSys_GetFlag(nod->slot) & FLAG_DISABLED))
+        {
+            if (nod->type == CTRL_SLOT)
+                control_slot_draw(nod);
+            else if (nod->type == CTRL_INPUT)
+                control_input_draw(nod);
+            else if (nod->type == CTRL_LEVER)
+                control_lever_draw(nod);
+            else if (nod->type == CTRL_SAFE)
+                control_safe_draw(nod);
+            else if (nod->type == CTRL_HOTMV)
+                control_hotmv_draw(nod);
+            else if (nod->type == CTRL_FIST)
+                control_fist_draw(nod);
+        }
         NextMList(ctrl);
     }
 }
@@ -532,6 +549,213 @@ void control_slot(ctrlnode *ct)
         }
 
     }
+}
+
+void control_fist(ctrlnode *ct)
+{
+    bool mousein=false;
+    fistnode *fist = ct->node.fist;
+    int32_t n_fist = -1;
+
+
+    if (!Rend_MouseInGamescr())
+            return;
+
+    int32_t mX = Rend_GetMouseGameX();
+    int32_t mY = Rend_GetMouseGameY();
+
+    if (fist->order != 0)
+    {
+        for(int32_t i=0;i<fist->fistnum;i++)
+        {
+            if (((fist->fiststatus >> i) & 1) == 1)
+            {
+                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                    if (fist->fists_dwn[i].boxes[j].x  <= mX &&\
+                        fist->fists_dwn[i].boxes[j].x2 >= mX &&\
+                        fist->fists_dwn[i].boxes[j].y  <= mY &&\
+                        fist->fists_dwn[i].boxes[j].y2 >= mY
+                       )
+                    {
+                        mousein = true;
+                        n_fist = i;
+                        break;
+                    }
+            }
+            else
+            {
+                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                    if (fist->fists_up[i].boxes[j].x  <= mX &&\
+                        fist->fists_up[i].boxes[j].x2 >= mX &&\
+                        fist->fists_up[i].boxes[j].y  <= mY &&\
+                        fist->fists_up[i].boxes[j].y2 >= mY
+                       )
+                    {
+                        mousein = true;
+                        n_fist = i;
+                        break;
+                    }
+            }
+
+            if (mousein)
+                break;
+
+        }
+    }
+    else
+    {
+        for(int32_t i=fist->fistnum-1;i>=0;i--)
+        {
+            if (((fist->fiststatus >> i) & 1) == 1)
+            {
+                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                    if (fist->fists_dwn[i].boxes[j].x  <= mX &&\
+                        fist->fists_dwn[i].boxes[j].x2 >= mX &&\
+                        fist->fists_dwn[i].boxes[j].y  <= mY &&\
+                        fist->fists_dwn[i].boxes[j].y2 >= mY
+                       )
+                    {
+                        mousein = true;
+                        n_fist = i;
+                        break;
+                    }
+            }
+            else
+            {
+                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                    if (fist->fists_up[i].boxes[j].x  <= mX &&\
+                        fist->fists_up[i].boxes[j].x2 >= mX &&\
+                        fist->fists_up[i].boxes[j].y  <= mY &&\
+                        fist->fists_up[i].boxes[j].y2 >= mY
+                       )
+                    {
+                        mousein = true;
+                        n_fist = i;
+                        break;
+                    }
+            }
+
+            if (mousein)
+                break;
+
+        }
+    }
+
+
+    if (mousein)
+    {
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(CURSOR_ACTIVE);
+
+        if (MouseUp(SDL_BUTTON_LEFT))
+        {
+            uint32_t old_status = fist->fiststatus;
+            fist->fiststatus ^= (1 << n_fist);
+
+            for(int32_t i=0; i<fist->num_entries; i++)
+                if (fist->entries[i].strt == old_status &&\
+                    fist->entries[i].send == fist->fiststatus)
+                {
+                    //printf("fist_seq %d \n",i);
+                    fist->frame_cur = fist->entries[i].anm_str;
+                    fist->frame_end = fist->entries[i].anm_end;
+                    fist->frame_time = 0;
+
+                    //printf("%d %d\n",fist->soundkey,fist->entries[i].sound);
+                    SetgVarInt(fist->animation_id,1);
+                    SetgVarInt(fist->soundkey, fist->entries[i].sound);
+                    break;
+                }
+
+            SetgVarInt(ct->slot,fist->fiststatus);
+        }
+    }
+
+
+
+
+}
+
+void control_fist_draw(ctrlnode *ct)
+{
+
+
+    fistnode *fist = ct->node.fist;
+
+   if (fist->frame_cur >= 0 && fist->frame_end >= 0)
+    if (fist->frame_cur <= fist->frame_end)
+    {
+        fist->frame_time -= GetDTime();
+
+        if (fist->frame_time <= 0)
+        {
+            fist->frame_time = fist->anm->framerate;
+
+            anim_RenderAnimFrame(fist->anm,fist->anm_rect.x,fist->anm_rect.y,
+                                           fist->anm->rel_w,fist->anm->rel_h,
+                                           fist->frame_cur);
+
+            fist->frame_cur++;
+            if (fist->frame_cur > fist->frame_end)
+                SetgVarInt(fist->animation_id, 2);
+
+        }
+
+    }
+
+   /* if (fist->order != 0)
+    {
+        for(int32_t i=0;i<fist->fistnum;i++)
+        {
+            if (((fist->fiststatus >> i) & 1) == 1)
+            {
+                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                    rectangleRGBA(Rend_GetGameScreen(),
+                                  fist->fists_dwn[i].boxes[j].x,
+                                  fist->fists_dwn[i].boxes[j].y,
+                                  fist->fists_dwn[i].boxes[j].x2,
+                                  fist->fists_dwn[i].boxes[j].y2,
+                                  255,0,0,255);
+            }
+            else
+            {
+                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                    rectangleRGBA(Rend_GetGameScreen(),
+                                  fist->fists_up[i].boxes[j].x,
+                                  fist->fists_up[i].boxes[j].y,
+                                  fist->fists_up[i].boxes[j].x2,
+                                  fist->fists_up[i].boxes[j].y2,
+                                  255,0,0,255);
+            }
+        }
+    }
+    else
+    {
+        for(int32_t i=fist->fistnum-1;i>=0;i--)
+        {
+            if (((fist->fiststatus >> i) & 1) == 1)
+            {
+                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                    rectangleRGBA(Rend_GetGameScreen(),
+                                  fist->fists_dwn[i].boxes[j].x,
+                                  fist->fists_dwn[i].boxes[j].y,
+                                  fist->fists_dwn[i].boxes[j].x2,
+                                  fist->fists_dwn[i].boxes[j].y2,
+                                  255,0,0,255);
+            }
+            else
+            {
+                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                    rectangleRGBA(Rend_GetGameScreen(),
+                                  fist->fists_up[i].boxes[j].x,
+                                  fist->fists_up[i].boxes[j].y,
+                                  fist->fists_up[i].boxes[j].x2,
+                                  fist->fists_up[i].boxes[j].y2,
+                                  255,0,0,255);
+            }
+        }
+    }*/
+
 }
 
 void control_hotmv(ctrlnode *ct)
@@ -1665,6 +1889,8 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
     fistnode *fist    = ctnode->node.fist;
     ctnode->slot      = slot;
 
+    char filename[MINIBUFSZ];
+
     while (!feof(fl))
     {
         fgets(buf,FILE_LN_BUF,fl);
@@ -1688,18 +1914,147 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"descfile") == 0)
         {
             str = GetParams(str);
+            strcpy(filename,str);
+
             char *pth = GetFilePath(str);
-
-            if (pth != NULL)
-            {
-                FILE *fil = fopen(pth,"rb");
-
-
-
-                fclose(fil);
-            }
+        }
+        else if (strCMP(str,"animation_id") == 0)
+        {
+            str = GetParams(str);
+            fist->animation_id = atoi(str);
         }
     }
+
+    char *pth = GetFilePath(filename);
+
+    if (pth != NULL)
+    {
+        FILE *fil = fopen(pth,"rb");
+
+        while(!feof(fil))
+        {
+            fgets(buf,FILE_LN_BUF,fil);
+            str = PrepareString(buf);
+            int32_t ln = strlen(str);
+            if (str[ln-1] == '~')
+                str[ln-1] = 0;
+
+            if (strCMP(str,"animation_id")==0)
+            {
+                //sscanf(str,"animation_id:%d",);
+            }
+            else if (strCMP(str,"animation")==0)
+            {
+                char minbuf[MINIBUFSZ];
+                sscanf(str,"animation:%s",minbuf);
+                fist->anm = anim_CreateAnim();
+                anim_LoadAnim(fist->anm,minbuf,0,0,0,0);
+            }
+            else if (strCMP(str,"anim_rect")==0)
+            {
+                int32_t t1,t2,t3,t4;
+                sscanf(str,"anim_rect:%d %d %d %d",&t1,&t2,&t3,&t4);
+                fist->anm_rect.x = t1;
+                fist->anm_rect.y = t2;
+                fist->anm_rect.w = t3-t1+1;
+                fist->anm_rect.h = t4-t2+1;
+            }
+            else if (strCMP(str,"num_fingers")==0)
+            {
+                int32_t t1;
+                sscanf(str,"num_fingers:%d",&t1);
+                if (t1 >= 0 && t1 <= CTRL_FIST_MAX_FISTS)
+                    fist->fistnum = t1;
+            }
+            else if (strCMP(str,"entries")==0)
+            {
+                int32_t t1;
+                sscanf(str,"entries:%d",&t1);
+                if (t1 >= 0 && t1 <= CTRL_FIST_MAX_ENTRS)
+                    fist->num_entries = t1;
+            }
+            else if (strCMP(str,"eval_order_ascending")==0)
+            {
+                int32_t t1;
+                sscanf(str,"eval_order_ascending:%d",&t1);
+                fist->order = t1;
+            }
+            else if (strCMP(str,"up_hs_num_")==0)
+            {
+                int32_t t1,t2;
+                sscanf(str,"up_hs_num_%d:%d",&t1,&t2);
+                if (t1 >= 0 && t1 < fist->fistnum)
+                    if (t2 >= 0 && t2 <= CTRL_FIST_MAX_BOXES)
+                        fist->fists_up[t1].num_box = t2;
+            }
+            else if (strCMP(str,"up_hs_")==0)
+            {
+                int32_t t1,t2,t3,t4,t5,t6;
+                sscanf(str,"up_hs_%d_%d:%d %d %d %d",&t1,&t2,&t3,&t4,&t5,&t6);
+                if (t1 >= 0 && t1 < fist->fistnum)
+                    if (t2 >= 0 && t2 < fist->fists_up[t1].num_box)
+                    {
+                        fist->fists_up[t1].boxes[t2].x  = t3;
+                        fist->fists_up[t1].boxes[t2].y  = t4;
+                        fist->fists_up[t1].boxes[t2].x2 = t5;
+                        fist->fists_up[t1].boxes[t2].y2 = t6;
+                    }
+
+            }
+            else if (strCMP(str,"down_hs_num_")==0)
+            {
+                int32_t t1,t2;
+                sscanf(str,"down_hs_num_%d:%d",&t1,&t2);
+                if (t1 >= 0 && t1 < fist->fistnum)
+                    if (t2 >= 0 && t2 <= CTRL_FIST_MAX_BOXES)
+                        fist->fists_dwn[t1].num_box = t2;
+            }
+            else if (strCMP(str,"down_hs_")==0)
+            {
+                int32_t t1,t2,t3,t4,t5,t6;
+                sscanf(str,"down_hs_%d_%d:%d %d %d %d",&t1,&t2,&t3,&t4,&t5,&t6);
+                if (t1 >= 0 && t1 < fist->fistnum)
+                    if (t2 >= 0 && t2 < fist->fists_dwn[t1].num_box)
+                    {
+                        fist->fists_dwn[t1].boxes[t2].x  = t3;
+                        fist->fists_dwn[t1].boxes[t2].y  = t4;
+                        fist->fists_dwn[t1].boxes[t2].x2 = t5;
+                        fist->fists_dwn[t1].boxes[t2].y2 = t6;
+                    }
+            }
+            else
+            {
+                int32_t t1,t2,t3,t4;
+                char s1[MINIBUFSZ];
+                char s2[MINIBUFSZ];
+                if (sscanf(str,"%d:%s %s %d %d (%d)",&t1,s1,s2,&t2,&t3,&t4)== 6)
+                {
+                    if (t1 >= 0 && t1 < fist->num_entries)
+                    {
+                        int32_t n1=0;
+                        for(int32_t i=0;i<strlen(s1);i++)
+                            if (s1[i] != '0')
+                                n1 |= (1 << i);
+
+                        int32_t n2=0;
+                        for(int32_t i=0;i<strlen(s2);i++)
+                            if (s2[i] != '0')
+                                n2 |= (1 << i);
+
+                        fist->entries[t1].strt = n1;
+                        fist->entries[t1].send = n2;
+                        fist->entries[t1].anm_str = t2;
+                        fist->entries[t1].anm_end = t3;
+                        fist->entries[t1].sound = t4;
+                    }
+                }
+
+            }
+        }
+        fclose(fil);
+    }
+    else
+        good = 0;
 
     if (good == 1)
         AddToMList(controlst,ctnode);
@@ -1939,6 +2294,13 @@ void ctrl_Delete_SafeNode(ctrlnode *nod)
     delete nod->node.safe;
 }
 
+void ctrl_Delete_FistNode(ctrlnode *nod)
+{
+    if (nod->node.fist->anm != NULL)
+        anim_DeleteAnim(nod->node.fist->anm);
+    delete nod->node.fist;
+}
+
 void ctrl_Delete_HotmovNode(ctrlnode *nod)
 {
     if (nod->node.hotmv->anm != NULL)
@@ -1972,6 +2334,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_HOTMV:
         ctrl_Delete_HotmovNode(nod);
+        break;
+    case CTRL_FIST:
+        ctrl_Delete_FistNode(nod);
         break;
     }
 

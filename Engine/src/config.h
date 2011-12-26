@@ -108,8 +108,22 @@
 #define CTRL_LEVER_ANGL_DELTA  30
 #define CTRL_LEVER_AUTO_DELAY  FPS_DELAY
 
+//fist-control
+#define CTRL_FIST_MAX_FISTS  4
+#define CTRL_FIST_MAX_BOXES  6
+#define CTRL_FIST_MAX_ENTRS  64
+
+
+
+
+
 
 #elif GAME_NEMESIS
+
+
+
+
+
 //TITLE
 #define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
 
