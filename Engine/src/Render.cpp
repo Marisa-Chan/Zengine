@@ -769,6 +769,11 @@ SDL_Surface *Rend_GetGameScreen()
     return tempbuf;
 }
 
+SDL_Surface *Rend_GetLocationScreenImage()
+{
+    return scrbuf;
+}
+
 SDL_Surface *Rend_GetWindowSurface()
 {
     return screen;

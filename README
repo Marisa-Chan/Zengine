@@ -40,7 +40,6 @@ action_display_message      :shows text line in box from titler-control
 
 [Controls Objects]
 control_titler              :contain message lines
-control_paint               :shows easel canvas
 control_push_toggle(venus_id): reverse what means "venus_id"
 
 

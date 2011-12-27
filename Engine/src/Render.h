@@ -91,6 +91,7 @@ void Rend_SwitchFullscreen();
 
 void Rend_SetDelay(int32_t delay);
 
+SDL_Surface *Rend_GetLocationScreenImage();
 
 struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h);
 void Rend_DeleteSubRect(struct_SubRect *erect);

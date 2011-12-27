@@ -159,13 +159,9 @@ char *Mouse_GetName(int indx)
 int Mouse_GetCursorIndex(char *name)
 {
     for (int i=0; i< NUM_CURSORS; i++)
-    {
         if (strcasecmp(name,CurNames[i]) == 0)
-            {
                 return i;
-                break;
-            }
-    }
+
     return CURSOR_IDLE;
 }
 
@@ -322,9 +318,9 @@ void Mouse_LoadObjCursor_znemesis(int num)
     sprintf(buf,"%2.2didle%c.zcr",current_obj_cur,'a');
     Mouse_LoadCursor(buf,objcur[0][CURSOR_UP_STATE]);
     sprintf(buf,"%2.2didle%c.zcr",current_obj_cur,'b');
-    Mouse_LoadCursor(buf,objcur[1][CURSOR_UP_STATE]);
-    sprintf(buf,"%2.2dact%c.zcr",current_obj_cur,'a');
     Mouse_LoadCursor(buf,objcur[0][CURSOR_DW_STATE]);
+    sprintf(buf,"%2.2dact%c.zcr",current_obj_cur,'a');
+    Mouse_LoadCursor(buf,objcur[1][CURSOR_UP_STATE]);
     sprintf(buf,"%2.2dact%c.zcr",current_obj_cur,'b');
     Mouse_LoadCursor(buf,objcur[1][CURSOR_DW_STATE]);
 }

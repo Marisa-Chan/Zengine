@@ -178,6 +178,21 @@ safenode * CreateSafeNode()
     return tmp;
 }
 
+paintnode * CreatePaintNode()
+{
+    paintnode *tmp = new(paintnode);
+
+    tmp->eligable_cnt = 0;
+    tmp->eligible_objects  = NULL;
+    tmp->brush = NULL;
+    tmp->paint = NULL;
+    tmp->last_x = 0;
+    tmp->last_y = 0;
+    tmp->cursor = CURSOR_IDLE;
+    InitRect(&tmp->rectangle);
+    return tmp;
+}
+
 ctrlnode *Ctrl_CreateNode(int type)
 {
     ctrlnode *tmp;
@@ -232,6 +247,11 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->node.hotmv = CreateHotMovieNode();
         tmp->func = control_hotmv;
         break;
+    case CTRL_PAINT:
+        tmp->type = CTRL_PAINT;
+        tmp->node.paint = CreatePaintNode();
+        tmp->func = control_paint;
+        break;
     };
     return tmp;
 }
@@ -245,12 +265,12 @@ void InitRect(Rect *rct)
 }
 
 
-bool Ctrl_Eligeblity(int obj, slotnode *slut)
+bool Ctrl_Eligeblity(int obj, int32_t *slots, int32_t count)
 {
     bool eli = false;
 
-    for (int i=0; i< slut->eligable_cnt; i++)
-        if (obj == slut->eligible_objects[i])
+    for (int i=0; i< count; i++)
+        if (obj == slots[i])
         {
             eli = true;
             break;
@@ -532,7 +552,7 @@ void control_slot(ctrlnode *ct)
                 SetgVarInt(ct->slot,0);
 
             }
-            else if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut))
+            else if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut->eligible_objects,slut->eligable_cnt))
             {
                 int te=GetgVarInt(ct->slot);
                 SetgVarInt(ct->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
@@ -551,6 +571,102 @@ void control_slot(ctrlnode *ct)
     }
 }
 
+void control_paint(ctrlnode *ct)
+{
+    bool mousein=false;
+    paintnode *paint = ct->node.paint;
+
+    if (!Rend_MouseInGamescr())
+        return;
+
+    int32_t mX = Rend_GetMouseGameX();
+    int32_t mY = Rend_GetMouseGameY();
+
+    if (mX >= paint->rectangle.x                      &&\
+        mX <  paint->rectangle.x + paint->rectangle.w &&\
+        mY >= paint->rectangle.y                      &&\
+        mY <  paint->rectangle.y + paint->rectangle.h)
+        mousein = true;
+
+    if (mousein)
+    {
+        if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),paint->eligible_objects,paint->eligable_cnt))
+        {
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(paint->cursor);
+
+            if (MouseDown(SDL_BUTTON_LEFT))
+            {
+                if (mX != paint->last_x || mY != paint->last_y)
+                {
+                    SDL_Surface *scrn = Rend_GetLocationScreenImage();
+                    SDL_LockSurface(scrn);
+                    SDL_LockSurface(paint->paint);
+
+                    int32_t cen_x = 0;// paint->b_w / 2;
+                    int32_t cen_y = 0;//paint->b_h / 2;
+
+                    int32_t d_x = mX - paint->rectangle.x;
+                    int32_t d_y = mY - paint->rectangle.y;
+
+                    if (GAME_BPP == 32)
+                    {
+                        uint32_t *px = (uint32_t *)scrn->pixels;
+                        uint32_t *fr = (uint32_t *)paint->paint->pixels;
+
+                        for (int32_t y=0; y<paint->b_h; y++)
+                            for (int32_t x=0; x<paint->b_w; x++)
+                                if (paint->brush[x+y*paint->b_w] != 0)
+                                    if ((d_x - cen_x)+x >= 0              &&\
+                                        (d_x - cen_x)+x < paint->paint->w &&\
+                                        (d_y - cen_y)+y >= 0              &&\
+                                        (d_y - cen_y)+y < paint->paint->h )
+                                    {
+                                        int32_t rel_x = (mX - cen_x) + x;
+                                        int32_t rel_y = (mY - cen_y) + y;
+                                        int32_t fr_x  = (d_x - cen_x)+x;
+                                        int32_t fr_y  = (d_y - cen_y)+y;
+                                        px[rel_x + rel_y*scrn->w] = fr[fr_x + fr_y*paint->paint->w];
+                                    }
+
+
+
+                    }
+                    else if (GAME_BPP == 16)
+                    {
+                        uint16_t *px = (uint16_t *)scrn->pixels;
+                        uint16_t *fr = (uint16_t *)paint->paint->pixels;
+
+                        for (int32_t y=0; y<paint->b_h; y++)
+                            for (int32_t x=0; x<paint->b_w; x++)
+                                if (paint->brush[x+y*paint->b_w] != 0)
+                                    if ((d_x - cen_x)+x >= 0              &&\
+                                        (d_x - cen_x)+x < paint->paint->w &&\
+                                        (d_y - cen_y)+y >= 0              &&\
+                                        (d_y - cen_y)+y < paint->paint->h )
+                                    {
+                                        int32_t rel_x = (mX - cen_x) + x;
+                                        int32_t rel_y = (mY - cen_y) + y;
+                                        int32_t fr_x  = (d_x - cen_x)+x;
+                                        int32_t fr_y  = (d_y - cen_y)+y;
+                                        px[rel_x + rel_y*scrn->w] = fr[fr_x + fr_y*paint->paint->w];
+                                    }
+                    }
+                    else
+                    {
+                        printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+                    }
+                    SDL_UnlockSurface(scrn);
+                    SDL_UnlockSurface(paint->paint);
+
+                    paint->last_x = mX;
+                    paint->last_y = mY;
+                }
+            }
+        }
+    }
+}
+
 void control_fist(ctrlnode *ct)
 {
     bool mousein=false;
@@ -559,7 +675,7 @@ void control_fist(ctrlnode *ct)
 
 
     if (!Rend_MouseInGamescr())
-            return;
+        return;
 
     int32_t mX = Rend_GetMouseGameX();
     int32_t mY = Rend_GetMouseGameY();
@@ -668,6 +784,8 @@ void control_fist(ctrlnode *ct)
                 }
 
             SetgVarInt(ct->slot,fist->fiststatus);
+
+            FlushMouseBtn(SDL_BUTTON_LEFT);
         }
     }
 
@@ -1729,6 +1847,137 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
 
 }
 
+
+int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
+{
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_PAINT);
+    paintnode *paint = ctnode->node.paint;
+
+    AddToMList(controlst,ctnode);
+    ctnode->slot      = slot;
+
+    char filename[MINIBUFSZ];
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"rectangle")==0)
+        {
+            str=GetParams(str);
+            sscanf(str,"%d %d %d %d",\
+                   &paint->rectangle.x,\
+                   &paint->rectangle.y,\
+                   &paint->rectangle.w,\
+                   &paint->rectangle.h);
+            //paint->rectangle.w -= (paint->rectangle.x-1);
+           // paint->rectangle.h -= (paint->rectangle.y-1);
+        }
+        else if (strCMP(str,"brush_file")==0)
+        {
+            str=GetParams(str);
+            char *pth=GetFilePath(str);
+            if (pth)
+            {
+                SDL_Surface *tmp = LoadConvertImg(pth);
+                paint->brush = (uint8_t *)malloc(tmp->w*tmp->h * sizeof(uint8_t));
+                paint->b_w = tmp->w;
+                paint->b_h = tmp->h;
+                SDL_LockSurface(tmp);
+                if (GAME_BPP == 32)
+                {
+                    uint32_t *a = (uint32_t *)tmp->pixels;
+
+                    for(int32_t j=0; j<paint->b_h; j++)
+                        for(int32_t i=0; i<paint->b_w; i++)
+                            if (a[i+j*tmp->w] < 0x7F7F7F)
+                                paint->brush[i+j*tmp->w] = 0;
+                            else
+                                paint->brush[i+j*tmp->w] = 1;
+                }
+                else
+                {
+                    printf("Write your code for %d bit mode in %s at %d line.\n",GAME_BPP,__FILE__,__LINE__);
+                }
+                SDL_UnlockSurface(tmp);
+                SDL_FreeSurface(tmp);
+            }
+        }
+        else if (strCMP(str,"cursor")==0)
+        {
+            str=GetParams(str);
+            paint->cursor = Mouse_GetCursorIndex(str);
+        }
+        else if (strCMP(str,"paint_file")==0)
+        {
+            str=GetParams(str);
+            strcpy(filename,str);
+        }
+        else if (strCMP(str,"eligible_objects")==0)
+        {
+            str=GetParams(str);
+            int tmpobj=0;
+            int strl=strlen(str);
+            for (int i=0; i < strl; i++)
+                if (str[i] == ' ')
+                    tmpobj++;
+
+            tmpobj++;
+
+            paint->eligable_cnt = tmpobj;
+            paint->eligible_objects = (int32_t *)malloc (tmpobj * sizeof(int32_t));
+            int i=0;
+            tmpobj=0;
+
+            for (;;)
+            {
+                if (i>=strl)
+                    break;
+                if (str[i] != ' ')
+                {
+                    paint->eligible_objects[tmpobj] = atoi(str + i);
+                    tmpobj++;
+
+                    while (i<strl && str[i] != ' ')
+                        i++;
+                }
+                i++;
+            }//for (;;)
+        }//if (str[0] == '}')
+    }//while (!feof(fl))
+
+    char *path = GetFilePath(filename);
+
+    if (path)
+    {
+        paint->paint = CreateSurface(paint->rectangle.w,paint->rectangle.h);
+        SDL_Surface *tmp = LoadConvertImg(path);
+        SDL_Rect tr;
+        tr.x = paint->rectangle.x;
+        tr.y = paint->rectangle.y;
+        tr.w = paint->rectangle.w;
+        tr.h = paint->rectangle.h;
+
+        SDL_BlitSurface(tmp,&tr,paint->paint,NULL);
+        SDL_FreeSurface(tmp);
+    }
+    else
+        return 0;
+
+    return 1;
+}
+
 int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
 {
     int good = 0;
@@ -1774,12 +2023,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"cursor")==0)
         {
             str=GetParams(str);
-            for (int i=0; i<NUM_CURSORS; i++)
-                if (strcasecmp(str,Mouse_GetName(i)) == 0)
-                {
-                    slut->cursor = i;
-                    break;
-                }
+            slut->cursor = Mouse_GetCursorIndex(str);
         }
         else if (strCMP(str,"distance_id")==0)
         {
@@ -1818,7 +2062,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
             }//for (;;)
         }//if (str[0] == '}')
     }//while (!feof(fl))
-
+    return 1;
 }
 
 int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
@@ -2222,6 +2466,10 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     {
         Parse_Control_HotMov(controlst,fl,slot);
     }
+    else if (strCMP(ctrltp,"paint")==0)
+    {
+        Parse_Control_Paint(controlst,fl,slot);
+    }
 
     return good;
 }
@@ -2310,6 +2558,17 @@ void ctrl_Delete_HotmovNode(ctrlnode *nod)
     delete nod->node.hotmv;
 }
 
+void ctrl_Delete_PaintNode(ctrlnode *nod)
+{
+    if (nod->node.paint->brush != NULL)
+        free(nod->node.paint->brush);
+    if (nod->node.paint->eligible_objects != NULL)
+        free(nod->node.paint->eligible_objects);
+    if (nod->node.paint->paint != NULL)
+        SDL_FreeSurface(nod->node.paint->paint);
+    delete nod->node.paint;
+}
+
 void DeleteSelControl(ctrlnode *nod)
 {
     switch (nod->type)
@@ -2337,6 +2596,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_FIST:
         ctrl_Delete_FistNode(nod);
+        break;
+    case CTRL_PAINT:
+        ctrl_Delete_PaintNode(nod);
         break;
     }
 

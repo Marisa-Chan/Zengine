@@ -11,6 +11,7 @@
 #define CTRL_SAFE     6
 #define CTRL_FIST     7
 #define CTRL_HOTMV    8
+#define CTRL_PAINT    9
 #define CTRL_PANA     100
 #define CTRL_FLAT     101
 #define CTRL_TILT     102
@@ -147,6 +148,20 @@ struct safenode
     int32_t  frame_time;
 };
 
+struct paintnode
+{
+    uint8_t     *brush;
+    int16_t     b_w;
+    int16_t     b_h;
+    SDL_Surface *paint;
+    Rect     rectangle;
+    int32_t  last_x;
+    int32_t  last_y;
+    int32_t  *eligible_objects;
+    int32_t  eligable_cnt;
+    int16_t  cursor;
+};
+
 struct fistnode
 {
     uint32_t fiststatus;
@@ -210,6 +225,7 @@ struct ctrlnode
         safenode     *safe;
         fistnode     *fist;
         hotmvnode    *hotmv;
+        paintnode    *paint;
 
         void  *unknown;
     } node;
@@ -240,6 +256,8 @@ void control_safe_draw(ctrlnode *ct);
 
 void control_fist(ctrlnode *ct);
 void control_fist_draw(ctrlnode *ct);
+
+void control_paint(ctrlnode *ct);
 
 void control_hotmv(ctrlnode *ct);
 void control_hotmv_draw(ctrlnode *ct);
