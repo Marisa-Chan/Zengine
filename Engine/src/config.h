@@ -128,7 +128,7 @@
 #define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
 
 //ScriptSystem params
-#define VAR_SLOTS_MAX      30000 //For nemesis 30000
+#define VAR_SLOTS_MAX      30100 //For nemesis 30000
 #define STATEBOX_STACK_MAX 1024
 #define MaxStateBoxEnts    0x800 //0xFF is very small
 #define pzlSTACK 0x800

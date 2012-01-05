@@ -186,6 +186,13 @@ void GameLoop()
     {
         if (MouseUp(SDL_BUTTON_RIGHT))
             SetgVarInt(18,1);
+
+#ifdef GAME_NEMESIS
+        if (MouseUp(SDL_BUTTON_RIGHT))
+            action_inventory("cycle",0,NULL);
+#endif
+
+
         if (MouseHit(SDL_BUTTON_LEFT))
             SetgVarInt(10,1);
     }

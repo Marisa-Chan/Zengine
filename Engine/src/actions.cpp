@@ -961,9 +961,107 @@ void act_inv_add(int item)
 
 }
 
+void del_item(int32_t item)
+{
+    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+        if (GetgVarInt(i)== item)
+        {
+            SetgVarInt(i,0);
+            break;
+        }
+}
+
+void put_item(int32_t item)
+{
+    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+        if (GetgVarInt(i) == 0)
+        {
+            SetgVarInt(i,item);
+            break;
+        }
+}
+
 void act_inv_cycle()
 {
+    int32_t objs = 0;
+    if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+        objs = 1;
 
+    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+        if (GetgVarInt(i)!=0)
+            objs++;
+
+    if (objs > 0)
+    {
+        int32_t *objects = (int32_t *)calloc(sizeof(int32_t),objs);
+
+        int32_t n = 0;
+
+        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+        {
+            objects[n] = GetgVarInt(SLOT_INVENTORY_MOUSE);
+            n++;
+        }
+
+        for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+            if (GetgVarInt(i)!=0)
+            {
+                objects[n] = GetgVarInt(i);
+                n++;
+            }
+
+        //sorting
+        int8_t exch = 1;
+        for (int32_t j=0; j < objs-1 && exch == 1; j++)
+        {
+            exch = 0;
+            for (int32_t i=0; i < objs-1; i++)
+                if (objects[i] > objects[i+1])
+                {
+                    int32_t tmp = objects[i+1];
+                    objects[i+1] = objects[i];
+                    objects[i] = tmp;
+                    exch = 1;
+                }
+        }
+        //end of sort
+
+
+        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+        {
+            int32_t itm = GetgVarInt(SLOT_INVENTORY_MOUSE);
+            int32_t nxt = 0;
+            for (int32_t i=objs-1; i>=0; i--)
+                if (objects[i] == itm)
+                {
+                    nxt = i+1;
+                    break;
+                }
+
+            if (nxt == objs)
+            {
+                put_item(itm);
+                SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+            }
+            else
+            {
+                put_item(itm);
+                itm = objects[nxt];
+                del_item(itm);
+                SetgVarInt(SLOT_INVENTORY_MOUSE,itm);
+            }
+
+        }
+        else
+        {
+            del_item(objects[0]);
+            SetgVarInt(SLOT_INVENTORY_MOUSE,objects[0]);
+        }
+
+
+
+        free(objects);
+    }
 }
 
 int action_inventory(char *params, int aSlot , pzllst *owner)
@@ -975,6 +1073,7 @@ int action_inventory(char *params, int aSlot , pzllst *owner)
     int item;
     char cmd[16];
     char chars[16];
+    memset(chars,0,16);
     sscanf(params,"%s %s",cmd,chars);
     item = GetIntVal(chars);
 

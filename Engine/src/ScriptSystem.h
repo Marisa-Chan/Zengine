@@ -55,8 +55,19 @@
 #define SLOT_INV_STORAGE_6    107
 #define SLOT_INV_STORAGE_50   149
 #define SLOT_TOTAL_INV_AVAIL  150
+
+#ifdef GAME_ZGI
+
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
+
+#elif GAME_NEMESIS
+
+#define SLOT_START_SLOT       30051
+#define SLOT_END_SLOT         30070
+
+#endif
+
 #define SLOT_SPELL_1          191
 #define SLOT_SPELL_2          192
 #define SLOT_SPELL_3          193
