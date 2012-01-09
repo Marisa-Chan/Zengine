@@ -1,14 +1,14 @@
 Status:   ZGI:RC
           ZNEMESIS: dev
 
-Progress:     [###############-----]
-             0%         75%        100%
+Progress:     [##################--]
+             0%         90%        100%
 
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [##########----------]
-             0%         50%        100%
+Nemesis Code: [###############-----]
+             0%         75%        100%
 
 
 
@@ -61,7 +61,6 @@ action_add_preblt	:reverse it
 action_remove_preblt	:reverse it
 action_set_master_volume:reverse it and write code
 action_zoom		:reverse it and write code
-action_inventory	: // add cycle code
 action_set_venus	:reverse it    
 action_disable_venus	:no comments %)     
 

@@ -12,6 +12,9 @@
 #define SUB_JUSTIFY_LEFT   1
 #define SUB_JUSTIFY_RIGHT  2
 
+#define SUB_CORRECT_VERT   (-16)
+#define SUB_CORRECT_HORIZ  0
+
 struct struct_font_style{
     char    fontname[64];
     int8_t  justify;  //0 - center, 1-left, 2-right

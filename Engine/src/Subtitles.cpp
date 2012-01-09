@@ -2,6 +2,7 @@
 #include "SDL_ttf.h"
 #include <string.h>
 
+
 struct_textfile *sub_LoadTextFile(char *file)
 {
     FILE *f = fopen(file,"rb");
@@ -30,20 +31,21 @@ struct_textfile *sub_LoadTextFile(char *file)
 
     tmp->count = linescount;
 
-    tmp->params = (char **)malloc(linescount * sizeof(char *));
-    tmp->subs   = (char **)malloc(linescount * sizeof(char *));
+    tmp->params = (char **)calloc(linescount,sizeof(char *));
+    tmp->subs   = (char **)calloc(linescount,sizeof(char *));
+
 
     linescount=0;
     int i=0;
     bool txtline = false;
     while (i<sz)
     {
-        if (tmp->buffer[i] != 0x0 && tmp->buffer[i] != 0xA && tmp->buffer[i] != 0xD)
+        if (tmp->buffer[i] != 0x0 && tmp->buffer[i] != 0xA)
             txtline = true;
         else
             txtline = false;
 
-        if (!txtline)
+        if (!txtline || tmp->buffer[i] == 0xD)
         {
             tmp->buffer[i] = 0x0;
             i++;
@@ -52,17 +54,28 @@ struct_textfile *sub_LoadTextFile(char *file)
         {
             if (linescount<tmp->count)
             {
+                tmp->params[linescount] = strchr(tmp->buffer+i,'<');
+
+                tmp->subs[linescount] = NULL;
+
+                if (tmp->params[linescount] != NULL)
+                {
+                    tmp->params[linescount]++;
+
+                    tmp->subs[linescount] = strchr(tmp->params[linescount],'>');
+
+                    if (tmp->subs[linescount] != NULL)
+                    {
+
+                        *tmp->subs[linescount] = 0x0;
+
+                        tmp->subs[linescount]++;
+
+                        i = tmp->subs[linescount] - tmp->buffer;
 
 
-                tmp->params[linescount] = strchr(tmp->buffer+i,'<') + 1;
-
-                tmp->subs[linescount] = strchr(tmp->params[linescount],'>');
-
-                *tmp->subs[linescount] = 0x0;
-
-                tmp->subs[linescount]++;
-
-                i = tmp->subs[linescount] - tmp->buffer;
+                    }
+                }
 
                 for(;;)
                 {
@@ -82,6 +95,8 @@ struct_textfile *sub_LoadTextFile(char *file)
             linescount++;
         }
     }
+
+
 
     return tmp;
 }
@@ -332,7 +347,10 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
             int x2;
             int y2;
             sscanf(str2,"%d %d %d %d",&x,&y,&x2,&y2);
-            tmp->SubRect = Rend_CreateSubRect(x,y+52,x2-x,y2-y);
+            tmp->SubRect = Rend_CreateSubRect(x + GAMESCREEN_X + SUB_CORRECT_HORIZ + GAMESCREEN_FLAT_X,
+                                              y + GAMESCREEN_Y + SUB_CORRECT_VERT,
+                                              x2-x,
+                                              y2-y);
         }
         else if (strCMP(str1,"TextFile") == 0)
         {
@@ -361,17 +379,19 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
             int st;
             int en;
             int sb;
-            sscanf(str2,"(%d,%d)=%d",&st,&en,&sb);
-            if (subscount == 0 || sb > subscount)
+            if ( sscanf(str2,"(%d,%d)=%d",&st,&en,&sb) == 3)
             {
-                printf("Error in subs %s\n",filename);
-                exit(-1);
-            }
-            tmp->subs[tmp->subscount].start = st;
-            tmp->subs[tmp->subscount].stop  = en;
-            tmp->subs[tmp->subscount].sub  = sb;
+                if (subscount == 0 || sb > subscount)
+                {
+                    printf("Error in subs %s\n",filename);
+                    exit(-1);
+                }
+                tmp->subs[tmp->subscount].start = st;
+                tmp->subs[tmp->subscount].stop  = en;
+                tmp->subs[tmp->subscount].sub  = sb;
 
-            tmp->subscount++;
+                tmp->subscount++;
+            }
 
         }
 
@@ -460,7 +480,7 @@ int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
 
             TTF_SizeUTF8(temp_font,txt,&w,&h);
             if (w >= dst->w)
-                {
+            {
                 for (int i=0; i<strlen(txt); i++)
                     if (txt[i] == ' ' || txt[i] == '\t')
                     {
@@ -483,12 +503,12 @@ int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
                 dy+=fnt_stl->size;
                 txt +=k;
 
-                }
+            }
             else
-                {
-                    sub_DrawSubWithJustify(txt,temp_font,clr,dst,dy,fnt_stl->justify);
-                    break;
-                }
+            {
+                sub_DrawSubWithJustify(txt,temp_font,clr,dst,dy,fnt_stl->justify);
+                break;
+            }
 
             di++;
         }
@@ -531,10 +551,12 @@ int sub_ProcessSub(struct_subtitles *sub,int subtime)
                     break;
                 }
 
-            struct_font_style fnt_style = sub_parse_parameters(sub->txt->params[sub->subs[j].sub]);
+            if (sub->txt->params[sub->subs[j].sub])
+            {
+                struct_font_style fnt_style = sub_parse_parameters(sub->txt->params[sub->subs[j].sub]);
 
-            sub_DrawTextToRect(sss,&fnt_style,sub->SubRect->img);
-
+                sub_DrawTextToRect(sss,&fnt_style,sub->SubRect->img);
+            }
         }
         sub->currentsub = j;
     }

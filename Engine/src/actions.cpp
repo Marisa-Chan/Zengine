@@ -32,6 +32,11 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 
     SDL_Surface *tmp = NULL;
 
+    char * path = GetFilePath(file);
+
+    if (!path)
+        return ACTION_NORMAL;
+
     if (tmp2 != -1)
     {
         int r,g,b;
