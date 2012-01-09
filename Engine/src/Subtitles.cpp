@@ -40,12 +40,12 @@ struct_textfile *sub_LoadTextFile(char *file)
     bool txtline = false;
     while (i<sz)
     {
-        if (tmp->buffer[i] != 0x0 && tmp->buffer[i] != 0xA)
+        if (tmp->buffer[i] != 0x0 && tmp->buffer[i] != 0xA && tmp->buffer[i] != 0xD)
             txtline = true;
         else
             txtline = false;
 
-        if (!txtline || tmp->buffer[i] == 0xD)
+        if (!txtline)
         {
             tmp->buffer[i] = 0x0;
             i++;
@@ -349,8 +349,8 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
             sscanf(str2,"%d %d %d %d",&x,&y,&x2,&y2);
             tmp->SubRect = Rend_CreateSubRect(x + GAMESCREEN_X + SUB_CORRECT_HORIZ + GAMESCREEN_FLAT_X,
                                               y + GAMESCREEN_Y + SUB_CORRECT_VERT,
-                                              x2-x,
-                                              y2-y);
+                                              x2-x+1,
+                                              y2-y+1);
         }
         else if (strCMP(str1,"TextFile") == 0)
         {
