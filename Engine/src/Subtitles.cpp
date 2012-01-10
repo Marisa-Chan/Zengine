@@ -37,63 +37,63 @@ struct_textfile *sub_LoadTextFile(char *file)
 
     linescount=0;
     int i=0;
-    bool txtline = false;
+    char *curline=NULL;
+
     while (i<sz)
     {
-        if (tmp->buffer[i] != 0x0 && tmp->buffer[i] != 0xA && tmp->buffer[i] != 0xD)
-            txtline = true;
-        else
-            txtline = false;
+        curline = tmp->buffer+i;
 
-        if (!txtline)
+        while (i<sz)
         {
-            tmp->buffer[i] = 0x0;
+            if (tmp->buffer[i] == 0xA || tmp->buffer[i] == 0xD)
+                break;
             i++;
         }
-        else
+
+        if (tmp->buffer[i] == 0xD)
         {
-            if (linescount<tmp->count)
+            if (tmp->buffer[i+1] == 0xA)//windows
             {
-                tmp->params[linescount] = strchr(tmp->buffer+i,'<');
+                tmp->buffer[i] = 0;
+                tmp->buffer[i+1] = 0;
+                i+=2;
+            }
+            else //macOS
+            {
+                tmp->buffer[i] = 0;
+                i++;
+            }
+        }
+        else if (tmp->buffer[i] == 0xA) //unix
+        {
+            tmp->buffer[i] = 0;
+            i++;
+        }
 
-                tmp->subs[linescount] = NULL;
+        if (linescount<tmp->count)
+        {
+            tmp->params[linescount] = NULL;
+            tmp->subs[linescount]   = NULL;
 
-                if (tmp->params[linescount] != NULL)
-                {
+            tmp->params[linescount] = strchr(curline,'<');
+
+            if (tmp->params[linescount] != NULL)
+            {
                     tmp->params[linescount]++;
 
                     tmp->subs[linescount] = strchr(tmp->params[linescount],'>');
 
                     if (tmp->subs[linescount] != NULL)
                     {
-
                         *tmp->subs[linescount] = 0x0;
 
                         tmp->subs[linescount]++;
-
-                        i = tmp->subs[linescount] - tmp->buffer;
-
-
                     }
                 }
 
-                for(;;)
-                {
-                    if (i<sz)
-                    {
-                        if (tmp->buffer[i] == 0xA || tmp->buffer[i] ==0xD)
-                            break;
-                    }
-                    else
-                        break;
-
-                    i++;
-                }
-            }
-            txtline = false;
-
-            linescount++;
         }
+
+        linescount++;
     }
 
 
