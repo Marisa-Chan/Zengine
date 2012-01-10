@@ -161,8 +161,10 @@ void EasterEggsAndDebug()
 
         if (CheckKeyboardMessage("Q",1) )
         {
-        //    printf("%d\n",GetgVarInt(6682));
-        //    printf("%d\n",GetgVarInt(6643));
+//            printf("\n%d\n",GetgVarInt(23107));
+//            printf("%d\n",GetgVarInt(23109));
+//            printf("%d\n",GetgVarInt(23115));
+//            printf("%d\n",GetgVarInt(23116));
         }
     }
 }
@@ -172,29 +174,28 @@ void GameLoop()
 
     Mouse_SetCursor(CURSOR_IDLE);
 
-    if (GetgVarInt(18) != 0)
-        SetgVarInt(18,0);
+    if (GetgVarInt(SLOT_MOUSE_RIGHT_CLICK) != 0)
+        SetgVarInt(SLOT_MOUSE_RIGHT_CLICK,0);
 
-    if (GetgVarInt(10) != 0)
-        SetgVarInt(10,0);
+    if (GetgVarInt(SLOT_MOUSE_DOWN) != 0)
+        SetgVarInt(SLOT_MOUSE_DOWN,0);
 
     if (KeyAnyHit())
         if (GetLastKey() != SDLK_FIRST)
-            SetgVarInt(8,GetWinKey(GetLastKey()));
+            SetgVarInt(SLOT_KEY_PRESS,GetWinKey(GetLastKey()));
 
     if (Rend_MouseInGamescr())
     {
         if (MouseUp(SDL_BUTTON_RIGHT))
-            SetgVarInt(18,1);
+            SetgVarInt(SLOT_MOUSE_RIGHT_CLICK,1);
 
 #ifdef GAME_NEMESIS
         if (MouseUp(SDL_BUTTON_RIGHT))
             action_inventory("cycle",0,NULL);
 #endif
-
-
-        if (MouseHit(SDL_BUTTON_LEFT))
-            SetgVarInt(10,1);
+        if (GetgVarInt(SLOT_MOUSE_RIGHT_CLICK) != 1)
+            if (MouseDown(SDL_BUTTON_LEFT))
+                SetgVarInt(SLOT_MOUSE_DOWN,1);
     }
 
     ScrSys_ProcessAllRes();

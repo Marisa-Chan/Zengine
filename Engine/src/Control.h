@@ -35,6 +35,10 @@ struct Rect
 
 void InitRect(Rect *rct);
 
+#define CTRL_PUSH_EV_UP   0
+#define CTRL_PUSH_EV_DWN  1
+#define CTRL_PUSH_EV_DBL  2
+
 
 struct pushnode
 {
@@ -43,8 +47,9 @@ struct pushnode
     int32_t y;
     int32_t w;
     int32_t h;
+    int16_t count_to;
     int16_t cursor;
-    bool downed;
+    int8_t event; // 0 - up, 1 - down, 2 - double
 };
 
 struct slotnode

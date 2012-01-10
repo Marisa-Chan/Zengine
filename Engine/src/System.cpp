@@ -36,6 +36,9 @@ int16_t keybbuf[KEYBUFLEN] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int32_t Mx, My;
 uint8_t LMstate,Mstate;
 
+int32_t M_dbl_time;
+bool    M_dbl_clk=false;
+
 
 //Reset state of key hits states
 void FlushHits()
@@ -54,6 +57,7 @@ void SetHit(SDLKey key)
     for (int16_t i=0; i < KEYBUFLEN - 1; i++)
         keybbuf[i] = keybbuf[i+1];
     keybbuf[KEYBUFLEN-1] = key;
+    printf("%d\n",key);
 }
 
 void FlushKeybKey(SDLKey key)
@@ -108,8 +112,23 @@ bool KeyAnyHit()
 void UpdateKeyboard()
 {
     Keys=SDL_GetKeyState(NULL);
+
+    M_dbl_clk = false;
     LMstate=Mstate;
     Mstate=SDL_GetMouseState(&Mx,&My);
+
+    if (MouseHit(SDL_BUTTON_LEFT))
+    {
+        if (M_dbl_time < millisec())
+        {
+            M_dbl_time = millisec() + DBL_CLK_TIME;
+        }
+        else
+        {
+            M_dbl_time = 0;
+            M_dbl_clk = true;
+        }
+    }
 }
 
 //return true if key was pressed(continously)
@@ -176,12 +195,29 @@ void InitVkKeys()
     VkKeys[SDLK_LCTRL]       = VK_LCONTROL;
     VkKeys[SDLK_RCTRL]       = VK_RCONTROL;
     VkKeys[SDLK_MENU]        = VK_RMENU;
+    VkKeys[SDLK_LEFTBRACKET] = VK_OEM_4;
+    VkKeys[SDLK_RIGHTBRACKET] = VK_OEM_6;
+    VkKeys[SDLK_SEMICOLON]   = VK_OEM_1;
+    VkKeys[SDLK_BACKSLASH]   = VK_OEM_5;
+    VkKeys[SDLK_QUOTE]   = VK_OEM_7;
+    VkKeys[SDLK_SLASH]   = VK_OEM_2;
+    VkKeys[SDLK_BACKSLASH]   = VK_OEM_3;
+    VkKeys[SDLK_COMMA]   = VK_OEM_COMMA;
+    VkKeys[SDLK_PERIOD]  = VK_OEM_PERIOD;
+    VkKeys[SDLK_MINUS]  = VK_OEM_MINUS;
+    VkKeys[SDLK_PLUS]   = VK_OEM_PLUS;
 }
 
 uint8_t GetWinKey(SDLKey key)
 {
     return VkKeys[key];
 }
+
+
+
+
+
+
 
 int MouseX()
 {
@@ -220,6 +256,11 @@ bool MouseUp(int btn)
         return true;
     else
         return false;
+}
+
+bool MouseDblClk()
+{
+    return M_dbl_clk;
 }
 
 void FlushMouseBtn(int btn)

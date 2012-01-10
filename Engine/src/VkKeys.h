@@ -77,6 +77,17 @@
 #define VK_RCONTROL	0xA3
 #define VK_LMENU	0xA4
 #define VK_RMENU	0xA5
-
+#define VK_OEM_1    0xBA
+#define VK_OEM_2    0xBF
+#define VK_OEM_3    0xC0
+#define VK_OEM_4    0xDB
+#define VK_OEM_5    0xDC
+#define VK_OEM_6    0xDD
+#define VK_OEM_7    0xDE
+#define VK_OEM_7    0xDE
+#define VK_OEM_PLUS   0xBB
+#define VK_OEM_COMMA  0xBC
+#define VK_OEM_MINUS  0xBD
+#define VK_OEM_PERIOD 0xBE
 
 #endif // VKKEYS_H_INCLUDED

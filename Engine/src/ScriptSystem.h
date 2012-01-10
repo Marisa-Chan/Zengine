@@ -15,6 +15,7 @@
 #define SLOT_KEY_PRESS          8 //keycode in slot
 #define SLOT_INVENTORY_MOUSE    9 //code of item in slot
 #define SLOT_MOUSE_DOWN        10 //1 if clicked
+#define SLOT_VENUS             13
 #define SLOT_MOUSE_RIGHT_CLICK 18 //1 if right button of mouse
 #define SLOT_MENU_STATE        19
 #define SLOT_JUST_RESTORED     20

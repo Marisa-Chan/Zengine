@@ -44,6 +44,7 @@ control_push_toggle(venus_id): reverse what means "venus_id"
 
 
 [Other]
+* Add Venus events
 * Create database with convert parameters
 * Create utility and scripts for scale for dingoo
 * Clear code

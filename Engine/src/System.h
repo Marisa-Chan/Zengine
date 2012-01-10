@@ -67,6 +67,7 @@ int MouseY();
 bool MouseDown(int btn);
 bool MouseHit(int btn);
 bool MouseUp(int btn);
+bool MouseDblClk();
 void FlushMouseBtn(int btn);
 void SetHit(SDLKey key);
 bool KeyHit(SDLKey key);

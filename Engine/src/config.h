@@ -233,6 +233,7 @@
 
 
 
+#define DBL_CLK_TIME       250
 
 
 #define SYSTEM_STRINGS_NUM 64

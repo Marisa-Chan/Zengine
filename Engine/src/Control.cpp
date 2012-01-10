@@ -14,7 +14,8 @@ pushnode * CreatePushNode()
     tmp->y = 0;
     tmp->w = 0;
     tmp->h = 0;
-    tmp->downed = false;
+    tmp->count_to = 2;
+    tmp->event = CTRL_PUSH_EV_UP;
     return tmp;
 }
 
@@ -1069,27 +1070,47 @@ void control_push(ctrlnode *ct)
                 pushChangeMouse = true;
             }
 
-        if (MouseHit(SDL_BUTTON_LEFT))
-            psh->downed = true;
+        //if (MouseHit(SDL_BUTTON_LEFT))
+        //    psh->downed = true;
 
-        if (MouseUp(SDL_BUTTON_LEFT))
+        int8_t pushed = 0;
+
+        switch(psh->event)
         {
-            if (psh->downed)
-            {
+            case CTRL_PUSH_EV_UP:
+                if (MouseUp(SDL_BUTTON_LEFT))
+                    pushed = 1;
+                break;
+            case  CTRL_PUSH_EV_DWN:
+                if (MouseHit(SDL_BUTTON_LEFT))
+                    pushed = 1;
+                break;
+            case  CTRL_PUSH_EV_DBL:
+                if (MouseDblClk())
+                    pushed = 1;
+                break;
+            default:
+
+                if (MouseUp(SDL_BUTTON_LEFT))
+                    pushed = 1;
+                break;
+        };
+
+        if (pushed == 1)
+        {
 #ifdef TRACE
                 printf("Pushed #%d\n",ct->slot);
 #endif
-                SetgVarInt(ct->slot,1);
+                int32_t val = GetgVarInt(ct->slot);
+                val++;
+                val %= psh->count_to;
+                SetgVarInt(ct->slot,val);
 
-                FlushMouseBtn(SDL_BUTTON_LEFT);
-            }
-
+               // FlushMouseBtn(SDL_BUTTON_LEFT);
         }
 
     }
-    else
-        if (!MouseDown(SDL_BUTTON_LEFT) || MouseHit(SDL_BUTTON_LEFT))
-            psh->downed = false;
+
 }
 
 
@@ -2071,7 +2092,7 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
     char buf[FILE_LN_BUF];
     char *str;
 
-    SetgVarInt(slot,0);
+//    SetgVarInt(slot,0);
 
 
 
@@ -2113,6 +2134,29 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
         {
             str = GetParams(str); //cursor
             psh->cursor = Mouse_GetCursorIndex(str);
+        }
+        else if (strCMP(str,"animation") == 0)
+        {
+
+        }
+        else if (strCMP(str,"mouse_event") == 0)
+        {
+            str = GetParams(str);
+            if (strCMP(str,"up") == 0 )
+                psh->event = CTRL_PUSH_EV_UP;
+            else if (strCMP(str,"down") == 0 )
+                psh->event = CTRL_PUSH_EV_DWN;
+            else if (strCMP(str,"double") == 0 )
+                psh->event = CTRL_PUSH_EV_DBL;
+        }
+        else if (strCMP(str,"sound") == 0)
+        {
+
+        }
+        else if (strCMP(str,"count_to") == 0)
+        {
+            str = GetParams(str);
+            psh->count_to = atoi(str)+1;
         }
     }
 
