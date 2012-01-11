@@ -5,8 +5,8 @@
 struct musicnode
 {
     Mix_Chunk  *chunk;
-    int         chn;
-    int         volume;
+    int32_t     chn;
+    int32_t     volume;
     bool        looped;
 
     bool        crossfade;

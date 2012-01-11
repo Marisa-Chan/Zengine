@@ -133,7 +133,7 @@ struct_action_res *snd_CreateWavNode()
     tmp = ScrSys_CreateActRes(NODE_TYPE_MUSIC);
 
     tmp->nodes.node_music = new (musicnode);
-    tmp->nodes.node_music->chn = 0;
+    tmp->nodes.node_music->chn = -1;
     tmp->nodes.node_music->chunk  = NULL;
     tmp->nodes.node_music->volume = 100;
     tmp->nodes.node_music->looped = false;
@@ -160,7 +160,7 @@ struct_action_res *snd_CreateSyncNode()
     tmp = ScrSys_CreateActRes(NODE_TYPE_SYNCSND);
 
     tmp->nodes.node_sync = new (struct_syncnode);
-    tmp->nodes.node_sync->chn    =  0;
+    tmp->nodes.node_sync->chn    =  -1;
     tmp->nodes.node_sync->chunk  = NULL;
     tmp->nodes.node_sync->syncto =  0;
     tmp->nodes.node_sync->sub        = NULL;

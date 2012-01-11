@@ -59,7 +59,6 @@ void SetHit(SDLKey key)
     for (int16_t i=0; i < KEYBUFLEN - 1; i++)
         keybbuf[i] = keybbuf[i+1];
     keybbuf[KEYBUFLEN-1] = key;
-    printf("%d\n",key);
 }
 
 void FlushKeybKey(SDLKey key)
