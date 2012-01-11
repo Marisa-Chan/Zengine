@@ -461,58 +461,102 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
     setGNode(nod->slot, nod);
 
-    char *filp=GetFilePath(file);
-
-    nod->nodes.node_music->universe = universe;
-
-    nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
-
-    int st = strlen(file);
-
-    file[st-1] = 'b';
-    file[st-2] = 'u';
-    file[st-3] = 's';
-
-    if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
-        nod->nodes.node_music->sub = sub_LoadSubtitles(file);
-
-    nod->nodes.node_music->chn = GetFreeChannel();
-    if (nod->nodes.node_music->chn == -1)
+    if (type == 4)
     {
-        printf("ERROR, NO CHANNELS!\n");
-        snd_DeleteWav(nod);
-        return ACTION_NORMAL;
+        char fil[FILE_LN_BUF];
+        int32_t instr = atoi(file);
+        int32_t pitch = atoi(loop);
+        sprintf(fil,"%s/MIDI/%d/%d.wav",GetAppPath(),instr,pitch);
+        if (FileExist(fil))
+        {
+            nod->nodes.node_music->universe = universe;
+            nod->nodes.node_music->chunk = Mix_LoadWAV(fil);
+
+            nod->nodes.node_music->chn = GetFreeChannel();
+            if (nod->nodes.node_music->chn == -1)
+            {
+                printf("ERROR, NO CHANNELS!\n");
+                snd_DeleteWav(nod);
+                return ACTION_NORMAL;
+            }
+
+            Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
+
+            if (read_params == 4)
+                nod->nodes.node_music->volume = GetIntVal(vol);
+            else
+                nod->nodes.node_music->volume = 100;
+
+            Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
+
+            if (instr == 0)
+            {
+                Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,0);
+                nod->nodes.node_music->looped = false;
+            }
+            else
+            {
+                Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,-1);
+                nod->nodes.node_music->looped = true;
+            }
+
+            LockChan(nod->nodes.node_music->chn);
+
+
+        }
+        else
+        {
+            snd_DeleteWav(nod);
+            return ACTION_NORMAL;
+        }
     }
-
-    Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
-
-    if (read_params == 4)
-        nod->nodes.node_music->volume = GetIntVal(vol);
     else
-        nod->nodes.node_music->volume = 100;
-
-    Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
-
-    if (GetIntVal(loop)==1)
     {
-        Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,-1);
-        nod->nodes.node_music->looped = true;
+        char *filp=GetFilePath(file);
+
+        nod->nodes.node_music->universe = universe;
+
+        nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
+
+        int st = strlen(file);
+
+        file[st-1] = 'b';
+        file[st-2] = 'u';
+        file[st-3] = 's';
+
+        if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+            nod->nodes.node_music->sub = sub_LoadSubtitles(file);
+
+        nod->nodes.node_music->chn = GetFreeChannel();
+        if (nod->nodes.node_music->chn == -1)
+        {
+            printf("ERROR, NO CHANNELS!\n");
+            snd_DeleteWav(nod);
+            return ACTION_NORMAL;
+        }
+
+        Mix_UnregisterAllEffects(nod->nodes.node_music->chn);
+
+        if (read_params == 4)
+            nod->nodes.node_music->volume = GetIntVal(vol);
+        else
+            nod->nodes.node_music->volume = 100;
+
+        Mix_Volume( nod->nodes.node_music->chn, GetLogVol(nod->nodes.node_music->volume));
+
+        if (GetIntVal(loop)==1)
+        {
+            Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,-1);
+            nod->nodes.node_music->looped = true;
+        }
+        else
+        {
+            Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,0);
+            nod->nodes.node_music->looped = false;
+        }
+
+        LockChan(nod->nodes.node_music->chn);
     }
-    else
-    {
-        Mix_PlayChannel(nod->nodes.node_music->chn,nod->nodes.node_music->chunk,0);
-        nod->nodes.node_music->looped = false;
-    }
-
-
-
-
-    LockChan(nod->nodes.node_music->chn);
-
-
-
-
-//    printf("chan %d vol %d\n",nod->chn,GetIntVal(vol));
 
     ScrSys_AddToActResList(nod);
 

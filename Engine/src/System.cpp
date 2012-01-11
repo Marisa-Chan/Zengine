@@ -39,6 +39,8 @@ uint8_t LMstate,Mstate;
 int32_t M_dbl_time;
 bool    M_dbl_clk=false;
 
+char apppath[FILE_LN_BUF];
+
 
 //Reset state of key hits states
 void FlushHits()
@@ -735,4 +737,14 @@ uint32_t GetDTime()
 double round(double r)
 {
     return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
+}
+
+void SetAppPath(char *pth)
+{
+    strcpy(apppath,pth);
+}
+
+char *GetAppPath()
+{
+    return apppath;
 }

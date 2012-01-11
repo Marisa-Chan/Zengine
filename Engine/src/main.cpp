@@ -35,6 +35,8 @@ int main(int argc, char **argv)
         }
     }
 
+    SetAppPath(pa);
+
     sprintf(buf,"%s/%s",pa,"Zork.dir");
     FILE *dirs=fopen(buf,"rb");
 

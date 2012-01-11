@@ -134,4 +134,7 @@ FManNode *FindInBinTree(char *chr);
 
 double round(double r);
 
+void SetAppPath(char *pth);
+char *GetAppPath();
+
 #endif // SYSTEM_H_INCLUDED
