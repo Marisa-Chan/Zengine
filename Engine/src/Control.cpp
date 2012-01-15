@@ -1621,7 +1621,9 @@ int Parse_Control_Panorama(FILE *fl)
         }
         else if (strCMP(str,"zeropoint")==0)
         {
-
+            str   = GetParams(str);
+            tmp = atoi(str);
+            Rend_pana_SetZeroPoint(tmp);
         }
 
     }

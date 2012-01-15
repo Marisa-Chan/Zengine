@@ -44,7 +44,7 @@ int32_t pana_PanaWidth=1800;
 bool    pana_ReversePana = false;
 float   pana_angle=60.0, pana_linscale=1.00;
 
-
+int32_t pana_Zero = 0;
 
 void Rend_pana_SetAngle(float angle)
 {
@@ -54,6 +54,11 @@ void Rend_pana_SetAngle(float angle)
 void Rend_pana_SetLinscale(float linscale)
 {
     pana_linscale = linscale;
+}
+
+void Rend_pana_SetZeroPoint(int32_t point)
+{
+    pana_Zero = point;
 }
 
 void Rend_SetDelay(int32_t delay)
@@ -588,6 +593,7 @@ void Rend_DrawPanorama()
 
 void Rend_PanaMouseInteract()
 {
+    int32_t tt = *view_X;
     if (Rend_MouseInGamescr())
     {
         if (MouseX() > GAMESCREEN_X + GAMESCREEN_W - GAMESCREEN_P)
@@ -605,6 +611,24 @@ void Rend_PanaMouseInteract()
 
             *view_X -= (pana_ReversePana == false ? param: -param);
         }
+    }
+
+    if (tt < pana_Zero)
+    {
+        if (*view_X >= pana_Zero)
+            SetgVarInt(SLOT_ROUNDS,GetgVarInt(SLOT_ROUNDS) + 1);
+    }
+    else if (tt > pana_Zero)
+    {
+        if (*view_X <= pana_Zero)
+            SetgVarInt(SLOT_ROUNDS,GetgVarInt(SLOT_ROUNDS) - 1);
+    }
+    else if (tt == pana_Zero)
+    {
+        if (*view_X < pana_Zero)
+            SetgVarInt(SLOT_ROUNDS,GetgVarInt(SLOT_ROUNDS) - 1);
+        else if (*view_X > pana_Zero)
+            SetgVarInt(SLOT_ROUNDS,GetgVarInt(SLOT_ROUNDS) + 1);
     }
 
     if (*view_X >= pana_PanaWidth)

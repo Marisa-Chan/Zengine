@@ -60,6 +60,7 @@ void Rend_SetRenderer(int meth);
 void Rend_pana_SetTable();
 void Rend_pana_SetAngle(float angle);
 void Rend_pana_SetLinscale(float linscale);
+void Rend_pana_SetZeroPoint(int32_t point);
 
 void Rend_tilt_SetTable();
 void Rend_tilt_SetAngle(float angle);
