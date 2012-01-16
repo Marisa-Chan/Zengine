@@ -245,4 +245,9 @@
 
 #define EFFECTS_MAX_CNT     32
 
+//Maximal number of same puzzles in the statebox stack
+//For increasing speed of engine
+//May cause errors, but should not
+#define MAX_PUZZLS_IN_STACK 2
+
 #endif // CONFIG_H_INCLUDED

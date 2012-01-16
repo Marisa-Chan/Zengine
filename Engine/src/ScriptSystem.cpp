@@ -676,8 +676,19 @@ void AddStateBoxToStk(puzzlenode *pzl)
     if (owner->stksize < pzlSTACK)
     {
         if (owner->stksize > 0)
-            if (owner->stack[owner->stksize - 1] == pzl)
-                return;
+        {
+            int32_t numb = 0;
+            for (int32_t i=owner->stksize - 1; i>=0 && owner->stack[i] != NULL; i--)
+            {
+                if (owner->stack[i] == pzl)
+                {
+                    if (numb < MAX_PUZZLS_IN_STACK)
+                        numb++;
+                    else
+                        return;
+                }
+            }
+        }
 
         owner->stack[owner->stksize] = pzl;
         owner->stksize++;
@@ -736,11 +747,16 @@ void ScrSys_exec_puzzle_list(pzllst *lst)
 
         while ( i < j)
         {
-            if ( Puzzle_try_exec( lst->stack[i] ) == ACTION_BREAK )
+            puzzlenode *to_exec = lst->stack[i];
+
+            lst->stack[i] = NULL;
+
+            if ( Puzzle_try_exec(to_exec) == ACTION_BREAK )
             {
                 BreakExecute=true;
                 break;
             }
+
             i++;
         }
 
