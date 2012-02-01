@@ -5,6 +5,7 @@
 #include "System.h"
 #include "Game.h"
 #include "Graph.h"
+#include "intro.h"
 
 using namespace std;
 
@@ -89,6 +90,8 @@ int main(int argc, char **argv)
 
     InitMTime(35.0);
 
+    intro_setup();
+
 
     while (!done )
     {
@@ -129,9 +132,10 @@ int main(int argc, char **argv)
             Rend_SwitchFullscreen();
         //done=true;
 
-
-
-        GameLoop();
+        if (intro_ended() == 0)
+            GameLoop();
+        else
+            intro_draw();
 
         //DrawAnimImage
         //printf ("\n\nloop #%d\n",i);

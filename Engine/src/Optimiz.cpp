@@ -42,6 +42,8 @@ float fastSin(float x) {
         idx = x*(-81.487332253);
     else
         idx = x*81.487332253; //512/(2*pi)
+
+    idx+=1024;
     idx %= 512;
     //int32_t idx2 = idx_untrimmed % 512;
 
