@@ -290,6 +290,7 @@ void intro_draw()
             {
                 intr_param = 0;
                 intro_play = 0;
+                SDL_FillRect(Rend_GetWindowSurface(),NULL,SDL_MapRGBA(Rend_GetWindowSurface()->format,0,0,0,0xFF));
             }
 
         }
@@ -300,6 +301,13 @@ void intro_draw()
 
 
     Rend_ScreenFlip();
+
+    if (KeyHit(SDLK_SPACE))
+    {
+        FlushKeybKey(SDLK_SPACE);
+        SDL_FillRect(Rend_GetWindowSurface(),NULL,SDL_MapRGBA(Rend_GetWindowSurface()->format,0,0,0,0xFF));
+        intro_play = 0;
+    }
 
 
 }
