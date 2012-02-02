@@ -308,10 +308,9 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
 
     while(SMPEG_status(anm->mpg) != SMPEG_STOPPED)
     {
-        SDL_Event event;
-        SDL_PollEvent(&event);
-        UpdateKeyboard();
-        if (KeyDown(SDLK_SPACE))
+        UpdateGameSystem();
+
+        if (KeyHit(SDLK_SPACE))
             SMPEG_stop(anm->mpg);
         DrawScalerToScreen(scl,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
 
