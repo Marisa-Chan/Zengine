@@ -1106,7 +1106,7 @@ void control_push(ctrlnode *ct)
                 val %= psh->count_to;
                 SetgVarInt(ct->slot,val);
 
-               // FlushMouseBtn(SDL_BUTTON_LEFT);
+                FlushMouseBtn(SDL_BUTTON_LEFT);
         }
 
     }

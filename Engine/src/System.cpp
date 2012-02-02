@@ -268,6 +268,8 @@ void FlushMouseBtn(int btn)
 {
     Mstate &= ~SDL_BUTTON(btn);
     LMstate &= ~SDL_BUTTON(btn);
+    if (btn == SDL_BUTTON_LEFT)
+        M_dbl_clk = false;
 }
 
 
