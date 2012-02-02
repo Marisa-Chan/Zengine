@@ -16,6 +16,38 @@ void END()
     done = true;
 }
 
+void UpdateGameSystem()
+{
+        ProcMTime();
+        UpdateDTime();
+        // message processing loop
+        SDL_Event event;
+
+        //Clear all hits
+        FlushHits();
+        while (SDL_PollEvent(&event))
+        {
+            // check for messages
+            switch (event.type)
+            {
+                // exit if the window is closed
+            case SDL_QUIT:
+                done = true;
+                break;
+
+                // check for keyhit's (one per press)
+            case SDL_KEYDOWN:
+                SetHit(event.key.keysym.sym);
+                break;
+            }
+        }
+        //check for keydown (continous)
+        UpdateKeyboard();
+
+        if ((KeyDown(SDLK_RALT) || KeyDown(SDLK_LALT)) && KeyHit(SDLK_RETURN))
+            Rend_SwitchFullscreen();
+}
+
 int main(int argc, char **argv)
 {
     InitFileManage();
@@ -95,41 +127,15 @@ int main(int argc, char **argv)
 
     while (!done )
     {
-#ifdef TRACE
+
+        UpdateGameSystem();
+
+//#ifdef TRACE
         //    printf("\n\nLoop #%d\n\n",bl);
-#endif
+//#endif
         //      printf("\n\nLoop #%d\n\n",bl);
         //Update game timer
-        ProcMTime();
-        UpdateDTime();
-        // message processing loop
-        SDL_Event event;
 
-        //Clear all hits
-        FlushHits();
-        while (SDL_PollEvent(&event))
-        {
-            // check for messages
-            switch (event.type)
-            {
-                // exit if the window is closed
-            case SDL_QUIT:
-                done = true;
-                break;
-
-                // check for keyhit's (one per press)
-            case SDL_KEYDOWN:
-                SetHit(event.key.keysym.sym);
-                break;
-            }
-        }
-        //check for keydown (continous)
-        UpdateKeyboard();
-
-
-
-        if ((KeyDown(SDLK_RALT) || KeyDown(SDLK_LALT)) && KeyHit(SDLK_RETURN))
-            Rend_SwitchFullscreen();
         //done=true;
 
         if (intro_ended() == 0)

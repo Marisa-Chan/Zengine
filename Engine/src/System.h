@@ -38,6 +38,7 @@
 
 
 void END();
+void UpdateGameSystem();
 
 //System time functions
 //uint64_t millisec();
