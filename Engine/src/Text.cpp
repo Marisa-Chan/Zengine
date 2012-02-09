@@ -27,7 +27,7 @@ struct_txt_style *txt_NewTxt()
 
 int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
 {
-    char buf[512];
+    char buf[TXT_CFG_BUF_MAX_LEN];
     memcpy(buf,strin,len);
     buf[len] = 0x0;
 
@@ -424,18 +424,18 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
     int32_t dx=0,dy=0;
     int32_t txt_w,txt_h;
     int32_t txtpos=0;
-    char buf[512];
-    char buf2[512];
-    memset(buf,0,512);
-    memset(buf2,0,512);
+    char buf[TXT_CFG_BUF_MAX_LEN];
+    char buf2[TXT_CFG_BUF_MAX_LEN];
+    memset(buf,0,TXT_CFG_BUF_MAX_LEN);
+    memset(buf2,0,TXT_CFG_BUF_MAX_LEN);
 
-    SDL_Surface *TxtSurfaces[256][6];
+    SDL_Surface *TxtSurfaces[TXT_CFG_TEXTURES_LINES][TXT_CFG_TEXTURES_PER_LINE];
     int32_t currentline=0, currentlineitm=0;
 
-    int8_t TxtJustify[256];
-    int8_t TxtPoint[256];
+    int8_t TxtJustify[TXT_CFG_TEXTURES_LINES];
+    int8_t TxtPoint[TXT_CFG_TEXTURES_LINES];
 
-    memset(TxtSurfaces,0,sizeof(TxtSurfaces[0][0])*256*6);
+    memset(TxtSurfaces,0,sizeof(TxtSurfaces[0][0])*TXT_CFG_TEXTURES_LINES*TXT_CFG_TEXTURES_PER_LINE);
 
     int32_t stringlen=strlen(text);
 
@@ -476,7 +476,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
 
                     currentlineitm++;
 
-                    memset(buf,0,512);
+                    memset(buf,0,TXT_CFG_BUF_MAX_LEN);
                     prevbufspace=0;
                     txtpos=0;
                     dx+=txt_w;
@@ -501,7 +501,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
 
             if (ret & TXT_RET_HASSTBOX)
             {
-                char buf3[16];
+                char buf3[MINIBUFSZ];
                 sprintf(buf3,"%d",GetgVarInt(style.statebox));
                 strcat(buf,buf3);
                 txtpos+=strlen(buf3);
@@ -536,7 +536,7 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
                     if (strlen(buf2)>0)
                         TxtSurfaces[currentline][currentlineitm] = txt_RenderUTF8(font,buf2,&style);
 
-                    memset(buf,0,512);
+                    memset(buf,0,TXT_CFG_BUF_MAX_LEN);
                     i = prevtxtspace;
                     prevbufspace=0;
                     txtpos=0;
@@ -580,8 +580,8 @@ void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
         dy+=TxtPoint[i];
     }
 
-    for (i=0; i<256; i++)
-        for (int32_t j=0; j<6; j++)
+    for (i=0; i<TXT_CFG_TEXTURES_LINES; i++)
+        for (int32_t j=0; j<TXT_CFG_TEXTURES_PER_LINE; j++)
             if (TxtSurfaces[i][j]!= NULL)
                 SDL_FreeSurface(TxtSurfaces[i][j]);
 
@@ -723,7 +723,7 @@ int txt_ProcessTTYtext(struct_action_res *nod)
 
                 if (ret & TXT_RET_HASSTBOX)
                 {
-                    char buf[16];
+                    char buf[MINIBUFSZ];
                     sprintf(buf,"%d",GetgVarInt(tty->style.statebox));
                     for (int8_t j=0; j<strlen(buf); j++)
                         outchartotty(buf[j],tty);

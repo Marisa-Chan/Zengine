@@ -14,8 +14,16 @@
 #define TXT_RET_NEWLN      0x4
 #define TXT_RET_HASSTBOX   0x8
 
+
+#define TXT_CFG_FONTNAME_MAX_LEN   64
+//buffers size used for parsing text
+#define TXT_CFG_BUF_MAX_LEN        512
+//used for drawing text
+#define TXT_CFG_TEXTURES_LINES     256
+#define TXT_CFG_TEXTURES_PER_LINE  6
+
 struct struct_txt_style{
-    char    fontname[64];
+    char    fontname[TXT_CFG_FONTNAME_MAX_LEN];
     int8_t  justify;  //0 - center, 1-left, 2-right
     int16_t  size;
     uint8_t  red;     //0-255
