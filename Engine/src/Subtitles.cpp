@@ -31,7 +31,6 @@ struct_textfile *sub_LoadTextFile(char *file)
 
     tmp->count = linescount;
 
-    tmp->params = (char **)calloc(linescount,sizeof(char *));
     tmp->subs   = (char **)calloc(linescount,sizeof(char *));
 
 
@@ -71,27 +70,7 @@ struct_textfile *sub_LoadTextFile(char *file)
         }
 
         if (linescount<tmp->count)
-        {
-            tmp->params[linescount] = NULL;
-            tmp->subs[linescount]   = NULL;
-
-            tmp->params[linescount] = strchr(curline,'<');
-
-            if (tmp->params[linescount] != NULL)
-            {
-                    tmp->params[linescount]++;
-
-                    tmp->subs[linescount] = strchr(tmp->params[linescount],'>');
-
-                    if (tmp->subs[linescount] != NULL)
-                    {
-                        *tmp->subs[linescount] = 0x0;
-
-                        tmp->subs[linescount]++;
-                    }
-                }
-
-        }
+            tmp->subs[linescount]   = curline;
 
         linescount++;
     }
@@ -105,196 +84,8 @@ void sub_DeleteTextFile(struct_textfile *txt)
 {
     free(txt->buffer);
     free(txt->subs);
-    free(txt->params);
     delete txt;
 }
-
-
-struct_font_style sub_parse_parameters(char *string)
-{
-    char buff[512];
-    strcpy(buff,string);
-
-    struct_font_style style;
-    style.blue  = 255;
-    style.green = 255;
-    style.red   = 255;
-    strcpy(style.fontname,"Arial");
-    style.bold       = SUB_STYLE_OFF;
-    style.escapement = 0;
-    style.italic     = SUB_STYLE_OFF;
-    style.justify    = SUB_JUSTIFY_CENTER;
-    style.newline    = 0;
-    style.size       = 12;
-    style.skipcolor  = SUB_STYLE_OFF;
-    style.strikeout  = SUB_STYLE_OFF;
-    style.underline  = SUB_STYLE_OFF;
-
-    char *token;
-
-    char *find = " ";
-
-    token = strtok(buff,find);
-
-    bool gooood;
-
-    while (token != NULL)
-    {
-        gooood = true;
-
-        if ( strCMP(token,"font") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                strcpy(style.fontname,token);
-        }
-        else if( strCMP(token,"blue") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                style.blue = atoi(token);
-        }
-        else if( strCMP(token,"red") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                style.red = atoi(token);
-        }
-        else if( strCMP(token,"green") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                style.green = atoi(token);
-        }
-        else if( strCMP(token,"newline") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.newline = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.newline = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"point") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                style.size = atoi(token);
-        }
-        else if( strCMP(token,"escapement") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else
-                style.escapement = atoi(token);
-        }
-        else if( strCMP(token,"italic") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.italic = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.italic = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"underline") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.underline = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.underline = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"strikeout") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.strikeout = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.strikeout = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"bold") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.bold = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.bold = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"skipcolor") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"on") == 0 )
-                style.skipcolor = SUB_STYLE_ON;
-            else if( strCMP(token,"off") == 0 )
-                style.skipcolor = SUB_STYLE_OFF;
-            else
-                gooood = false;
-        }
-        else if( strCMP(token,"image") == 0 )
-        {
-            //token = strtok(NULL,find);
-        }
-        else if( strCMP(token,"statebox") == 0 )
-        {
-            //token = strtok(NULL,find);
-        }
-        else if( strCMP(token,"justify") == 0 )
-        {
-            token = strtok(NULL,find);
-            if (token == NULL)
-                gooood = false;
-            else if( strCMP(token,"center") == 0 )
-                style.justify = SUB_JUSTIFY_CENTER;
-            else if( strCMP(token,"left") == 0 )
-                style.justify = SUB_JUSTIFY_LEFT;
-            else if( strCMP(token,"right") == 0 )
-                style.justify = SUB_JUSTIFY_RIGHT;
-            else
-                gooood = false;
-        }
-
-        if (gooood)
-            token = strtok(NULL,find);
-
-    }
-
-    return style;
-
-}
-
-
 
 struct_subtitles *sub_LoadSubtitles(char *filename)
 {
@@ -360,17 +151,8 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
                 delete tmp;
                 return NULL;
             }
-            /* FILE *f2 = fopen(fil2,"rb");
-             while (!feof(f2))
-             {
-                 fgets(buf2,FILE_LN_BUF,f2);
-                 TrimRight(buf2);
-                 subs[subscount] = (char *)malloc(strlen(buf2)+1);
-                 strcpy(subs[subscount],buf2);
-                 subscount++;
-             }
-             fclose(f2);*/
-            tmp->txt = sub_LoadTextFile(fil2);//
+
+            tmp->txt = sub_LoadTextFile(fil2);
             tmp->subs = (struct_one_subtitle *)calloc(tmp->txt->count,sizeof(struct_one_subtitle));
             subscount = tmp->txt->count;
         }
@@ -401,126 +183,6 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
     return tmp;
 }
 
-
-void sub_DrawSubWithJustify(char *txt, TTF_Font *fnt, SDL_Color clr, SDL_Surface *dst, int dy, int justify)
-{
-    SDL_Surface *aaa= TTF_RenderUTF8_Solid(fnt,txt,clr);
-
-
-    if (justify == SUB_JUSTIFY_LEFT)
-
-        DrawImageToSurf(aaa,0,dy,dst);
-
-    else if (justify == SUB_JUSTIFY_CENTER)
-
-        DrawImageToSurf(aaa, (dst->w - aaa->w)/2,  dy,  dst);
-
-    else if (justify == SUB_JUSTIFY_RIGHT)
-
-        DrawImageToSurf(aaa, dst->w - aaa->w,  dy,  dst);
-
-
-    SDL_FreeSurface(aaa);
-}
-
-int sub_DrawTextToRect(char *txt, struct_font_style *fnt_stl, SDL_Surface *dst)
-{
-
-    TTF_Font *temp_font = GetFontByName(fnt_stl->fontname, fnt_stl->size);
-    if(!temp_font)
-    {
-        printf("TTF_OpenFont: %s\n", TTF_GetError());
-        exit(1);
-    }
-
-    int temp_stl=0;
-
-    if (fnt_stl->bold == SUB_STYLE_ON)
-        temp_stl |= TTF_STYLE_BOLD;
-
-    if (fnt_stl->italic == SUB_STYLE_ON)
-        temp_stl |= TTF_STYLE_ITALIC;
-
-    if (fnt_stl->underline == SUB_STYLE_ON)
-        temp_stl |= TTF_STYLE_UNDERLINE;
-
-#if (SDL_TTF_NUM_VERSION >= 20010)
-    if (fnt_stl->strikeout == SUB_STYLE_ON)
-        temp_stl |= TTF_STYLE_STRIKETHROUGH;
-#endif
-
-    TTF_SetFontStyle(temp_font,temp_stl);
-
-    SDL_FillRect(dst,NULL,0);
-
-    SDL_Color clr= {fnt_stl->red,fnt_stl->green,fnt_stl->blue};
-
-
-    int w,h,ww;
-
-    TTF_SizeUTF8(temp_font,txt,&w,&h);
-
-    ww=w;
-
-    if (w < dst->w)
-        sub_DrawSubWithJustify(txt,temp_font,clr,dst,0,fnt_stl->justify);
-    else
-    {
-
-        int dy=0;
-        int di=0;
-
-        for (;;)
-        {
-            if (txt[0] == 0x0 || di > 10)
-                break;
-
-            int k=0;
-            char tmpstr[255];
-
-            TTF_SizeUTF8(temp_font,txt,&w,&h);
-            if (w >= dst->w)
-            {
-                for (int i=0; i<strlen(txt); i++)
-                    if (txt[i] == ' ' || txt[i] == '\t')
-                    {
-                        strncpy(tmpstr,txt,i);
-                        tmpstr[i] = 0;
-
-                        TTF_SizeUTF8(temp_font,tmpstr,&w,&h);
-
-                        if (w > dst->w)
-                            break;
-
-                        k = i;
-                    }
-
-                strncpy(tmpstr,txt,k);
-                tmpstr[k] = 0;
-
-                sub_DrawSubWithJustify(tmpstr,temp_font,clr,dst,dy,fnt_stl->justify);
-
-                dy+=fnt_stl->size;
-                txt +=k;
-
-            }
-            else
-            {
-                sub_DrawSubWithJustify(txt,temp_font,clr,dst,dy,fnt_stl->justify);
-                break;
-            }
-
-            di++;
-        }
-
-
-
-    }
-    return ww;
-
-    TTF_CloseFont(temp_font);
-}
-
 int sub_ProcessSub(struct_subtitles *sub,int subtime)
 {
     int j=-1;
@@ -534,7 +196,7 @@ int sub_ProcessSub(struct_subtitles *sub,int subtime)
 
     if (j == -1 && sub->currentsub!= -1)
     {
-        SDL_FillRect(sub->SubRect->img,NULL,0);
+        SDL_FillRect(sub->SubRect->img,NULL,SDL_MapRGBA(sub->SubRect->img->format,0,0,0,255));
         sub->currentsub = -1;
     }
 
@@ -543,21 +205,13 @@ int sub_ProcessSub(struct_subtitles *sub,int subtime)
         char *sss;
         sss = sub->txt->subs[sub->subs[j].sub];
         if (sss != NULL)
-        {
-            for (int i=0; i<=strlen(sss); i++)
-                if (sss[i] == '>')
-                {
-                    sss +=i+1;
-                    break;
-                }
-
-            if (sub->txt->params[sub->subs[j].sub])
+            if (strlen(sss) > 0)
             {
-                struct_font_style fnt_style = sub_parse_parameters(sub->txt->params[sub->subs[j].sub]);
-
-                sub_DrawTextToRect(sss,&fnt_style,sub->SubRect->img);
+                SDL_FillRect(sub->SubRect->img,NULL,SDL_MapRGBA(sub->SubRect->img->format,0,0,0,255));
+                txt_DrawTxtInOneLine(sss,sub->SubRect->img);
             }
-        }
+
+
         sub->currentsub = j;
     }
 }

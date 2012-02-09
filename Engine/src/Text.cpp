@@ -364,17 +364,17 @@ void txt_set_font_style(TTF_Font *font, struct_txt_style *fnt_stl)
 {
     int32_t temp_stl=0;
 
-    if (fnt_stl->bold == SUB_STYLE_ON)
+    if (fnt_stl->bold == TXT_STYLE_VAR_TRUE)
         temp_stl |= TTF_STYLE_BOLD;
 
-    if (fnt_stl->italic == SUB_STYLE_ON)
+    if (fnt_stl->italic == TXT_STYLE_VAR_TRUE)
         temp_stl |= TTF_STYLE_ITALIC;
 
-    if (fnt_stl->underline == SUB_STYLE_ON)
+    if (fnt_stl->underline == TXT_STYLE_VAR_TRUE)
         temp_stl |= TTF_STYLE_UNDERLINE;
 
 #if (SDL_TTF_NUM_VERSION >= 20010)
-    if (fnt_stl->strikeout == SUB_STYLE_ON)
+    if (fnt_stl->strikeout == TXT_STYLE_VAR_TRUE)
         temp_stl |= TTF_STYLE_STRIKETHROUGH;
 #endif
 
