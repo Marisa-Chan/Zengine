@@ -6,7 +6,6 @@ CXX_WIN = i486-mingw32-g++
 LIBS = -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lsmpeg -lrt
 LIBS_WIN = -L$(MINGW)/lib/ -lmingw32 -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lsmpeg -lSDL.dll -mwindows
 TARGET = Zengine
-TARGET_WIN = $(TARGET).exe
 OBJS =  \
 	actions.cpp\
 	Control.cpp\
@@ -26,7 +25,8 @@ OBJS =  \
 	menu.cpp\
 	Subtitles.cpp\
 	Text.cpp\
-	Optimiz.cpp
+	Optimiz.cpp\
+	intro.cpp
 	
 WINOBJ = \
 	win_funct.cpp
@@ -39,8 +39,8 @@ linux_znem: $(OBJS)
 	$(CXX) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
 win32_zgi: $(OBJS) $(WINOBJ)
-	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
-	$(CXX_WIN) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET)_wide.exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 win32_znem: $(OBJS) $(WINOBJ)
 	$(CXX_WIN) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
