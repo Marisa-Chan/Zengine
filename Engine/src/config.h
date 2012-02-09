@@ -113,8 +113,8 @@
 #define CTRL_FIST_MAX_BOXES  6
 #define CTRL_FIST_MAX_ENTRS  64
 
-
-
+//titler-control
+#define CTRL_TITLER_MAX_STRINGS  128
 
 
 
@@ -224,6 +224,10 @@
 #define CTRL_FIST_MAX_FISTS  4
 #define CTRL_FIST_MAX_BOXES  6
 #define CTRL_FIST_MAX_ENTRS  64
+
+//titler-control
+#define CTRL_TITLER_MAX_STRINGS  128
+
 
 #else
 

@@ -161,6 +161,7 @@ void EasterEggsAndDebug()
 
         if (CheckKeyboardMessage("Q",1) )
         {
+//            SetgVarInt(159,GetgVarInt(159)+1);
 //            printf("\n%d\n",GetgVarInt(23107));
 //            printf("%d\n",GetgVarInt(23109));
 //            printf("%d\n",GetgVarInt(23115));

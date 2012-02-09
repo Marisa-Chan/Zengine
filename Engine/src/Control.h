@@ -12,6 +12,7 @@
 #define CTRL_FIST     7
 #define CTRL_HOTMV    8
 #define CTRL_PAINT    9
+#define CTRL_TITLER   10
 #define CTRL_PANA     100
 #define CTRL_FLAT     101
 #define CTRL_TILT     102
@@ -153,6 +154,16 @@ struct safenode
     int32_t  frame_time;
 };
 
+struct titlernode
+{
+    int16_t      num_strings;
+    char *       strings[CTRL_TITLER_MAX_STRINGS];
+    Rect         rectangle;
+    SDL_Surface  *surface;
+    int16_t      current_string;
+    int16_t      next_string;
+};
+
 struct paintnode
 {
     uint8_t     *brush;
@@ -231,6 +242,7 @@ struct ctrlnode
         fistnode     *fist;
         hotmvnode    *hotmv;
         paintnode    *paint;
+        titlernode   *titler;
 
         void  *unknown;
     } node;
@@ -261,6 +273,9 @@ void control_safe_draw(ctrlnode *ct);
 
 void control_fist(ctrlnode *ct);
 void control_fist_draw(ctrlnode *ct);
+
+void control_titler(ctrlnode *ct);
+void control_titler_draw(ctrlnode *ct);
 
 void control_paint(ctrlnode *ct);
 

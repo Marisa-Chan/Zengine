@@ -744,8 +744,8 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
     tmp->point = pre->nodes.node_animpre;
     tmp->x = x;
     tmp->y = y;
-    tmp->w = w-x;
-    tmp->h = h-y;
+    tmp->w = w-x+1;
+    tmp->h = h-y+1;
     tmp->start = start;
     tmp->end = end;
     tmp->loop = loop;
@@ -1655,6 +1655,29 @@ int action_region(char *params, int aSlot , pzllst *owner)
 
         break;
         }
+    }
+
+    return ACTION_NORMAL;
+}
+
+int action_display_message(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:display_message(%s)\n",params);
+#endif
+
+    int32_t p1,p2,p3,p4,p5,p6;
+
+    if (sscanf(params,"%d %d %d %d %d %d",&p1, &p2, &p3, &p4, &p5, &p6) == 6)
+    {
+
+    }
+    else if (sscanf(params,"%d %d",&p1, &p2) == 2)
+    {
+        ctrlnode *ct = GetControlByID(p1);
+        if (ct)
+            if (ct->type == CTRL_TITLER)
+                ct->node.titler->next_string = p2;
     }
 
     return ACTION_NORMAL;

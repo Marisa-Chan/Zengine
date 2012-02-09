@@ -1,14 +1,14 @@
 Status:   ZGI:RC
           ZNEMESIS: dev
 
-Progress:     [##################--]
-             0%         90%        100%
+Progress:     [###################-]
+             0%         95%        100%
 
 ZGI Code:     [###################-]  //TESTING!
              0%         98%        100%
 
-Nemesis Code: [###############-----]
-             0%         75%        100%
+Nemesis Code: [##################--]
+             0%         90%        100%
 
 
 
@@ -36,10 +36,8 @@ Thanks w8m (for "unraw" code reverse)
 [Actions Functions]
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
-action_display_message      :shows text line in box from titler-control
 
 [Controls Objects]
-control_titler              :contain message lines
 control_push_toggle(venus_id): reverse what means "venus_id"
 
 

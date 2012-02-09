@@ -473,6 +473,17 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
         nod->func  = action_region;
         return;
     }
+    if (strCMP(buf,"display_message")==0)
+    {
+        nod = new(func_node);
+        AddToMList(lst,nod);
+
+        nod->param = copy_params(params);
+        nod->slot  = slot;
+
+        nod->func  = action_display_message;
+        return;
+    }
 
 }
 

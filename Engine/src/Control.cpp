@@ -194,6 +194,20 @@ paintnode * CreatePaintNode()
     return tmp;
 }
 
+titlernode * CreateTitlerNode()
+{
+    titlernode *tmp = new(titlernode);
+
+    tmp->num_strings = 0;
+    tmp->surface  = NULL;
+    InitRect(&tmp->rectangle);
+
+    for (int32_t i=0; i<CTRL_TITLER_MAX_STRINGS; i++)
+        tmp->strings[i] = NULL;
+
+    return tmp;
+}
+
 ctrlnode *Ctrl_CreateNode(int type)
 {
     ctrlnode *tmp;
@@ -252,6 +266,11 @@ ctrlnode *Ctrl_CreateNode(int type)
         tmp->type = CTRL_PAINT;
         tmp->node.paint = CreatePaintNode();
         tmp->func = control_paint;
+        break;
+    case CTRL_TITLER:
+        tmp->type = CTRL_TITLER;
+        tmp->node.titler = CreateTitlerNode();
+        tmp->func = control_titler;
         break;
     };
     return tmp;
@@ -414,6 +433,8 @@ void Ctrl_DrawControls()
                 control_hotmv_draw(nod);
             else if (nod->type == CTRL_FIST)
                 control_fist_draw(nod);
+            else if (nod->type == CTRL_TITLER)
+                control_titler_draw(nod);
         }
         NextMList(ctrl);
     }
@@ -939,6 +960,26 @@ void control_hotmv(ctrlnode *ct)
 
     }
     }
+}
+
+void control_titler(ctrlnode *ct)
+{
+    titlernode *titler = ct->node.titler;
+    if (titler->current_string != titler->next_string && titler->next_string >= 0 && titler->next_string < CTRL_TITLER_MAX_STRINGS)
+    {
+        titler->current_string = titler->next_string;
+        SDL_FillRect(titler->surface,NULL,SDL_MapRGBA(titler->surface->format,0,0,0,255));
+        if (titler->strings[titler->current_string] != NULL && titler->surface != NULL)
+            txt_DrawTxtInOneLine(titler->strings[titler->current_string],titler->surface);
+    }
+}
+
+void control_titler_draw(ctrlnode *ct)
+{
+    titlernode *titler = ct->node.titler;
+
+    if (titler->surface)
+        Rend_DrawImageUpGamescr(titler->surface, titler->rectangle.x + GAMESCREEN_FLAT_X,  titler->rectangle.y);
 }
 
 void control_hotmv_draw(ctrlnode *ct)
@@ -1787,6 +1828,73 @@ int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
 
 }
 
+int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
+{
+    int good = 0;
+    char buf[FILE_LN_BUF];
+    char *str;
+
+    ctrlnode *ctnode = Ctrl_CreateNode(CTRL_TITLER);
+    titlernode *titler = ctnode->node.titler;
+
+    AddToMList(controlst,ctnode);
+    ctnode->slot      = slot;
+
+    while (!feof(fl))
+    {
+        fgets(buf,FILE_LN_BUF,fl);
+        str = PrepareString(buf);
+
+        if (str[0] == '}')
+        {
+            good = 1;
+            break;
+        }
+        else if (strCMP(str,"rectangle")==0)
+        {
+            str=GetParams(str);
+            sscanf(str,"%d %d %d %d",\
+                   &titler->rectangle.x,\
+                   &titler->rectangle.y,\
+                   &titler->rectangle.w,\
+                   &titler->rectangle.h);
+
+            titler->surface = CreateSurface(titler->rectangle.w-titler->rectangle.x+1,titler->rectangle.h-titler->rectangle.y+1);
+            SetColorKey(titler->surface,0,0,0);
+        }
+        else if (strCMP(str,"string_resource_file")==0)
+        {
+            str=GetParams(str);
+            char *tmp = GetFilePath(str);
+            if (tmp != NULL)
+            {
+                titler->num_strings = 0;
+                FILE *fl2 = fopen (tmp,"rb");
+
+                char bf[FILE_LN_BUF];
+
+                while (!feof(fl2) && titler->num_strings<CTRL_TITLER_MAX_STRINGS)
+                {
+                    fgets(bf,FILE_LN_BUF,fl2);
+                    char *str2 = PrepareString(bf);
+                    int32_t bflen = strlen(str2);
+                    if (bf > 0)
+                    {
+                        titler->strings[titler->num_strings] = (char *)calloc(bflen+1,1);
+                        strcpy(titler->strings[titler->num_strings],str2);
+                    }
+
+                    titler->num_strings++;
+                }
+
+                fclose(fl2);
+
+            }
+        }
+    }//while (!feof(fl))
+
+}
+
 int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
 {
     int good = 0;
@@ -2516,6 +2624,10 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
     {
         Parse_Control_Paint(controlst,fl,slot);
     }
+    else if (strCMP(ctrltp,"titler")==0)
+    {
+        Parse_Control_Titler(controlst,fl,slot);
+    }
 
     return good;
 }
@@ -2615,6 +2727,16 @@ void ctrl_Delete_PaintNode(ctrlnode *nod)
     delete nod->node.paint;
 }
 
+void ctrl_Delete_TitlerNode(ctrlnode *nod)
+{
+    if (nod->node.titler->surface != NULL)
+        SDL_FreeSurface(nod->node.titler->surface);
+    for (int32_t i=0; i<CTRL_TITLER_MAX_STRINGS; i++)
+        if (nod->node.titler->strings[i] != NULL)
+            free(nod->node.titler->strings[i]);
+    delete nod->node.titler;
+}
+
 void DeleteSelControl(ctrlnode *nod)
 {
     switch (nod->type)
@@ -2645,6 +2767,9 @@ void DeleteSelControl(ctrlnode *nod)
         break;
     case CTRL_PAINT:
         ctrl_Delete_PaintNode(nod);
+        break;
+    case CTRL_TITLER:
+        ctrl_Delete_TitlerNode(nod);
         break;
     }
 
