@@ -44,6 +44,8 @@ void UpdateGameSystem()
         //check for keydown (continous)
         UpdateKeyboard();
 
+        FpsCounter();
+
         if ((KeyDown(SDLK_RALT) || KeyDown(SDLK_LALT)) && KeyHit(SDLK_RETURN))
             Rend_SwitchFullscreen();
 }

@@ -515,3 +515,27 @@ void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y)
     DrawScaler(scal,x,y,screen);
 }
 
+int32_t time=0;
+int32_t frames=0;
+int32_t fps=1;
+
+int32_t GetFps()
+{
+    return fps;
+}
+
+void FpsCounter()
+{
+    if (millisec() > time)
+    {
+        fps = frames;
+        if (fps == 0)
+            fps = 1;
+        frames = 0;
+        time = millisec() + 1000;
+    }
+    frames++;
+}
+
+
+

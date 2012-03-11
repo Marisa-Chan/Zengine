@@ -306,9 +306,7 @@ void ifquit()
     Rend_ScreenFlip();
     while (!KeyDown(SDLK_y) && !KeyDown(SDLK_n))
     {
-        SDL_Event event;
-        SDL_PollEvent(&event);
-        UpdateKeyboard();
+        UpdateGameSystem();
     }
     Rend_DeleteSubRect(zzz);
     if (KeyDown(SDLK_y))

@@ -73,4 +73,7 @@ void DeleteScaler(scaler *scal);
 void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst);
 void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y);
 
+int32_t GetFps();
+void FpsCounter();
+
 #endif // GRAPH_H_INCLUDED

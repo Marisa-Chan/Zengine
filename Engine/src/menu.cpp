@@ -21,16 +21,14 @@
 
 #define menu_ITEM_SPACE        28
 
-
-#define menu_zgi_scrollby_main   2
-#define menu_zgi_scrollby_side   24
+#define menu_SCROLL_TIME_INV   1.0
+#define menu_SCROLL_TIME       0.5
 
 #define menu_zgi_inv_hot_w     28
 #define menu_zgi_inv_h         32
 #define menu_zgi_inv_w         600
 
 #define menu_znemesis_butanim  200
-#define menu_znemesis_scrollby 4
 #define menu_znemesis_but_frames  6
 #define menu_znemesis_but_max_frm 4
 #define menu_znemesis_but_clk_frm 5
@@ -38,7 +36,7 @@
 uint16_t menu_bar_flag = 0xFFFF;
 
 bool   menu_Scrolled [3] = {false,false,false};
-int16_t menu_ScrollPos[3] = {0,0,0};
+float menu_ScrollPos[3] = {0,0,0};
 
 SDL_Surface *menubar[4][2];
 SDL_Surface *menuback[3][2];
@@ -50,11 +48,10 @@ bool inmenu=false;
 
 int16_t mouse_on_item=-1;
 
-int32_t menu_scroll_time = menu_SCROLL_DELAY;
 
 SDL_Surface *menubar_znem;
 SDL_Surface *menubut_znem[4][menu_znemesis_but_frames];
-int16_t      scrollpos_znem;
+float        scrollpos_znem;
 bool         scrolled_znem;
 
 int16_t      butframe_znem[4];
@@ -115,8 +112,6 @@ void menu_LoadGraphics_znemesis()
 
 void menu_UpdateMenuBar_zgi()
 {
-    char buf[255];
-
     mouse_on_item = -1;
 
     if (MouseY() <= menu_HOT_Y)
@@ -132,13 +127,12 @@ void menu_UpdateMenuBar_zgi()
 
                 if (!menu_Scrolled[menu_ITEM])
                 {
-                    if (menu_scroll_time<0)
-                    {
-                        menu_ScrollPos [menu_ITEM] += menu_zgi_scrollby_side;
-                        menu_scroll_time = menu_SCROLL_DELAY;
-                    }
-                    else
-                        menu_scroll_time -= GetDTime();
+                    float scrl = (menu_zgi_inv_w / float(GetFps())) /menu_SCROLL_TIME_INV;
+
+                    if (scrl == 0)
+                        scrl = 1.0;
+
+                    menu_ScrollPos [menu_ITEM] += scrl;
                 }
 
                 if (menu_ScrollPos[menu_ITEM] >= 0)
@@ -185,13 +179,12 @@ void menu_UpdateMenuBar_zgi()
 
                 if (!menu_Scrolled[menu_MAGIC])
                 {
-                    if (menu_scroll_time<0)
-                    {
-                        menu_ScrollPos [menu_MAGIC] += menu_zgi_scrollby_side;
-                        menu_scroll_time = menu_SCROLL_DELAY;
-                    }
-                    else
-                        menu_scroll_time -= GetDTime();
+                    float scrl = (menu_zgi_inv_w / float(GetFps())) /menu_SCROLL_TIME_INV;
+
+                    if (scrl == 0)
+                        scrl = 1.0;
+
+                    menu_ScrollPos [menu_MAGIC] += scrl;
                 }
 
                 if (menu_ScrollPos[menu_MAGIC] >= menuback[menu_MAGIC][0]->w)
@@ -229,13 +222,13 @@ void menu_UpdateMenuBar_zgi()
 
             if (!menu_Scrolled[menu_MAIN])
             {
-                if (menu_scroll_time<0)
-                {
-                    menu_ScrollPos [menu_MAIN] += menu_zgi_scrollby_main;
-                    menu_scroll_time = menu_SCROLL_DELAY;
-                }
-                else
-                    menu_scroll_time -= GetDTime();
+                float scrl = (menu_MAIN_EL_H / float(GetFps())) /menu_SCROLL_TIME;
+
+                if (scrl == 0)
+                    scrl = 1.0;
+
+                menu_ScrollPos [menu_MAIN] += scrl;
+
             }
 
             if (menu_ScrollPos[menu_MAIN] >= 0)
@@ -308,7 +301,6 @@ void menu_UpdateMenuBar_zgi()
                 menu_mousefocus = menu_MAIN;
                 menu_Scrolled[menu_MAIN]  = false;
                 menu_ScrollPos[menu_MAIN] = menuback[menu_MAIN][1]->h - menuback[menu_MAIN][0]->h;
-                menu_scroll_time = menu_SCROLL_DELAY;
             }
 
             if (menu_bar_flag & menu_BAR_MAGIC)
@@ -317,7 +309,6 @@ void menu_UpdateMenuBar_zgi()
                     menu_mousefocus = menu_MAGIC;
                     menu_Scrolled[menu_MAGIC]  = false;
                     menu_ScrollPos[menu_MAGIC] = menu_zgi_inv_hot_w;
-                    menu_scroll_time = menu_SCROLL_DELAY;
                 }
 
             if (menu_bar_flag & menu_BAR_ITEM)
@@ -326,7 +317,6 @@ void menu_UpdateMenuBar_zgi()
                     menu_mousefocus = menu_ITEM;
                     menu_Scrolled[menu_ITEM]  = false;
                     menu_ScrollPos[menu_ITEM] = menu_zgi_inv_hot_w - menu_zgi_inv_w;
-                    menu_scroll_time = menu_SCROLL_DELAY;
                 }
         }
     }
@@ -350,8 +340,6 @@ void menu_UpdateMenuBar_zgi()
 
 void menu_UpdateMenuBar_znemesis()
 {
-    char buf[255];
-
     mouse_on_item = -1;
 
     if (MouseY() <= menu_HOT_Y)
@@ -362,13 +350,12 @@ void menu_UpdateMenuBar_znemesis()
 
             if (!scrolled_znem)
             {
-                if (menu_scroll_time<0)
-                {
-                    scrollpos_znem += menu_znemesis_scrollby;
-                    menu_scroll_time = menu_SCROLL_DELAY;
-                }
-                else
-                    menu_scroll_time -= GetDTime();
+                float scrl = (menubar_znem->h / float(GetFps())) /menu_SCROLL_TIME;
+
+                if (scrl == 0)
+                    scrl = 1.0;
+
+                scrollpos_znem += scrl;
             }
 
             if (scrollpos_znem >= 0)
@@ -478,13 +465,12 @@ void menu_UpdateMenuBar_znemesis()
 
         if (scrollpos_znem > -menubar_znem->h)
         {
-            if (menu_scroll_time<0)
-                {
-                    scrollpos_znem -= menu_znemesis_scrollby;
-                    menu_scroll_time = menu_SCROLL_DELAY;
-                }
-                else
-                    menu_scroll_time -= GetDTime();
+            float scrl = (menubar_znem->h / float(GetFps())) /menu_SCROLL_TIME;
+
+            if (scrl == 0)
+                scrl = 1.0;
+
+            scrollpos_znem -= scrl;
         }
         else
             scrollpos_znem = -menubar_znem->h;
@@ -659,8 +645,6 @@ void menu_DrawMenuBar_zgi()
 
 void menu_DrawMenuBar_znemesis()
 {
-    char buf[255];
-
     if (inmenu)
     {
             DrawImage(menubar_znem,menu_MAIN_X,scrollpos_znem);
