@@ -586,9 +586,9 @@ void control_slot(ctrlnode *ct)
     if (mousein)
     {
 
-        if (GetgVarInt(ct->slot)!=0)
-            if (Mouse_IsCurrentCur(CURSOR_IDLE))
-                Mouse_SetCursor(slut->cursor);
+      //  if (GetgVarInt(ct->slot)!=0)
+        if (Mouse_IsCurrentCur(CURSOR_IDLE))
+            Mouse_SetCursor(slut->cursor);
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
