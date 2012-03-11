@@ -102,6 +102,8 @@
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
 		<Unit filename="types.h" />
+		<Unit filename="inventory.h" />
+		<Unit filename="inventory.cpp" />
 		<Extensions>
 			<envvars />
 			<code_completion>

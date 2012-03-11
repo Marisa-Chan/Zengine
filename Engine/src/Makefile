@@ -26,7 +26,8 @@ OBJS =  \
 	Subtitles.cpp\
 	Text.cpp\
 	Optimiz.cpp\
-	intro.cpp
+	intro.cpp\
+	inventory.cpp
 	
 WINOBJ = \
 	win_funct.cpp
