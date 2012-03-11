@@ -8,7 +8,7 @@
 		<Cursor position="7448" topLine="253" />
 	</File>
 	<File name="Game.h" open="1" top="0" tabpos="15">
-		<Cursor position="528" topLine="6" />
+		<Cursor position="528" topLine="0" />
 	</File>
 	<File name="Graph.cpp" open="1" top="0" tabpos="5">
 		<Cursor position="6381" topLine="318" />
@@ -39,9 +39,6 @@
 	</File>
 	<File name="actions.cpp" open="1" top="0" tabpos="13">
 		<Cursor position="576" topLine="0" />
-	</File>
-	<File name="./config.h" open="1" top="0" tabpos="17">
-		<Cursor position="817" topLine="33" />
 	</File>
 	<File name="main.cpp" open="1" top="0" tabpos="1">
 		<Cursor position="520" topLine="3" />

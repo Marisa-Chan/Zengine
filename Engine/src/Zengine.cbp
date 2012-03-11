@@ -104,6 +104,8 @@
 		<Unit filename="types.h" />
 		<Unit filename="inventory.h" />
 		<Unit filename="inventory.cpp" />
+		<Unit filename="intro.h" />
+		<Unit filename="intro.cpp" />
 		<Extensions>
 			<envvars />
 			<code_completion>
