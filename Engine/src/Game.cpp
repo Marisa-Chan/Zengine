@@ -192,7 +192,7 @@ void GameLoop()
 
 #ifdef GAME_NEMESIS
         if (MouseUp(SDL_BUTTON_RIGHT))
-            action_inventory("cycle",0,NULL);
+            inv_cycle();
 #endif
         if (GetgVarInt(SLOT_MOUSE_RIGHT_CLICK) != 1)
             if (MouseDown(SDL_BUTTON_LEFT))

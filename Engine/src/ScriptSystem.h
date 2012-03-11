@@ -20,6 +20,7 @@
 #define SLOT_MOUSE_RIGHT_CLICK 18 //1 if right button of mouse
 #define SLOT_MENU_STATE        19
 #define SLOT_JUST_RESTORED     20
+#define SLOT_ON_QUIT           39 //1 - quitting
 #define SLOT_LASTWORLD         40
 #define SLOT_LASTROOM          41
 #define SLOT_LASTNODE          42
@@ -32,7 +33,9 @@
 #define SLOT_MENU_LASTVIEW_POS 49
 #define SLOT_KBD_ROTATE_SPEED  50
 #define SLOT_SUBTITLE_FLAG     51 //ShowSubtitles
+#define SLOT_STREAMSKIP_KEY    52
 #define SLOT_PANAROTATE_SPEED  53
+#define SLOT_MASTER_VOLUME     56
 #define SLOT_QSOUND_ENABLE     57
 #define SLOT_VENUSENABLED      58
 #define SLOT_HIGH_QUIALITY     59
@@ -49,6 +52,8 @@
                                     //To change - type DBGONOFF
 #define SLOT_JAPANESEFONTS     75
 #define SLOT_BRIGHTNESS        77
+#define SLOT_INV_STORAGE_S1   100
+#define SLOT_INV_STORAGE_0    101
 #define SLOT_INV_STORAGE_1    102
 #define SLOT_INV_STORAGE_2    103
 #define SLOT_INV_STORAGE_3    104
@@ -58,17 +63,9 @@
 #define SLOT_INV_STORAGE_50   149
 #define SLOT_TOTAL_INV_AVAIL  150
 
-#ifdef GAME_ZGI
-
 #define SLOT_START_SLOT       151
 #define SLOT_END_SLOT         170
 
-#elif GAME_NEMESIS
-
-#define SLOT_START_SLOT       30051
-#define SLOT_END_SLOT         30070
-
-#endif
 
 #define SLOT_SPELL_1          191
 #define SLOT_SPELL_2          192

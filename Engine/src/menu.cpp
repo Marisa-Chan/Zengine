@@ -162,17 +162,28 @@ void menu_UpdateMenuBar_zgi()
                         mouse_on_item = i;
 
                         if (MouseUp(SDL_BUTTON_LEFT))
-                            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
+                        {
+                            int32_t mouse_item = GetgVarInt(SLOT_INVENTORY_MOUSE);
+                            if (mouse_item >= 0  && mouse_item < 0xE0)
                             {
-                                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(SLOT_START_SLOT + i));
-                                SetgVarInt(SLOT_START_SLOT + i,0);
+                                inv_drop(mouse_item);
+                                inv_add(GetgVarInt(SLOT_START_SLOT + i));
+                                SetgVarInt(SLOT_START_SLOT + i,mouse_item);
                             }
-                            else if (GetgVarInt(SLOT_INVENTORY_MOUSE) > 0  && GetgVarInt(SLOT_INVENTORY_MOUSE) < 0xE0) //ITEM_HACK
-                            {
-                                int te=GetgVarInt(SLOT_START_SLOT + i);
-                                SetgVarInt(SLOT_START_SLOT + i,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
-                            }
+
+
+//                            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
+//                            {
+//                                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(SLOT_START_SLOT + i));
+//                                SetgVarInt(SLOT_START_SLOT + i,0);
+//                            }
+//                            else if (GetgVarInt(SLOT_INVENTORY_MOUSE) > 0  && GetgVarInt(SLOT_INVENTORY_MOUSE) < 0xE0) //ITEM_HACK
+//                            {
+//                                int te=GetgVarInt(SLOT_START_SLOT + i);
+//                                SetgVarInt(SLOT_START_SLOT + i,GetgVarInt(SLOT_INVENTORY_MOUSE));
+//                                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
+//                            }
+                        }
                     }
                 }
 

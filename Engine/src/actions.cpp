@@ -961,156 +961,282 @@ int action_stop(char *params, int aSlot , pzllst *owner)
 }
 
 
+//int32_t inv_get_cnt()
+//{
+//    return GetgVarInt(SLOT_INV_STORAGE_S1);
+//}
+//
+//void inv_set_cnt(int32_t cnt)
+//{
+//    SetgVarInt(SLOT_INV_STORAGE_S1,cnt);
+//}
+//
+//int32_t inv_get_item(int32_t index)
+//{
+//    if (index < 49 && index >= 0)
+//        return GetgVarInt(SLOT_INV_STORAGE_0 + index);
+//    return -1;
+//}
+//
+//void inv_set_item(int32_t index, int32_t item)
+//{
+//    if (index < 49 && index >= 0)
+//        SetgVarInt(SLOT_INV_STORAGE_0 + index,item);
+//}
+//
+//
+//void act_inv_drop(int item)
+//{
+//
+//    int32_t items_cnt = inv_get_cnt();
+//
+//    //if items in inventory > 0
+//    if ( items_cnt != 0)
+//    {
+//        int32_t index = 0;
+//
+//        //finding needed item
+//        while (index < items_cnt)
+//        {
+//            if ( inv_get_item(index) == item )
+//                break;
+//
+//            index++;
+//        }
+//
+//        // if item in the inventory
+//        if ( items_cnt !=index )
+//        {
+//            //shift all items left with rewrite founded item
+//            for (int32_t v = index; v < items_cnt-1 ; v++)
+//                inv_set_item(v, inv_get_item(v+1));
+//
+//            //del last item
+//            inv_set_item(items_cnt-1, 0);
+//            inv_set_cnt(inv_get_cnt() - 1);
+//
+//            SetgVarInt(SLOT_INVENTORY_MOUSE, inv_get_item(0));
+//        }
+//    }
+//
+//
+//
+////    if (item == 0)
+////        return;
+////
+////    if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
+////    {
+////        SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+////    }
+////    else
+////    {
+////        for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
+////            if (GetgVarInt(i)==item)
+////            {
+////                SetgVarInt(i,0);
+////                break;
+////            }
+////    }
+//
+//}
 
+//void act_inv_add_put(int item)
+//{
+//    int32_t cnt = inv_get_cnt();
+//
+//    for ( int32_t i = cnt; i > 0; --i )
+//        inv_set_item(i, inv_get_item(i-1));
+//
+//    inv_set_item(0,item);
+//
+//    SetgVarInt(SLOT_INVENTORY_MOUSE, item);
+//
+//    inv_set_cnt(inv_get_cnt() + 1);
+//}
+//
+//void act_inv_add(int item)
+//{
+////
+////    if (inv_get_cnt() < 49)
+////    {
+////        if (inv_get_cnt() == 0)
+////            inv_set_cnt(1);
+////
+////
+////        int32_t cnt = inv_get_cnt();
+////
+////        if ( cnt <= 0 )
+////            act_inv_add_put(item);
+////        else
+////        {
+////            int32_t v4 = 0;
+////
+////            while ( inv_get_item(v4) != item )
+////            {
+////                if ( v4 > cnt )
+////                {
+////                    act_inv_add_put(item);
+////                    break;
+////                }
+////
+////                v4++;
+////            }
+////        }
+////    }
+//
+//    if (inv_get_cnt() < 49)
+//    {
+//        int32_t cnt = inv_get_cnt();
+//
+//        int8_t flag = 1;
+//
+//        for(int32_t cur = 0; cur < cnt; cur++)
+//            if (inv_get_item(cur) == item)
+//            {
+//                flag = 0;
+//                break;
+//            }
+//
+//
+//        if (flag)
+//        {
+//            for ( int32_t i = cnt; i > 0; --i )
+//                inv_set_item(i, inv_get_item(i-1));
+//
+//            inv_set_item(0,item);
+//
+//            SetgVarInt(SLOT_INVENTORY_MOUSE, item);
+//
+//            inv_set_cnt(cnt + 1);
+//        }
+//
+//    }
+//
+////   if (item == 0)
+//    //     return;
+//
+//    /*for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//        if (GetgVarInt(i) == item)
+//            SetgVarInt(i,0);*/
+//    /*
+//       for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//           if (GetgVarInt(i)==0)
+//           {
+//               if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+//               {
+//                   SetgVarInt(i,GetgVarInt(SLOT_INVENTORY_MOUSE));
+//                   SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+//               }
+//               else
+//                   break;
+//           }
+//
+//       SetgVarInt(SLOT_INVENTORY_MOUSE,item);*/
+//
+//}
 
-void act_inv_drop(int item)
-{
-    if (item == 0)
-        return;
-
-    if (GetgVarInt(SLOT_INVENTORY_MOUSE) == item)
-    {
-        SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-    }
-    else
-    {
-        for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT ; i++)
-            if (GetgVarInt(i)==item)
-            {
-                SetgVarInt(i,0);
-                break;
-            }
-    }
-
-}
-
-void act_inv_add(int item)
-{
-    if (item == 0)
-        return;
-
-    /*for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-        if (GetgVarInt(i) == item)
-            SetgVarInt(i,0);*/
-
-    for (int i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-        if (GetgVarInt(i)==0)
-        {
-            if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-            {
-                SetgVarInt(i,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-            }
-            else
-                break;
-        }
-
-    SetgVarInt(SLOT_INVENTORY_MOUSE,item);
-
-}
-
-void del_item(int32_t item)
-{
-    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-        if (GetgVarInt(i)== item)
-        {
-            SetgVarInt(i,0);
-            break;
-        }
-}
-
-void put_item(int32_t item)
-{
-    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-        if (GetgVarInt(i) == 0)
-        {
-            SetgVarInt(i,item);
-            break;
-        }
-}
-
-void act_inv_cycle()
-{
-    int32_t objs = 0;
-    if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-        objs = 1;
-
-    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-        if (GetgVarInt(i)!=0)
-            objs++;
-
-    if (objs > 0)
-    {
-        int32_t *objects = (int32_t *)calloc(sizeof(int32_t),objs);
-
-        int32_t n = 0;
-
-        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-        {
-            objects[n] = GetgVarInt(SLOT_INVENTORY_MOUSE);
-            n++;
-        }
-
-        for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
-            if (GetgVarInt(i)!=0)
-            {
-                objects[n] = GetgVarInt(i);
-                n++;
-            }
-
-        //sorting
-        int8_t exch = 1;
-        for (int32_t j=0; j < objs-1 && exch == 1; j++)
-        {
-            exch = 0;
-            for (int32_t i=0; i < objs-1; i++)
-                if (objects[i] > objects[i+1])
-                {
-                    int32_t tmp = objects[i+1];
-                    objects[i+1] = objects[i];
-                    objects[i] = tmp;
-                    exch = 1;
-                }
-        }
-        //end of sort
-
-
-        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
-        {
-            int32_t itm = GetgVarInt(SLOT_INVENTORY_MOUSE);
-            int32_t nxt = 0;
-            for (int32_t i=objs-1; i>=0; i--)
-                if (objects[i] == itm)
-                {
-                    nxt = i+1;
-                    break;
-                }
-
-            if (nxt == objs)
-            {
-                put_item(itm);
-                SetgVarInt(SLOT_INVENTORY_MOUSE,0);
-            }
-            else
-            {
-                put_item(itm);
-                itm = objects[nxt];
-                del_item(itm);
-                SetgVarInt(SLOT_INVENTORY_MOUSE,itm);
-            }
-
-        }
-        else
-        {
-            del_item(objects[0]);
-            SetgVarInt(SLOT_INVENTORY_MOUSE,objects[0]);
-        }
-
-
-
-        free(objects);
-    }
-}
+//void del_item(int32_t item)
+//{
+//    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//        if (GetgVarInt(i)== item)
+//        {
+//            SetgVarInt(i,0);
+//            break;
+//        }
+//}
+//
+//void put_item(int32_t item)
+//{
+//    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//        if (GetgVarInt(i) == 0)
+//        {
+//            SetgVarInt(i,item);
+//            break;
+//        }
+//}
+//
+//void act_inv_cycle()
+//{
+//    int32_t objs = 0;
+//    if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+//        objs = 1;
+//
+//    for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//        if (GetgVarInt(i)!=0)
+//            objs++;
+//
+//    if (objs > 0)
+//    {
+//        int32_t *objects = (int32_t *)calloc(sizeof(int32_t),objs);
+//
+//        int32_t n = 0;
+//
+//        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+//        {
+//            objects[n] = GetgVarInt(SLOT_INVENTORY_MOUSE);
+//            n++;
+//        }
+//
+//        for (int32_t i=SLOT_START_SLOT; i<= SLOT_END_SLOT; i++)
+//            if (GetgVarInt(i)!=0)
+//            {
+//                objects[n] = GetgVarInt(i);
+//                n++;
+//            }
+//
+//        //sorting
+//        int8_t exch = 1;
+//        for (int32_t j=0; j < objs-1 && exch == 1; j++)
+//        {
+//            exch = 0;
+//            for (int32_t i=0; i < objs-1; i++)
+//                if (objects[i] > objects[i+1])
+//                {
+//                    int32_t tmp = objects[i+1];
+//                    objects[i+1] = objects[i];
+//                    objects[i] = tmp;
+//                    exch = 1;
+//                }
+//        }
+//        //end of sort
+//
+//
+//        if (GetgVarInt(SLOT_INVENTORY_MOUSE)!=0)
+//        {
+//            int32_t itm = GetgVarInt(SLOT_INVENTORY_MOUSE);
+//            int32_t nxt = 0;
+//            for (int32_t i=objs-1; i>=0; i--)
+//                if (objects[i] == itm)
+//                {
+//                    nxt = i+1;
+//                    break;
+//                }
+//
+//            if (nxt == objs)
+//            {
+//                put_item(itm);
+//                SetgVarInt(SLOT_INVENTORY_MOUSE,0);
+//            }
+//            else
+//            {
+//                put_item(itm);
+//                itm = objects[nxt];
+//                del_item(itm);
+//                SetgVarInt(SLOT_INVENTORY_MOUSE,itm);
+//            }
+//
+//        }
+//        else
+//        {
+//            del_item(objects[0]);
+//            SetgVarInt(SLOT_INVENTORY_MOUSE,objects[0]);
+//        }
+//
+//
+//
+//        free(objects);
+//    }
+//}
 
 int action_inventory(char *params, int aSlot , pzllst *owner)
 {
@@ -1127,25 +1253,28 @@ int action_inventory(char *params, int aSlot , pzllst *owner)
 
     if (strcasecmp(cmd,"add")==0)
     {
-        act_inv_add(item);
+        inv_add(item);
     }
     else if (strcasecmp(cmd,"addi")==0)
     {
         item=GetgVarInt(item);
-        act_inv_add(item);
+        inv_add(item);
     }
     else if (strcasecmp(cmd,"drop")==0)
     {
-        act_inv_drop(item);
+        if (item >= 0)
+            inv_drop(item);
+        else
+            inv_drop(GetgVarInt(SLOT_INVENTORY_MOUSE));
     }
     else if (strcasecmp(cmd,"dropi")==0)
     {
         item = GetgVarInt(item);
-        act_inv_drop(item);
+        inv_drop(item);
     }
     else if (strcasecmp(cmd,"cycle")==0)
     {
-        act_inv_cycle();
+        inv_cycle();
     }
     else
         return ACTION_ERROR;

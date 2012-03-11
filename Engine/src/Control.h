@@ -64,6 +64,7 @@ struct slotnode
     int32_t *eligible_objects;
     int32_t eligable_cnt;
     int16_t cursor;
+    int32_t loaded_img;
     SDL_Surface *srf;
 };
 
@@ -256,6 +257,8 @@ int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
 void ProcessControls(MList *ctrlst);
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut);
+bool Ctrl_Eligeblity(int obj, int32_t *slots, int32_t count);
+
 void Ctrl_DrawControls();
 
 void DeleteControlList(MList *lst);

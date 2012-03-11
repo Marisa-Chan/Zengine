@@ -46,6 +46,7 @@ slotnode * CreateSlotNode()
     tmp->eligable_cnt = 0;
     tmp->eligible_objects = NULL;
     tmp->srf = NULL;
+    tmp->loaded_img = -1;
     InitRect(&tmp->rectangle);
     InitRect(&tmp->hotspot);
     tmp->flat = false;
@@ -68,7 +69,7 @@ fistnode * CreateFistNode()
     tmp->frame_time = 0;
     tmp->animation_id = 0;
 
-    for (int32_t i=0; i<CTRL_FIST_MAX_FISTS;i++)
+    for (int32_t i=0; i<CTRL_FIST_MAX_FISTS; i++)
     {
         tmp->fists_up[i].num_box = 0;
         tmp->fists_dwn[i].num_box = 0;
@@ -76,7 +77,7 @@ fistnode * CreateFistNode()
 
 
     tmp->num_entries = 0;
-    for (int32_t i=0; i<CTRL_FIST_MAX_ENTRS;i++)
+    for (int32_t i=0; i<CTRL_FIST_MAX_ENTRS; i++)
     {
         tmp->entries[i].anm_end = 0;
         tmp->entries[i].anm_str = 0;
@@ -284,6 +285,18 @@ void InitRect(Rect *rct)
     rct->y = 0;
 }
 
+bool Ctrl_Eligeblity(int obj, slotnode *slot)
+{
+    bool eli = false;
+
+    for (int i=0; i< slot->eligable_cnt; i++)
+        if (obj == slot->eligible_objects[i])
+        {
+            eli = true;
+            break;
+        }
+    return eli;
+}
 
 bool Ctrl_Eligeblity(int obj, int32_t *slots, int32_t count)
 {
@@ -312,7 +325,15 @@ void control_slot_draw(ctrlnode *nod)
 
     if (tmp1 != 0)
     {
-        if (slut->srf==NULL)
+        if (slut->loaded_img != tmp1)
+            if (slut->srf != NULL)
+            {
+                SDL_FreeSurface(slut->srf);
+                slut->srf=NULL;
+                slut->loaded_img = -1;
+            }
+
+        if (slut->srf==NULL && slut->loaded_img != tmp1)
         {
             char bff[16];
 #ifdef GAME_ZGI
@@ -324,6 +345,8 @@ void control_slot_draw(ctrlnode *nod)
             char *fil = GetFilePath(bff);
             if (fil)
                 slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
+
+            slut->loaded_img = tmp1;
         }
 
         if (slut->srf)
@@ -335,6 +358,7 @@ void control_slot_draw(ctrlnode *nod)
         {
             SDL_FreeSurface(slut->srf);
             slut->srf=NULL;
+            slut->loaded_img = -1;
         }
 
     }
@@ -568,20 +592,57 @@ void control_slot(ctrlnode *ct)
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
-            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
-            {
-                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(ct->slot));
-                SetgVarInt(ct->slot,0);
 
-            }
-            else if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut->eligible_objects,slut->eligable_cnt))
+
+            int32_t item = GetgVarInt(ct->slot);
+            int32_t mouse_item = GetgVarInt(SLOT_INVENTORY_MOUSE);
+            if ( item != 0 )
             {
-                int te=GetgVarInt(ct->slot);
-                SetgVarInt(ct->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
-                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
-                SDL_FreeSurface(slut->srf);
-                slut->srf=NULL;
+                if ( mouse_item != 0)
+                {
+                    if (Ctrl_Eligeblity(mouse_item, slut))
+                    {
+                        inv_drop(mouse_item);
+                        inv_add(item);
+                        SetgVarInt(ct->slot,mouse_item);
+                    }
+                }
+                else
+                {
+                    inv_add(item);
+                    SetgVarInt(ct->slot,0);
+                }
             }
+            else if ( mouse_item == 0 )
+            {
+                if ( Ctrl_Eligeblity(0, slut))
+                {
+                    inv_drop(0);
+                    SetgVarInt(ct->slot,0);
+                }
+            }
+            else if ( Ctrl_Eligeblity(mouse_item, slut))
+            {
+                SetgVarInt(ct->slot,mouse_item);
+                inv_drop(mouse_item);
+            }
+
+
+
+//            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
+//            {
+//                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(ct->slot));
+//                SetgVarInt(ct->slot,0);
+//
+//            }
+//            else if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut->eligible_objects,slut->eligable_cnt))
+//            {
+//                int te=GetgVarInt(ct->slot);
+//                SetgVarInt(ct->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
+//                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
+//                SDL_FreeSurface(slut->srf);
+//                slut->srf=NULL;
+//            }
 #ifdef TRACE
             printf("Pushed\n");
             printf("Slot #%d to 1\n",ct->slot);
@@ -605,9 +666,9 @@ void control_paint(ctrlnode *ct)
     int32_t mY = Rend_GetMouseGameY();
 
     if (mX >= paint->rectangle.x                      &&\
-        mX <  paint->rectangle.x + paint->rectangle.w &&\
-        mY >= paint->rectangle.y                      &&\
-        mY <  paint->rectangle.y + paint->rectangle.h)
+            mX <  paint->rectangle.x + paint->rectangle.w &&\
+            mY >= paint->rectangle.y                      &&\
+            mY <  paint->rectangle.y + paint->rectangle.h)
         mousein = true;
 
     if (mousein)
@@ -640,9 +701,9 @@ void control_paint(ctrlnode *ct)
                             for (int32_t x=0; x<paint->b_w; x++)
                                 if (paint->brush[x+y*paint->b_w] != 0)
                                     if ((d_x - cen_x)+x >= 0              &&\
-                                        (d_x - cen_x)+x < paint->paint->w &&\
-                                        (d_y - cen_y)+y >= 0              &&\
-                                        (d_y - cen_y)+y < paint->paint->h )
+                                            (d_x - cen_x)+x < paint->paint->w &&\
+                                            (d_y - cen_y)+y >= 0              &&\
+                                            (d_y - cen_y)+y < paint->paint->h )
                                     {
                                         int32_t rel_x = (mX - cen_x) + x;
                                         int32_t rel_y = (mY - cen_y) + y;
@@ -663,9 +724,9 @@ void control_paint(ctrlnode *ct)
                             for (int32_t x=0; x<paint->b_w; x++)
                                 if (paint->brush[x+y*paint->b_w] != 0)
                                     if ((d_x - cen_x)+x >= 0              &&\
-                                        (d_x - cen_x)+x < paint->paint->w &&\
-                                        (d_y - cen_y)+y >= 0              &&\
-                                        (d_y - cen_y)+y < paint->paint->h )
+                                            (d_x - cen_x)+x < paint->paint->w &&\
+                                            (d_y - cen_y)+y >= 0              &&\
+                                            (d_y - cen_y)+y < paint->paint->h )
                                     {
                                         int32_t rel_x = (mX - cen_x) + x;
                                         int32_t rel_y = (mY - cen_y) + y;
@@ -704,15 +765,15 @@ void control_fist(ctrlnode *ct)
 
     if (fist->order != 0)
     {
-        for(int32_t i=0;i<fist->fistnum;i++)
+        for(int32_t i=0; i<fist->fistnum; i++)
         {
             if (((fist->fiststatus >> i) & 1) == 1)
             {
-                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                for(int32_t j=0; j<fist->fists_dwn[i].num_box; j++)
                     if (fist->fists_dwn[i].boxes[j].x  <= mX &&\
-                        fist->fists_dwn[i].boxes[j].x2 >= mX &&\
-                        fist->fists_dwn[i].boxes[j].y  <= mY &&\
-                        fist->fists_dwn[i].boxes[j].y2 >= mY
+                            fist->fists_dwn[i].boxes[j].x2 >= mX &&\
+                            fist->fists_dwn[i].boxes[j].y  <= mY &&\
+                            fist->fists_dwn[i].boxes[j].y2 >= mY
                        )
                     {
                         mousein = true;
@@ -722,11 +783,11 @@ void control_fist(ctrlnode *ct)
             }
             else
             {
-                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                for(int32_t j=0; j<fist->fists_up[i].num_box; j++)
                     if (fist->fists_up[i].boxes[j].x  <= mX &&\
-                        fist->fists_up[i].boxes[j].x2 >= mX &&\
-                        fist->fists_up[i].boxes[j].y  <= mY &&\
-                        fist->fists_up[i].boxes[j].y2 >= mY
+                            fist->fists_up[i].boxes[j].x2 >= mX &&\
+                            fist->fists_up[i].boxes[j].y  <= mY &&\
+                            fist->fists_up[i].boxes[j].y2 >= mY
                        )
                     {
                         mousein = true;
@@ -742,15 +803,15 @@ void control_fist(ctrlnode *ct)
     }
     else
     {
-        for(int32_t i=fist->fistnum-1;i>=0;i--)
+        for(int32_t i=fist->fistnum-1; i>=0; i--)
         {
             if (((fist->fiststatus >> i) & 1) == 1)
             {
-                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                for(int32_t j=0; j<fist->fists_dwn[i].num_box; j++)
                     if (fist->fists_dwn[i].boxes[j].x  <= mX &&\
-                        fist->fists_dwn[i].boxes[j].x2 >= mX &&\
-                        fist->fists_dwn[i].boxes[j].y  <= mY &&\
-                        fist->fists_dwn[i].boxes[j].y2 >= mY
+                            fist->fists_dwn[i].boxes[j].x2 >= mX &&\
+                            fist->fists_dwn[i].boxes[j].y  <= mY &&\
+                            fist->fists_dwn[i].boxes[j].y2 >= mY
                        )
                     {
                         mousein = true;
@@ -760,11 +821,11 @@ void control_fist(ctrlnode *ct)
             }
             else
             {
-                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                for(int32_t j=0; j<fist->fists_up[i].num_box; j++)
                     if (fist->fists_up[i].boxes[j].x  <= mX &&\
-                        fist->fists_up[i].boxes[j].x2 >= mX &&\
-                        fist->fists_up[i].boxes[j].y  <= mY &&\
-                        fist->fists_up[i].boxes[j].y2 >= mY
+                            fist->fists_up[i].boxes[j].x2 >= mX &&\
+                            fist->fists_up[i].boxes[j].y  <= mY &&\
+                            fist->fists_up[i].boxes[j].y2 >= mY
                        )
                     {
                         mousein = true;
@@ -792,7 +853,7 @@ void control_fist(ctrlnode *ct)
 
             for(int32_t i=0; i<fist->num_entries; i++)
                 if (fist->entries[i].strt == old_status &&\
-                    fist->entries[i].send == fist->fiststatus)
+                        fist->entries[i].send == fist->fiststatus)
                 {
                     //printf("fist_seq %d \n",i);
                     fist->frame_cur = fist->entries[i].anm_str;
@@ -822,79 +883,79 @@ void control_fist_draw(ctrlnode *ct)
 
     fistnode *fist = ct->node.fist;
 
-   if (fist->frame_cur >= 0 && fist->frame_end >= 0)
-    if (fist->frame_cur <= fist->frame_end)
-    {
-        fist->frame_time -= GetDTime();
-
-        if (fist->frame_time <= 0)
+    if (fist->frame_cur >= 0 && fist->frame_end >= 0)
+        if (fist->frame_cur <= fist->frame_end)
         {
-            fist->frame_time = fist->anm->framerate;
+            fist->frame_time -= GetDTime();
 
-            anim_RenderAnimFrame(fist->anm,fist->anm_rect.x,fist->anm_rect.y,
-                                           fist->anm->rel_w,fist->anm->rel_h,
-                                           fist->frame_cur);
+            if (fist->frame_time <= 0)
+            {
+                fist->frame_time = fist->anm->framerate;
 
-            fist->frame_cur++;
-            if (fist->frame_cur > fist->frame_end)
-                SetgVarInt(fist->animation_id, 2);
+                anim_RenderAnimFrame(fist->anm,fist->anm_rect.x,fist->anm_rect.y,
+                                     fist->anm->rel_w,fist->anm->rel_h,
+                                     fist->frame_cur);
+
+                fist->frame_cur++;
+                if (fist->frame_cur > fist->frame_end)
+                    SetgVarInt(fist->animation_id, 2);
+
+            }
 
         }
 
-    }
-
-   /* if (fist->order != 0)
-    {
-        for(int32_t i=0;i<fist->fistnum;i++)
-        {
-            if (((fist->fiststatus >> i) & 1) == 1)
-            {
-                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
-                    rectangleRGBA(Rend_GetGameScreen(),
-                                  fist->fists_dwn[i].boxes[j].x,
-                                  fist->fists_dwn[i].boxes[j].y,
-                                  fist->fists_dwn[i].boxes[j].x2,
-                                  fist->fists_dwn[i].boxes[j].y2,
-                                  255,0,0,255);
-            }
-            else
-            {
-                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
-                    rectangleRGBA(Rend_GetGameScreen(),
-                                  fist->fists_up[i].boxes[j].x,
-                                  fist->fists_up[i].boxes[j].y,
-                                  fist->fists_up[i].boxes[j].x2,
-                                  fist->fists_up[i].boxes[j].y2,
-                                  255,0,0,255);
-            }
-        }
-    }
-    else
-    {
-        for(int32_t i=fist->fistnum-1;i>=0;i--)
-        {
-            if (((fist->fiststatus >> i) & 1) == 1)
-            {
-                for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
-                    rectangleRGBA(Rend_GetGameScreen(),
-                                  fist->fists_dwn[i].boxes[j].x,
-                                  fist->fists_dwn[i].boxes[j].y,
-                                  fist->fists_dwn[i].boxes[j].x2,
-                                  fist->fists_dwn[i].boxes[j].y2,
-                                  255,0,0,255);
-            }
-            else
-            {
-                for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
-                    rectangleRGBA(Rend_GetGameScreen(),
-                                  fist->fists_up[i].boxes[j].x,
-                                  fist->fists_up[i].boxes[j].y,
-                                  fist->fists_up[i].boxes[j].x2,
-                                  fist->fists_up[i].boxes[j].y2,
-                                  255,0,0,255);
-            }
-        }
-    }*/
+    /* if (fist->order != 0)
+     {
+         for(int32_t i=0;i<fist->fistnum;i++)
+         {
+             if (((fist->fiststatus >> i) & 1) == 1)
+             {
+                 for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                     rectangleRGBA(Rend_GetGameScreen(),
+                                   fist->fists_dwn[i].boxes[j].x,
+                                   fist->fists_dwn[i].boxes[j].y,
+                                   fist->fists_dwn[i].boxes[j].x2,
+                                   fist->fists_dwn[i].boxes[j].y2,
+                                   255,0,0,255);
+             }
+             else
+             {
+                 for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                     rectangleRGBA(Rend_GetGameScreen(),
+                                   fist->fists_up[i].boxes[j].x,
+                                   fist->fists_up[i].boxes[j].y,
+                                   fist->fists_up[i].boxes[j].x2,
+                                   fist->fists_up[i].boxes[j].y2,
+                                   255,0,0,255);
+             }
+         }
+     }
+     else
+     {
+         for(int32_t i=fist->fistnum-1;i>=0;i--)
+         {
+             if (((fist->fiststatus >> i) & 1) == 1)
+             {
+                 for(int32_t j=0;j<fist->fists_dwn[i].num_box;j++)
+                     rectangleRGBA(Rend_GetGameScreen(),
+                                   fist->fists_dwn[i].boxes[j].x,
+                                   fist->fists_dwn[i].boxes[j].y,
+                                   fist->fists_dwn[i].boxes[j].x2,
+                                   fist->fists_dwn[i].boxes[j].y2,
+                                   255,0,0,255);
+             }
+             else
+             {
+                 for(int32_t j=0;j<fist->fists_up[i].num_box;j++)
+                     rectangleRGBA(Rend_GetGameScreen(),
+                                   fist->fists_up[i].boxes[j].x,
+                                   fist->fists_up[i].boxes[j].y,
+                                   fist->fists_up[i].boxes[j].x2,
+                                   fist->fists_up[i].boxes[j].y2,
+                                   255,0,0,255);
+             }
+         }
+     }*/
 
 }
 
@@ -937,28 +998,28 @@ void control_hotmv(ctrlnode *ct)
         int32_t curfr = hotm->cur_frame;
 
         if (hotm->rect.x + hotm->frame_list[curfr].x    <= mX &&\
-            hotm->rect.x + hotm->frame_list[curfr].x2   >= mX &&\
-            hotm->rect.y + hotm->frame_list[curfr].y    <= mY &&\
-            hotm->rect.y + hotm->frame_list[curfr].y2   >= mY )
+                hotm->rect.x + hotm->frame_list[curfr].x2   >= mX &&\
+                hotm->rect.y + hotm->frame_list[curfr].y    <= mY &&\
+                hotm->rect.y + hotm->frame_list[curfr].y2   >= mY )
             mousein = true;
 
-    if (mousein)
-    {
-        if (Mouse_IsCurrentCur(CURSOR_IDLE))
-            Mouse_SetCursor(CURSOR_ACTIVE);
-
-        if (MouseUp(SDL_BUTTON_LEFT))
+        if (mousein)
         {
-            FlushMouseBtn(SDL_BUTTON_LEFT);
+            if (Mouse_IsCurrentCur(CURSOR_IDLE))
+                Mouse_SetCursor(CURSOR_ACTIVE);
 
-            SetgVarInt(ct->slot,1);
+            if (MouseUp(SDL_BUTTON_LEFT))
+            {
+                FlushMouseBtn(SDL_BUTTON_LEFT);
+
+                SetgVarInt(ct->slot,1);
 
 #ifdef TRACE
-            printf("Pushed_HotMov %d(Slot)\n",ct->slot);
+                printf("Pushed_HotMov %d(Slot)\n",ct->slot);
 #endif
-        }
+            }
 
-    }
+        }
     }
 }
 
@@ -1007,14 +1068,14 @@ void control_safe(ctrlnode *ct)
     int32_t mY = Rend_GetMouseGameY();
 
     if ( safe->rectangle.x                     <= mX &&\
-         safe->rectangle.x+safe->rectangle.w   >= mX &&\
-         safe->rectangle.y                     <= mY &&\
-         safe->rectangle.y+safe->rectangle.h   >= mY )
+            safe->rectangle.x+safe->rectangle.w   >= mX &&\
+            safe->rectangle.y                     <= mY &&\
+            safe->rectangle.y+safe->rectangle.h   >= mY )
     {
         int32_t mR = (mX - safe->center_x) * (mX - safe->center_x) + (mY - safe->center_y) * (mY - safe->center_y);
 
         if (mR < safe->radius_outer_sq &&\
-            mR > safe->radius_inner_sq)
+                mR > safe->radius_inner_sq)
             mousein = true;
     }
 
@@ -1118,36 +1179,36 @@ void control_push(ctrlnode *ct)
 
         switch(psh->event)
         {
-            case CTRL_PUSH_EV_UP:
-                if (MouseUp(SDL_BUTTON_LEFT))
-                    pushed = 1;
-                break;
-            case  CTRL_PUSH_EV_DWN:
-                if (MouseHit(SDL_BUTTON_LEFT))
-                    pushed = 1;
-                break;
-            case  CTRL_PUSH_EV_DBL:
-                if (MouseDblClk())
-                    pushed = 1;
-                break;
-            default:
+        case CTRL_PUSH_EV_UP:
+            if (MouseUp(SDL_BUTTON_LEFT))
+                pushed = 1;
+            break;
+        case  CTRL_PUSH_EV_DWN:
+            if (MouseHit(SDL_BUTTON_LEFT))
+                pushed = 1;
+            break;
+        case  CTRL_PUSH_EV_DBL:
+            if (MouseDblClk())
+                pushed = 1;
+            break;
+        default:
 
-                if (MouseUp(SDL_BUTTON_LEFT))
-                    pushed = 1;
-                break;
+            if (MouseUp(SDL_BUTTON_LEFT))
+                pushed = 1;
+            break;
         };
 
         if (pushed == 1)
         {
 #ifdef TRACE
-                printf("Pushed #%d\n",ct->slot);
+            printf("Pushed #%d\n",ct->slot);
 #endif
-                int32_t val = GetgVarInt(ct->slot);
-                val++;
-                val %= psh->count_to;
-                SetgVarInt(ct->slot,val);
+            int32_t val = GetgVarInt(ct->slot);
+            val++;
+            val %= psh->count_to;
+            SetgVarInt(ct->slot,val);
 
-                FlushMouseBtn(SDL_BUTTON_LEFT);
+            FlushMouseBtn(SDL_BUTTON_LEFT);
         }
 
     }
@@ -1206,7 +1267,7 @@ void control_lever(ctrlnode *ct)
 
     fclose(aaa);
     exit(1);
-*/
+    */
     levernode *lev = ct->node.lev;
     if (lev->curfrm < CTRL_LEVER_MAX_FRAMES)
     {
@@ -1214,9 +1275,9 @@ void control_lever(ctrlnode *ct)
         {
 
             if (lev->hotspots[lev->curfrm].x                <= Rend_GetMouseGameX() &&\
-                lev->hotspots[lev->curfrm].x + lev->delta_x >= Rend_GetMouseGameX() &&\
-                lev->hotspots[lev->curfrm].y                <= Rend_GetMouseGameY() &&\
-                lev->hotspots[lev->curfrm].y + lev->delta_y >= Rend_GetMouseGameY())
+                    lev->hotspots[lev->curfrm].x + lev->delta_x >= Rend_GetMouseGameX() &&\
+                    lev->hotspots[lev->curfrm].y                <= Rend_GetMouseGameY() &&\
+                    lev->hotspots[lev->curfrm].y + lev->delta_y >= Rend_GetMouseGameY())
             {
                 Mouse_SetCursor(lev->cursor);
 
@@ -1232,23 +1293,23 @@ void control_lever(ctrlnode *ct)
             }
 
             //if (!lev->mouse_captured) /* if still not pressed*/
-                if (lev->autoout)
+            if (lev->autoout)
+            {
+                if (lev->autoseq_frm < lev->hasout[lev->autoseq])
                 {
-                    if (lev->autoseq_frm < lev->hasout[lev->autoseq])
-                    {
-                        lev->autoseq_time -= GetDTime();
+                    lev->autoseq_time -= GetDTime();
 
-                        if (lev->autoseq_time < 0)
-                        {
-                            lev->curfrm = lev->outproc[lev->autoseq][lev->autoseq_frm];
-                            SetgVarInt(ct->slot, lev->curfrm);
-                            lev->autoseq_frm++;
-                            lev->autoseq_time = CTRL_LEVER_AUTO_DELAY;
-                        }
+                    if (lev->autoseq_time < 0)
+                    {
+                        lev->curfrm = lev->outproc[lev->autoseq][lev->autoseq_frm];
+                        SetgVarInt(ct->slot, lev->curfrm);
+                        lev->autoseq_frm++;
+                        lev->autoseq_time = CTRL_LEVER_AUTO_DELAY;
                     }
-                    else
-                        lev->autoout = false;
                 }
+                else
+                    lev->autoout = false;
+            }
         }
         else
         {
@@ -1278,7 +1339,7 @@ void control_lever(ctrlnode *ct)
                             int16_t angl = lev->hotspots[lev->curfrm].directions[j].angle;
 
                             if (angl + CTRL_LEVER_ANGL_DELTA  >  lev->mouse_angle   &&
-                                angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
+                                    angl - CTRL_LEVER_ANGL_DELTA  <  lev->mouse_angle   )
                             {
                                 lev->curfrm = lev->hotspots[lev->curfrm].directions[j].toframe;
                                 SetgVarInt(ct->slot, lev->curfrm);
@@ -1464,41 +1525,41 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
             {
                 if (t1 < CTRL_LEVER_MAX_FRAMES)
                 {
-                lev->hotspots[t1].x = t2;
-                lev->hotspots[t1].y = t3;
-                char *token;
-                char *find = " ";
-                char tmpbuf[FILE_LN_BUF];
-                strcpy(tmpbuf,str);
-                token = strtok(tmpbuf,find);
-                while (token != NULL)
-                {
-                    if( strCMP(token,"d") == 0 )
+                    lev->hotspots[t1].x = t2;
+                    lev->hotspots[t1].y = t3;
+                    char *token;
+                    char *find = " ";
+                    char tmpbuf[FILE_LN_BUF];
+                    strcpy(tmpbuf,str);
+                    token = strtok(tmpbuf,find);
+                    while (token != NULL)
                     {
-                        int32_t t4,t5;
-                        sscanf(token,"d=%d,%d",&t4,&t5);
-                        if (lev->hotspots[t1].angles < CTRL_LEVER_MAX_DIRECTS)
+                        if( strCMP(token,"d") == 0 )
                         {
-                            int16_t angles = lev->hotspots[t1].angles;
-                            lev->hotspots[t1].directions[angles].toframe = t4;
-                            lev->hotspots[t1].directions[angles].angle   = t5;
-                            lev->hotspots[t1].angles++;
+                            int32_t t4,t5;
+                            sscanf(token,"d=%d,%d",&t4,&t5);
+                            if (lev->hotspots[t1].angles < CTRL_LEVER_MAX_DIRECTS)
+                            {
+                                int16_t angles = lev->hotspots[t1].angles;
+                                lev->hotspots[t1].directions[angles].toframe = t4;
+                                lev->hotspots[t1].directions[angles].angle   = t5;
+                                lev->hotspots[t1].angles++;
+                            }
                         }
+                        token = strtok(NULL,find);
                     }
-                    token = strtok(NULL,find);
-                }
-                lev->hasout[t1] = 0;
-                for (int32_t g=0; g<strlen(str);g++)
-                    if (tolower(str[g]) == 'p')
-                    {
-                        int32_t tr1,tr2;
-                        int8_t num = sscanf(str+g+1,"(%d to %d)", &tr1, &tr2);
-                        if (num == 2)
+                    lev->hasout[t1] = 0;
+                    for (int32_t g=0; g<strlen(str); g++)
+                        if (tolower(str[g]) == 'p')
                         {
-                            lev->outproc[t1][ lev->hasout[t1] ] = tr2;
-                            lev->hasout[t1]++;
+                            int32_t tr1,tr2;
+                            int8_t num = sscanf(str+g+1,"(%d to %d)", &tr1, &tr2);
+                            if (num == 2)
+                            {
+                                lev->outproc[t1][ lev->hasout[t1] ] = tr2;
+                                lev->hasout[t1]++;
+                            }
                         }
-                    }
                 }
             }
         }
@@ -1510,24 +1571,24 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 
     fclose(file2);
 
-/*    if (lev->anm)
-    {
-        if (lev->AnimCoords.w > lev->anm->rel_w)
-            lev->AnimCoords.w = round((double)lev->AnimCoords.w / (double)lev->anm->rel_w) * lev->anm->rel_w;
-        else
-            lev->AnimCoords.w = lev->anm->rel_w / round((double)lev->anm->rel_w/(double)lev->AnimCoords.w);
+    /*    if (lev->anm)
+        {
+            if (lev->AnimCoords.w > lev->anm->rel_w)
+                lev->AnimCoords.w = round((double)lev->AnimCoords.w / (double)lev->anm->rel_w) * lev->anm->rel_w;
+            else
+                lev->AnimCoords.w = lev->anm->rel_w / round((double)lev->anm->rel_w/(double)lev->AnimCoords.w);
 
-        if (lev->AnimCoords.h > lev->anm->rel_h)
-            lev->AnimCoords.h = round((double)lev->AnimCoords.h / (double)lev->anm->rel_h) * lev->anm->rel_h;
-        else
-            lev->AnimCoords.h = lev->anm->rel_h / round((double)lev->anm->rel_h/(double)lev->AnimCoords.h);
+            if (lev->AnimCoords.h > lev->anm->rel_h)
+                lev->AnimCoords.h = round((double)lev->AnimCoords.h / (double)lev->anm->rel_h) * lev->anm->rel_h;
+            else
+                lev->AnimCoords.h = lev->anm->rel_h / round((double)lev->anm->rel_h/(double)lev->AnimCoords.h);
 
-        if (lev->AnimCoords.w == 0)
-            lev->AnimCoords.w = lev->anm->rel_w;
-        if (lev->AnimCoords.h == 0)
-            lev->AnimCoords.h = lev->anm->rel_h;
-    }
-*/
+            if (lev->AnimCoords.w == 0)
+                lev->AnimCoords.w = lev->anm->rel_w;
+            if (lev->AnimCoords.h == 0)
+                lev->AnimCoords.h = lev->anm->rel_h;
+        }
+    */
     return 1;
 }
 
@@ -2013,7 +2074,7 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
                    &paint->rectangle.w,\
                    &paint->rectangle.h);
             //paint->rectangle.w -= (paint->rectangle.x-1);
-           // paint->rectangle.h -= (paint->rectangle.y-1);
+            // paint->rectangle.h -= (paint->rectangle.y-1);
         }
         else if (strCMP(str,"brush_file")==0)
         {
@@ -2430,12 +2491,12 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
                     if (t1 >= 0 && t1 < fist->num_entries)
                     {
                         int32_t n1=0;
-                        for(int32_t i=0;i<strlen(s1);i++)
+                        for(int32_t i=0; i<strlen(s1); i++)
                             if (s1[i] != '0')
                                 n1 |= (1 << i);
 
                         int32_t n2=0;
-                        for(int32_t i=0;i<strlen(s2);i++)
+                        for(int32_t i=0; i<strlen(s2); i++)
                             if (s2[i] != '0')
                                 n2 |= (1 << i);
 

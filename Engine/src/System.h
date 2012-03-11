@@ -31,6 +31,7 @@
 #include "Timers.h"
 #include "Control.h"
 #include "ScriptSystem.h"
+#include "inventory.h"
 #include "actions.h"
 #include "anims.h"
 #include "menu.h"
