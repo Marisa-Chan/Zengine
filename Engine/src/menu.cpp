@@ -170,19 +170,6 @@ void menu_UpdateMenuBar_zgi()
                                 inv_add(GetgVarInt(SLOT_START_SLOT + i));
                                 SetgVarInt(SLOT_START_SLOT + i,mouse_item);
                             }
-
-
-//                            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
-//                            {
-//                                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(SLOT_START_SLOT + i));
-//                                SetgVarInt(SLOT_START_SLOT + i,0);
-//                            }
-//                            else if (GetgVarInt(SLOT_INVENTORY_MOUSE) > 0  && GetgVarInt(SLOT_INVENTORY_MOUSE) < 0xE0) //ITEM_HACK
-//                            {
-//                                int te=GetgVarInt(SLOT_START_SLOT + i);
-//                                SetgVarInt(SLOT_START_SLOT + i,GetgVarInt(SLOT_INVENTORY_MOUSE));
-//                                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
-//                            }
                         }
                     }
                 }

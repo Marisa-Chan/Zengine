@@ -627,22 +627,6 @@ void control_slot(ctrlnode *ct)
                 inv_drop(mouse_item);
             }
 
-
-
-//            if (GetgVarInt(SLOT_INVENTORY_MOUSE)==0)
-//            {
-//                SetgVarInt(SLOT_INVENTORY_MOUSE,GetgVarInt(ct->slot));
-//                SetgVarInt(ct->slot,0);
-//
-//            }
-//            else if (Ctrl_Eligeblity(GetgVarInt(SLOT_INVENTORY_MOUSE),slut->eligible_objects,slut->eligable_cnt))
-//            {
-//                int te=GetgVarInt(ct->slot);
-//                SetgVarInt(ct->slot,GetgVarInt(SLOT_INVENTORY_MOUSE));
-//                SetgVarInt(SLOT_INVENTORY_MOUSE,te);
-//                SDL_FreeSurface(slut->srf);
-//                slut->srf=NULL;
-//            }
 #ifdef TRACE
             printf("Pushed\n");
             printf("Slot #%d to 1\n",ct->slot);
