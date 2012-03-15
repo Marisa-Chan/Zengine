@@ -508,11 +508,11 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
     }
     else
     {
-        const char *filp=GetFilePath(file);
+//        const char *filp=GetFilePath(file);
 
         nod->nodes.node_music->universe = universe;
 
-        nod->nodes.node_music->chunk = Mix_LoadWAV(filp);
+        nod->nodes.node_music->chunk = loader_LoadFile(file);
 
         int st = strlen(file);
 
@@ -625,9 +625,9 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
         getGNode(syncto)->nodes.node_animpre->framerate=FPS_DELAY; //~15fps hack
     }
 
-    const char *filp=GetFilePath(a3);
+    //const char *filp=GetFilePath(a3);
 
-    if (tmp->nodes.node_sync->chn == -1 || filp == NULL)
+    if (tmp->nodes.node_sync->chn == -1 /*|| filp == NULL*/)
     {
         printf("ERROR, NO CHANNELS OR NO FILE!\n");
         snd_DeleteSync(tmp);
@@ -644,7 +644,7 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
         tmp->nodes.node_sync->sub = sub_LoadSubtitles(a3);
 
 
-    tmp->nodes.node_sync->chunk  = Mix_LoadWAV(filp);
+    tmp->nodes.node_sync->chunk  = loader_LoadFile(a3);
 
     Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
 

@@ -105,6 +105,8 @@
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
 		<Unit filename="types.h" />
+		<Unit filename="./loader.cpp" />
+		<Unit filename="./loader.h" />
 		<Extensions>
 			<envvars />
 			<code_completion>

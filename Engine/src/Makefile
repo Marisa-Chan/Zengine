@@ -28,7 +28,8 @@ OBJS =  \
 	Text.cpp\
 	Optimiz.cpp\
 	intro.cpp\
-	inventory.cpp
+	inventory.cpp\
+	loader.cpp
 	
 WINOBJ = \
 	win_funct.cpp
