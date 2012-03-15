@@ -5,7 +5,7 @@ int action_set_screen(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
 #endif
-    char *fil = GetFilePath(params);
+    const char *fil = GetFilePath(params);
 
     if (fil != NULL)
         Rend_LoadGamescr(fil);
@@ -20,19 +20,19 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:set_partial_screen(%s)\n",params);
 #endif
-    int x,y,tmp1,tmp2;
+    int x,y/*,tmp1*/,tmp2;
     char xx[16],yy[16],tmp11[16],tmp22[16];
     char file[255];
     sscanf(params,"%s %s %s %s %s",xx,yy,file,tmp11,tmp22);
 
     x=GetIntVal(xx);
     y=GetIntVal(yy);
-    tmp1=GetIntVal(tmp11);
+    /*tmp1=GetIntVal(tmp11);*/
     tmp2=GetIntVal(tmp22);
 
     SDL_Surface *tmp = NULL;
 
-    char * path = GetFilePath(file);
+    const char * path = GetFilePath(file);
 
     if (!path)
         return ACTION_NORMAL;
@@ -244,7 +244,7 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
 
     int xx,yy,ww,hh,tmp;
 
-    char *fil;
+    const char *fil;
 
     sscanf(params,"%s %s %s %s %s %s %s",file,x,y,w,h,u1,u2);
 
@@ -284,9 +284,6 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     struct_subtitles *subs=NULL;
     if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
         subs = sub_LoadSubtitles(file);
-
-    int subtime = 0;
-
 
     SMPEG_setdisplay(anm->mpg,anm->img,0,0);
     SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
@@ -511,7 +508,7 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
     }
     else
     {
-        char *filp=GetFilePath(file);
+        const char *filp=GetFilePath(file);
 
         nod->nodes.node_music->universe = universe;
 
@@ -628,7 +625,7 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
         getGNode(syncto)->nodes.node_animpre->framerate=FPS_DELAY; //~15fps hack
     }
 
-    char *filp=GetFilePath(a3);
+    const char *filp=GetFilePath(a3);
 
     if (tmp->nodes.node_sync->chn == -1 || filp == NULL)
     {
@@ -710,15 +707,12 @@ int action_playpreload(char *params, int aSlot , pzllst *owner)
 {
     char sl[16];
     uint32_t slot;
-    int x,y,w,h,start,end,loop,sll;
+    int x,y,w,h,start,end,loop;
     sscanf(params,"%s %d %d %d %d %d %d %d",sl,&x,&y,&w,&h,&start,&end,&loop);
 
 #ifdef TRACE
     printf("        action:playpreload:%d(%s)\n",aSlot,params);
 #endif
-
-
-    char buff[255];
 
     slot = GetIntVal(sl);
 
@@ -779,7 +773,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     w-=x;
     h-=y;
 
-    char *fil = GetFilePath(chars);
+    const char *fil = GetFilePath(chars);
 
     if (fil == NULL)
     {
@@ -933,7 +927,11 @@ int action_kill(char *params, int aSlot , pzllst *owner)
     printf("        action:kill(%s)\n",params);
 #endif
 
+#ifdef TRACE
     int result = stopkiller(params,aSlot,owner, true);
+#else
+    stopkiller(params,aSlot,owner, true);
+#endif
 
 #ifdef TRACE
     if (result == ACTION_NOT_FOUND)
@@ -950,7 +948,11 @@ int action_stop(char *params, int aSlot , pzllst *owner)
     printf("        action:stop(%s)\n",params);
 #endif
 
-    int result = stopkiller(params,aSlot,owner, false);
+#ifdef TRACE
+    int result = stopkiller(params,aSlot,owner, true);
+#else
+    stopkiller(params,aSlot,owner, true);
+#endif
 
 #ifdef TRACE
     if (result == ACTION_NOT_FOUND)

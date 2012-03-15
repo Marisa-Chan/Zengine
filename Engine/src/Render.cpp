@@ -193,7 +193,7 @@ void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y)
         DrawImageToSurf(scr,x,y,screen);
 }
 
-void Rend_LoadGamescr(char *path)
+void Rend_LoadGamescr(const char *path)
 {
     if (scrbuf)
         SDL_FreeSurface(scrbuf);
@@ -1134,23 +1134,27 @@ int32_t Effects_GetColor(uint32_t x, uint32_t y)
 {
     int32_t color = 0;
 
+    int32_t xx = x;
+    int32_t yy = y;
+
     SDL_LockSurface(scrbuf);
     if (GAME_BPP == 32)
     {
-        if (x < scrbuf->w && y < scrbuf->h)
+
+        if (xx < scrbuf->w && yy < scrbuf->h)
         {
             int32_t *pixels = (int32_t *)scrbuf->pixels;
 
-            color = pixels[scrbuf->w*y + x];
+            color = pixels[scrbuf->w*yy + xx];
         }
     }
     else if (GAME_BPP == 16)
     {
-        if (x < scrbuf->w && y < scrbuf->h)
+        if (xx < scrbuf->w && yy < scrbuf->h)
         {
             int16_t *pixels = (int16_t *)scrbuf->pixels;
 
-            color = pixels[scrbuf->w*y + x];
+            color = pixels[scrbuf->w*yy + xx];
         }
     }
     else
@@ -1745,8 +1749,8 @@ int32_t Rend_EF_9_Setup(char *mask, char *clouds, int32_t delay,int32_t x, int32
         return -1;
     }
 
-    char *mask_fil = GetFilePath(mask);
-    char *cloud_fil = GetFilePath(clouds);
+    const char *mask_fil = GetFilePath(mask);
+    const char *cloud_fil = GetFilePath(clouds);
 
     if (mask_fil == NULL || cloud_fil == NULL)
     {

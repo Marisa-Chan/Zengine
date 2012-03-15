@@ -25,8 +25,8 @@ struct func_node
 
 struct crit_node
 {
-    uint32_t    slot1;
-    uint32_t    slot2;
+    int32_t    slot1;
+    int32_t    slot2;
     uint8_t     oper;
     bool        var2; //if true: slot2 is slot; false: slot2 - number
 };

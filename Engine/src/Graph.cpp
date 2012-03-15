@@ -140,22 +140,22 @@ SDL_Surface *CreateSurface(uint16_t w,uint16_t h)
     return SDL_CreateRGBSurface(SFTYPE,w,h,bpp,0,0,0,0);;
 }
 
-SDL_Surface *LoadConvertImg(char *file)
+SDL_Surface *LoadConvertImg(const char *file)
 {
     SDL_Surface *tmpbuf=IMG_Load(file);
     if (!tmpbuf)
-        printf("\nERROR:  IMG_Load(%s)\n\n",file, IMG_GetError());
+        printf("\nERROR:  IMG_Load(%s) %s\n\n",file, IMG_GetError());
     else
         ConvertImage(&tmpbuf);
 
     return tmpbuf;
 }
 
-SDL_Surface *LoadConvertImg(char *file,uint32_t key)
+SDL_Surface *LoadConvertImg(const char *file,uint32_t key)
 {
     SDL_Surface *tmpbuf=IMG_Load(file);
     if (!tmpbuf)
-        printf("\nERROR:  IMG_Load(%s)\n\n",file, IMG_GetError());
+        printf("\nERROR:  IMG_Load(%s) %s\n\n",file, IMG_GetError());
     else
         ConvertImage(&tmpbuf);
 
@@ -168,7 +168,7 @@ anim_surf *LoadAnimImage(char *file, int32_t mask)
 {
 
     char buf[64];
-    char *bufp;
+    const char *bufp;
     strcpy(buf,file);
     int len=strlen(buf);
     buf[len-1]='g';
@@ -226,7 +226,8 @@ void DrawAnimImage(anim_surf *anim, int x, int y, int frame)
     if (!anim)
         return;
 
-    if (frame >= anim->info.frames)
+    int32_t frames = anim->info.frames;
+    if (frame >= frames)
     {
         printf("Error, required frame of animation is out of range\n");
         return;
@@ -239,8 +240,8 @@ void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *s
 {
     if (!anim)
         return;
-
-    if (frame >= anim->info.frames)
+    int32_t frames = anim->info.frames;
+    if (frame >= frames)
     {
         printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
         return;
@@ -256,8 +257,8 @@ void FreeAnimImage(anim_surf *anim)
 
     if (anim)
     {
-
-        for (int i=0; i<anim->info.frames; i++)
+        int32_t frames = anim->info.frames;
+        for (int i=0; i<frames; i++)
             if (anim->img[i])
                 SDL_FreeSurface(anim->img[i]);
 
@@ -515,7 +516,7 @@ void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y)
     DrawScaler(scal,x,y,screen);
 }
 
-int32_t time=0;
+uint32_t time=0;
 int32_t frames=0;
 int32_t fps=1;
 

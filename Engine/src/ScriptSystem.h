@@ -151,7 +151,7 @@ MList  *GetAction_res_List();
 
 void ScrSys_AddToActResList(void *);
 
-char * ScrSys_ReturnListName(pzllst *lst);
+const char * ScrSys_ReturnListName(pzllst *lst);
 
 MList *ScrSys_FindResAllBySlot(int32_t slot);
 
@@ -175,7 +175,7 @@ int *getdirectvar(uint32_t indx);
 
 
 
-void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst);
+void LoadScriptFile(pzllst *lst, const char *filename, bool control, MList *controlst);
 void InitScriptsEngine();
 
 void FillStateBoxFromList(pzllst *lst);

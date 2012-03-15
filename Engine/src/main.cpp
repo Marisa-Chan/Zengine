@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     char buf[512];
     char buf2[512];
     bool fullscreen = false;
-    char *pa="./";
+    const char *pa="./";
     for (int i=1; i<argc; i++)
     {
         if (strcasecmp(argv[i],"-f")==0)

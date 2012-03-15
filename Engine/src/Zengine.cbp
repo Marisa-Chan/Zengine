@@ -48,7 +48,6 @@
 		</Build>
 		<Compiler>
 			<Add option="-fexpensive-optimizations" />
-			<Add option="-w" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/SDL" />
@@ -96,16 +95,16 @@
 		<Unit filename="anims.cpp" />
 		<Unit filename="anims.h" />
 		<Unit filename="./config.h" />
+		<Unit filename="intro.cpp" />
+		<Unit filename="intro.h" />
+		<Unit filename="inventory.cpp" />
+		<Unit filename="inventory.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="./menu.cpp" />
 		<Unit filename="./menu.h" />
 		<Unit filename="mylist.cpp" />
 		<Unit filename="mylist.h" />
 		<Unit filename="types.h" />
-		<Unit filename="inventory.h" />
-		<Unit filename="inventory.cpp" />
-		<Unit filename="intro.h" />
-		<Unit filename="intro.cpp" />
 		<Extensions>
 			<envvars />
 			<code_completion>

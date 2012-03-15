@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-struct_textfile *sub_LoadTextFile(char *file)
+struct_textfile *sub_LoadTextFile(const char *file)
 {
     FILE *f = fopen(file,"rb");
 
@@ -91,15 +91,14 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
 {
 
     char buf[FILE_LN_BUF];
-    char buf2[FILE_LN_BUF];
     char *str1; // without left spaces, paramname
-    char *str2; // params
+    char *str2 = NULL; // params
 
     int subscount=0;
 
     struct_subtitles *tmp;
 
-    char *fil = GetFilePath(filename);
+    const char *fil = GetFilePath(filename);
     if (fil == NULL)
         return NULL;
 
@@ -115,14 +114,14 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
         fgets(buf,FILE_LN_BUF,f);
         str1 = TrimLeft(buf);
 
-        for (int i=0; i<strlen(str1); i++)
+        int32_t t_len = strlen(str1);
+        for (int i=0; i<t_len; i++)
             if (str1[i] == ':')
             {
                 str1[i] = 0x0;
                 str2 = str1+i+1;
                 break;
             }
-
         for (int i=strlen(str2)-1; i>=0; i--)
             if (str2[i] == '~' || str2[i]==0x0A || str2[i]==0x0D)
                 str2[i] = 0x0;
@@ -145,7 +144,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
         }
         else if (strCMP(str1,"TextFile") == 0)
         {
-            char *fil2 = GetFilePath(str2);
+            const char *fil2 = GetFilePath(str2);
             if (fil2 == NULL)
             {
                 delete tmp;
@@ -183,7 +182,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
     return tmp;
 }
 
-int sub_ProcessSub(struct_subtitles *sub,int subtime)
+void sub_ProcessSub(struct_subtitles *sub,int subtime)
 {
     int j=-1;
     for (int i=0; i<sub->subscount; i++)

@@ -95,12 +95,12 @@ struct FManRepNode
 
 void InitFileManage();
 void ListDir(char *dir);
-char *GetFilePath(char *chr);
-char *GetExactFilePath(char *chr);
-void AddReplacer(char *ext, char *ext2);
+const char *GetFilePath(const char *chr);
+const char *GetExactFilePath(const char *chr);
+void AddReplacer(const char *ext, const char *ext2);
 
 int GetKeyBuffered(int indx);
-bool CheckKeyboardMessage(char *msg, int len);
+bool CheckKeyboardMessage(const char *msg, int len);
 
 bool FileExist(char * fil);
 
@@ -131,12 +131,12 @@ struct BinTreeNd
 
 BinTreeNd *CreateBinTreeNd();
 void AddToBinTree(FManNode *nod);
-FManNode *FindInBinTree(char *chr);
+FManNode *FindInBinTree(const char *chr);
 
 
 double round(double r);
 
-void SetAppPath(char *pth);
+void SetAppPath(const char *pth);
 char *GetAppPath();
 
 #endif // SYSTEM_H_INCLUDED

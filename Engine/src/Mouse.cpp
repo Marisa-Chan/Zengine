@@ -7,14 +7,14 @@
 #define CURSOR_DW_STATE    1
 
 
-char *(CurNames[])= {"active","arrow","backward","downarrow","forward","handpt","handpu","hdown","hleft",\
+const char *(CurNames[])= {"active","arrow","backward","downarrow","forward","handpt","handpu","hdown","hleft",\
                      "hright","hup","idle","leftarrow","rightarrow","suggest_surround","suggest_tilt","turnaround","zuparrow"
                     };
 
-char *(CurFiles_zgi[])= {"g0gbc011.zcr","g0gac001.zcr","g0gac021.zcr","g0gac031.zcr","g0gac041.zcr","g0gac051.zcr","g0gac061.zcr","g0gac071.zcr","g0gac081.zcr",\
+const char *(CurFiles_zgi[])= {"g0gbc011.zcr","g0gac001.zcr","g0gac021.zcr","g0gac031.zcr","g0gac041.zcr","g0gac051.zcr","g0gac061.zcr","g0gac071.zcr","g0gac081.zcr",\
                      "g0gac091.zcr","g0gac101.zcr","g0gac011.zcr","g0gac111.zcr","g0gac121.zcr","g0gac131.zcr","g0gac141.zcr","g0gac151.zcr","g0gac161.zcr"
                     };
-char *(CurFiles_znemesis[])= {"00act","arrow","back","down","forw","handpt","handpu","hdown","hleft",\
+const char *(CurFiles_znemesis[])= {"00act","arrow","back","down","forw","handpt","handpu","hdown","hleft",\
                      "hright","hup","00idle","left","right","ssurr","stilt","turn","up"
                     };
 
@@ -24,7 +24,7 @@ Cursor *cur;
 int8_t  cursor_index=0;
 
 int current_obj_cur=0; //Number of loaded custom cursor
-Cursor *objcur[2][CURSOR_STATES] = {NULL, NULL, NULL, NULL};
+Cursor *objcur[2][CURSOR_STATES] = {{NULL, NULL}, {NULL, NULL}};
 
 static bool DrawCursor = true;
 
@@ -106,10 +106,10 @@ bool Mouse_IsCurrentCur(int indx)
 }
 
 
-void Mouse_LoadCursor(char *file, Cursor *cur)
+void Mouse_LoadCursor(const char *file, Cursor *cur)
 {
     char tmp[64];
-    char *tmp2;
+    const char *tmp2;
     strcpy(tmp,file);
     int len=strlen(tmp);
     tmp[len-1]='g';
@@ -151,7 +151,7 @@ void Mouse_DeleteCursor(Cursor *cur)
     delete cur;
 }
 
-char *Mouse_GetName(int indx)
+const char *Mouse_GetName(int indx)
 {
     return CurNames[indx];
 }

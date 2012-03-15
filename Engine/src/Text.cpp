@@ -35,7 +35,7 @@ int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
 
     char *token;
 
-    char *find = " ";
+    const char *find = " ";
 
     //font with "item what i want"
     char *fontitem = strcasestr(buf,"font");
@@ -336,16 +336,14 @@ void txt_DrawTxtWithJustify(char *txt, TTF_Font *fnt, SDL_Color clr, SDL_Surface
 }
 
 
-int32_t txt_get_linelen_for_width()
-{
-
-}
-
 void txt_readfontstyle(struct_txt_style *style, char *strin)
 {
     int32_t strt=-1;
     int32_t endt=-1;
-    for (int32_t i=0; i< strlen(strin); i++)
+
+    int32_t t_len = strlen(strin);
+
+    for (int32_t i=0; i< t_len; i++)
     {
         if (strin[i] == '<')
             strt = i;
@@ -392,7 +390,7 @@ int32_t txt_DrawTxt(char *txt, struct_txt_style *fnt_stl, SDL_Surface *dst)
 
     SDL_FillRect(dst,NULL,0);
 
-    SDL_Color clr= {fnt_stl->red,fnt_stl->green,fnt_stl->blue};
+    SDL_Color clr= {fnt_stl->red,fnt_stl->green,fnt_stl->blue,255};
 
     txt_set_font_style(temp_font,fnt_stl);
 
@@ -410,7 +408,7 @@ int32_t txt_DrawTxt(char *txt, struct_txt_style *fnt_stl, SDL_Surface *dst)
 SDL_Surface *txt_RenderUTF8(TTF_Font *fnt, char *text, struct_txt_style *style)
 {
     txt_set_font_style(fnt,style);
-    SDL_Color clr= {style->red,style->green,style->blue};
+    SDL_Color clr= {style->red,style->green,style->blue,255};
     return TTF_RenderUTF8_Solid(fnt,text,clr);
 }
 
@@ -656,7 +654,7 @@ void ttyscroll(struct_ttytext *tty)
 
 void outchartotty(uint16_t chr,struct_ttytext *tty)
 {
-    SDL_Color clr = {tty->style.red,tty->style.green,tty->style.blue};
+    SDL_Color clr = {tty->style.red,tty->style.green,tty->style.blue,255};
 
     SDL_Surface *tmp_surf = TTF_RenderGlyph_Solid(tty->fnt,chr,clr);
 
@@ -725,7 +723,9 @@ int txt_ProcessTTYtext(struct_action_res *nod)
                 {
                     char buf[MINIBUFSZ];
                     sprintf(buf,"%d",GetgVarInt(tty->style.statebox));
-                    for (int8_t j=0; j<strlen(buf); j++)
+
+                    int32_t t_len = strlen(buf);
+                    for (int8_t j=0; j<t_len; j++)
                         outchartotty(buf[j],tty);
                 }
 

@@ -11,7 +11,7 @@ pzllst *CreatePzlLst()
     return tmp;
 }
 
-char *copy_params(char *params)
+char *copy_params(const char *params)
 {
     char *tmp = (char *)malloc(strlen(params)+1);
     strcpy(tmp,params);
@@ -25,7 +25,7 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
     int  slot;
 
     func_node *nod;
-    char *params=" ";
+    const char *params=" ";
 
     str = instr;
 
@@ -548,7 +548,8 @@ int Parse_Puzzle_Criteria(puzzlenode *pzl,FILE *fl)
             sscanf(&str[1],"%d",&nod->slot1);
 
             int ij;
-            for (ij=0; ij<strlen(str); ij++)
+            int32_t t_len = strlen(str);
+            for (ij=0; ij<t_len; ij++)
             {
                 if (str[ij]=='!')
                 {
@@ -573,7 +574,7 @@ int Parse_Puzzle_Criteria(puzzlenode *pzl,FILE *fl)
             }
 
 
-            for (ij++; ij<strlen(str); ij++)
+            for (ij++; ij<t_len; ij++)
             {
                 if (str[ij]=='[')
                 {

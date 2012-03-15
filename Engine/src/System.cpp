@@ -74,7 +74,7 @@ int GetKeyBuffered(int indx)
         return keybbuf[KEYBUFLEN-indx-1];
 }
 
-bool CheckKeyboardMessage(char *msg, int len)
+bool CheckKeyboardMessage(const char *msg, int len)
 {
     if (len > KEYBUFLEN)
         return false;
@@ -120,7 +120,7 @@ void UpdateKeyboard()
 
     if (MouseHit(SDL_BUTTON_LEFT))
     {
-        if (M_dbl_time < millisec())
+        if ((uint32_t)M_dbl_time < millisec())
         {
             M_dbl_time = millisec() + DBL_CLK_TIME;
         }
@@ -446,7 +446,7 @@ char *GetFilePath2(char *chr)
     return NULL;
 }
 
-void AddReplacer(char *ext, char *ext2)
+void AddReplacer(const char *ext, const char *ext2)
 {
     FManRepNode *RepNode=new (FManRepNode);
     AddToMList(FManRepl,RepNode);
@@ -536,7 +536,7 @@ char * GetParams(char *str)
             return str+i+1;
         }
     }
-    return " ";
+    return (char *)" ";
 }
 
 int GetIntVal(char *chr)
@@ -574,17 +574,19 @@ BinTreeNd *CreateBinTreeNd()
 void AddToBinTree(FManNode *nod)
 {
     char buffer[255];
-    for (int i=0; i<strlen(nod->File);i++)
+    int32_t t_len = strlen(nod->File);
+
+    for (int i=0; i<t_len;i++)
         buffer[i]=tolower(nod->File[i]);
 
-    buffer[strlen(nod->File)] = 0x0;
+    buffer[t_len] = 0x0;
 
     if (root == NULL)
         root = CreateBinTreeNd();
 
     BinTreeNd **treenod = &root;
-
-    for (int j=0; j<strlen(buffer);j++)
+    t_len = strlen(buffer);
+    for (int j=0; j<t_len;j++)
         for (int i=0; i<8; i++)
             {
                 int bit = ((buffer[j]) >> i) & 1;
@@ -600,17 +602,19 @@ void AddToBinTree(FManNode *nod)
         (*treenod)->nod = nod;
 }
 
-FManNode *FindInBinTree(char *chr)
+FManNode *FindInBinTree(const char *chr)
 {
     char buffer[255];
-    for (int i=0; i<strlen(chr);i++)
+    int32_t t_len = strlen(chr);
+    for (int i=0; i<t_len;i++)
         buffer[i]=tolower(chr[i]);
 
-    buffer[strlen(chr)] = 0x0;
+    buffer[t_len] = 0x0;
 
     BinTreeNd *treenod = root;
 
-    for (int j=0; j<strlen(buffer);j++)
+    t_len = strlen(buffer);
+    for (int j=0; j<t_len;j++)
         for (int i=0; i<8; i++)
             {
                 int bit = ((buffer[j]) >> i) & 1;
@@ -642,7 +646,7 @@ void DeleteBinTree()
     root         = NULL;
 }
 
-char *GetFilePath(char *chr)
+const char *GetFilePath(const char *chr)
 {
     char buf[255];
     strcpy(buf,chr);
@@ -669,7 +673,7 @@ char *GetFilePath(char *chr)
     return NULL;
 }
 
-char *GetExactFilePath(char *chr)
+const char *GetExactFilePath(const char *chr)
 {
     FManNode *nod = FindInBinTree(chr);
     if (nod != NULL)
@@ -740,7 +744,7 @@ double round(double r)
     return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
 }
 
-void SetAppPath(char *pth)
+void SetAppPath(const char *pth)
 {
     strcpy(apppath,pth);
 }

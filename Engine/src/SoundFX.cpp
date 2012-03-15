@@ -51,6 +51,7 @@ int snd_ProcessWav(struct_action_res *nod)
         }
 
         if (mnod->crossfade)
+        {
             if (mnod->crossfade_params.times > 0)
             {
                 if (GetBeat())
@@ -63,6 +64,7 @@ int snd_ProcessWav(struct_action_res *nod)
             }
             else
                 mnod->crossfade = false;
+        }
 
         if (Rend_GetRenderer() != RENDER_PANA)
         {
@@ -226,6 +228,7 @@ struct_action_res *snd_CreatePanTrack()
     tmp = ScrSys_CreateActRes(NODE_TYPE_PANTRACK);
 
     tmp->nodes.node_pantracking = 0;
+    return tmp;
 }
 
 int snd_ProcessPanTrack(struct_action_res *nod)

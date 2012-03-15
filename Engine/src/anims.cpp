@@ -277,7 +277,7 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
     return nod->playID;
 }
 
-int8_t anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t h, int16_t frame)
+void anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t h, int16_t frame)
 {
 
     if (mnod)

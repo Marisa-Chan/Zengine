@@ -45,7 +45,7 @@ void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y);
 void Rend_DrawImageToGamescr(SDL_Surface *scr,int x, int y);
 void Rend_DrawImageToGamescr(anim_surf *scr,int x, int y, int frame);
 
-void Rend_LoadGamescr(char *path);
+void Rend_LoadGamescr(const char *path);
 
 void Rend_ProcessCursor();
 

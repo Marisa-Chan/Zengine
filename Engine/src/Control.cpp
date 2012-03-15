@@ -342,7 +342,7 @@ void control_slot_draw(ctrlnode *nod)
 #ifdef GAME_NEMESIS
             sprintf(bff,CTRL_SLOT_FILE_NAME,tmp1,slut->distance_id);
 #endif
-            char *fil = GetFilePath(bff);
+            const char *fil = GetFilePath(bff);
             if (fil)
                 slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
 
@@ -412,7 +412,9 @@ void control_input_draw(ctrlnode *ct)
                     inp->period = inp->cursor->info.time;
                 }
 
-                if (inp->frame >= inp->cursor->info.frames)
+                int32_t max_frames = inp->cursor->info.frames;
+
+                if (inp->frame >= max_frames)
                     inp->frame = 0;
             }
         }
@@ -495,9 +497,9 @@ void control_input(ctrlnode *ct)
                 SDLKey key = GetLastKey();
                 int tmplen = strlen(inp->text);
 
-                if (key>=SDLK_0 && key<=SDLK_9 ||
-                        key>=SDLK_a && key<=SDLK_z ||
-                        key==SDLK_SPACE)
+                if ((key>=SDLK_0 && key<=SDLK_9) ||
+                        (key>=SDLK_a && key<=SDLK_z) ||
+                        (key==SDLK_SPACE))
                 {
                     if (tmplen < SAVE_NAME_MAX_LEN)
                     {
@@ -1206,6 +1208,7 @@ void control_save(ctrlnode *ct)
     for (int i=0; i<MAX_SAVES; i++)
         if (sv->inputslot[i] != -1)
             if (sv->input_nodes[i]->node.inp->enterkey)
+            {
                 if(sv->forsaving)
                 {
                     FILE *f = fopen("inquis.sav","wb");
@@ -1235,7 +1238,7 @@ void control_save(ctrlnode *ct)
                     ScrSys_LoadGame(fln);
                     break;
                 }
-
+            }
 }
 
 void control_lever(ctrlnode *ct)
@@ -1387,6 +1390,7 @@ void control_lever(ctrlnode *ct)
 int Parse_Control_Flat()
 {
     Rend_SetRenderer (RENDER_FLAT);
+    return 1;
 }
 
 int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
@@ -1425,7 +1429,7 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
         }
     }
 
-    char *descfile = GetFilePath(filename);
+    const char *descfile = GetFilePath(filename);
 
     if (!descfile)
         return 0; //FAIL
@@ -1505,14 +1509,14 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
         else
         {
             int32_t t1,t2,t3;
-            if (sscanf(str,"%d:%d %d", &t1, &t2, &t3) == 3);
+            if (sscanf(str,"%d:%d %d", &t1, &t2, &t3) == 3)
             {
                 if (t1 < CTRL_LEVER_MAX_FRAMES)
                 {
                     lev->hotspots[t1].x = t2;
                     lev->hotspots[t1].y = t3;
                     char *token;
-                    char *find = " ";
+                    const char *find = " ";
                     char tmpbuf[FILE_LN_BUF];
                     strcpy(tmpbuf,str);
                     token = strtok(tmpbuf,find);
@@ -1533,7 +1537,8 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
                         token = strtok(NULL,find);
                     }
                     lev->hasout[t1] = 0;
-                    for (int32_t g=0; g<strlen(str); g++)
+                    int32_t len = strlen(str);
+                    for (int32_t g=0; g<len; g++)
                         if (tolower(str[g]) == 'p')
                         {
                             int32_t tr1,tr2;
@@ -1637,7 +1642,7 @@ int Parse_Control_HotMov(MList *controlst, FILE *fl, uint32_t slot)
         }
     }
 
-    char *descfile = GetFilePath(filename);
+    const char *descfile = GetFilePath(filename);
 
     if (!descfile)
         return 0; //FAIL
@@ -1718,6 +1723,7 @@ int Parse_Control_Panorama(FILE *fl)
     //  printf("%f\n",k);
 
     Rend_pana_SetTable();
+    return good;
 }
 
 int Parse_Control_Tilt(FILE *fl)
@@ -1758,8 +1764,8 @@ int Parse_Control_Tilt(FILE *fl)
         {
             str   = GetParams(str);
             tmp = atoi(str);
-            //if (tmp == 1)
-            //Rend_SetReversePana(true);
+            if (tmp == 1)
+                Rend_SetReversePana(true);
         }
     }
 
@@ -1767,6 +1773,7 @@ int Parse_Control_Tilt(FILE *fl)
     //  printf("%f\n",k);
 
     Rend_tilt_SetTable();
+    return good;
 }
 
 int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
@@ -1870,7 +1877,7 @@ int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
                 if (nd->type == CTRL_INPUT)
                     nd->node.inp->readonly = !sv->forsaving;
         }
-
+    return good;
 }
 
 int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
@@ -1910,7 +1917,7 @@ int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"string_resource_file")==0)
         {
             str=GetParams(str);
-            char *tmp = GetFilePath(str);
+            const char *tmp = GetFilePath(str);
             if (tmp != NULL)
             {
                 titler->num_strings = 0;
@@ -1937,7 +1944,7 @@ int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
             }
         }
     }//while (!feof(fl))
-
+    return good;
 }
 
 int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
@@ -2020,7 +2027,7 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
         }
 
     }//while (!feof(fl))
-
+    return good;
 }
 
 
@@ -2063,7 +2070,7 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"brush_file")==0)
         {
             str=GetParams(str);
-            char *pth=GetFilePath(str);
+            const char *pth=GetFilePath(str);
             if (pth)
             {
                 SDL_Surface *tmp = LoadConvertImg(pth);
@@ -2133,7 +2140,7 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
         }//if (str[0] == '}')
     }//while (!feof(fl))
 
-    char *path = GetFilePath(filename);
+    const char *path = GetFilePath(filename);
 
     if (path)
     {
@@ -2151,7 +2158,7 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
     else
         return 0;
 
-    return 1;
+    return good;
 }
 
 int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
@@ -2238,7 +2245,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
             }//for (;;)
         }//if (str[0] == '}')
     }//while (!feof(fl))
-    return 1;
+    return good;
 }
 
 int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
@@ -2358,8 +2365,6 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
         {
             str = GetParams(str);
             strcpy(filename,str);
-
-            char *pth = GetFilePath(str);
         }
         else if (strCMP(str,"animation_id") == 0)
         {
@@ -2368,7 +2373,7 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
         }
     }
 
-    char *pth = GetFilePath(filename);
+    const char *pth = GetFilePath(filename);
 
     if (pth != NULL)
     {
@@ -2475,12 +2480,14 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
                     if (t1 >= 0 && t1 < fist->num_entries)
                     {
                         int32_t n1=0;
-                        for(int32_t i=0; i<strlen(s1); i++)
+                        int32_t len = strlen(s1);
+                        for(int32_t i=0; i<len; i++)
                             if (s1[i] != '0')
                                 n1 |= (1 << i);
 
                         int32_t n2=0;
-                        for(int32_t i=0; i<strlen(s2); i++)
+                        int32_t tmp_len = strlen(s2);
+                        for(int32_t i=0; i<tmp_len; i++)
                             if (s2[i] != '0')
                                 n2 |= (1 << i);
 
@@ -2593,9 +2600,6 @@ int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
 int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
 {
     int  good = 0;
-
-    char buf[FILE_LN_BUF];
-    char *str;
 
     uint32_t    slot;
     char      ctrltp[100];

@@ -30,7 +30,7 @@ MList    *actres =NULL; //sounds, animations, ttytexts and other.
 uint8_t  *SaveBuffer = NULL;
 uint32_t SaveCurrentSize=0;
 
-char * ScrSys_ReturnListName(pzllst *lst)
+const char * ScrSys_ReturnListName(pzllst *lst)
 {
     if (lst == world)
         return "world";
@@ -43,6 +43,8 @@ char * ScrSys_ReturnListName(pzllst *lst)
 
     if (lst == view)
         return "view";
+
+    return "unknown";
 }
 
 pzllst *GetUni()
@@ -202,7 +204,7 @@ void InitScriptsEngine()
 
 
 
-void LoadScriptFile(pzllst *lst, char *filename, bool control, MList *controlst)
+void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *controlst)
 {
 #ifdef TRACE
     printf("Loading script file %s\n",filename);
@@ -543,7 +545,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[3]=temp.View;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
-        char *fil = GetExactFilePath(buf);
+        const char *fil = GetExactFilePath(buf);
         if (fil != NULL)
             LoadScriptFile(view,fil,true,ctrl);
 
@@ -562,7 +564,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[2]=0;
         sprintf(buf,"%s.scr",tm);
 
-        char *fil = GetExactFilePath(buf);
+        const char *fil = GetExactFilePath(buf);
         if (fil != NULL)
             LoadScriptFile(room,fil,false,NULL);
     }
@@ -579,7 +581,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[1]=0;
         sprintf(buf,"%s.scr",tm);
 
-        char *fil = GetExactFilePath(buf);
+        const char *fil = GetExactFilePath(buf);
         if (fil != NULL)
             LoadScriptFile(world,fil,false,NULL);
 
@@ -993,7 +995,7 @@ struct_action_res *ScrSys_CreateActRes(int type)
 
 #define pref_COUNT 17
 
-const struct {char *name;int slot;} prefs[pref_COUNT] =
+const struct {const char *name;int slot;} prefs[pref_COUNT] =
 {
 {"KeyboardTurnSpeed",SLOT_KBD_ROTATE_SPEED},
 {"PanaRotateSpeed",SLOT_PANAROTATE_SPEED},

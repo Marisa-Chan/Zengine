@@ -29,12 +29,12 @@ Cursor *Mouse_GetCursor(int indx);
 Cursor *Mouse_GetCurrentCursor();
 bool Mouse_IsCurrentCur(int indx);
 
-void Mouse_LoadCursor(char *file, Cursor *cur);
+void Mouse_LoadCursor(const char *file, Cursor *cur);
 void Mouse_DrawCursor(int x, int y);
 void Mouse_DeleteCursor(Cursor *cur);
 
 
-char *Mouse_GetName(int indx);
+const char *Mouse_GetName(int indx);
 int Mouse_GetCursorIndex(char *name);
 
 int Mouse_GetCurrentObjCur();
