@@ -164,18 +164,19 @@ SDL_Surface *LoadConvertImg(const char *file,uint32_t key)
     return tmpbuf;
 }
 
-anim_surf *LoadAnimImage(char *file, int32_t mask)
+anim_surf *LoadAnimImage(const char *file, int32_t mask)
 {
+
+#ifdef LOADTRACE
+    printf("fallback-mechanism\n");
+#endif
 
     char buf[64];
     const char *bufp;
     strcpy(buf,file);
     int len=strlen(buf);
-    buf[len-1]='g';
-    buf[len-2]='n';
-    buf[len-3]='p';
 
-    bufp=GetExactFilePath(buf);
+    bufp=GetFilePath(buf);
     if (bufp==NULL)
         return NULL;
 
@@ -200,7 +201,7 @@ anim_surf *LoadAnimImage(char *file, int32_t mask)
 
     typedef SDL_Surface* PSDL_Surface;
 
-    atmp->info.time=66;
+    atmp->info.time /= 10;
     atmp->img=new PSDL_Surface[atmp->info.frames];//frames * sizeof(SDL_Surface *));
 
     for (uint8_t i=0; i< atmp->info.frames; i++)

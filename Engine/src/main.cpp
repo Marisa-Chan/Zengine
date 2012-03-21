@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     AddReplacer("SRC","WAV");
     AddReplacer("IFP","WAV");
     AddReplacer("AVI","MPG");
+    AddReplacer("RLF","PNG");
 
 
 

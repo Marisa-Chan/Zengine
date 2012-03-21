@@ -1,5 +1,6 @@
 #include "System.h"
 
+/*********************************** adpcm_Support *******************************/
 
 static const uint8_t wavHeader[0x2C] =
 {
@@ -314,7 +315,10 @@ Mix_Chunk *loader_LoadFile(const char *file)
     return chunk;
 }
 
+/*********************************** END adpcm_Support *******************************/
 
+
+/***********************************TGZ_Support *******************************/
 
 void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t transpose)
 {
@@ -431,7 +435,7 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
         fread(&magic,4,1,f);
         if (magic  == 0x005A4754)
         {
-            printf("Nyan %s\n",file);
+
             fseek(f,0,SEEK_END);
             int32_t pksz = ftell(f) - 0x10;
             fseek(f,8,SEEK_SET);
@@ -493,5 +497,283 @@ SDL_Surface *loader_LoadFile(const char *file, int8_t transpose)
 SDL_Surface *loader_LoadFile(const char *file, int8_t transpose,uint32_t key)
 {
     return loader_Load_GF_File(file,transpose,1,key);
+}
+
+
+
+/*********************************** END TGZ_Support *******************************/
+
+
+
+
+/*********************************** RLF ***************************************/
+
+
+struct Header
+{
+    uint32_t magic; //FELR 0x524C4546
+    uint32_t size;// from begin
+    uint32_t unk1;
+    uint32_t unk2;
+    uint32_t frames; //number of frames
+};
+
+struct Cinf
+{
+    uint32_t magic; //FNIC
+    uint32_t size;
+    uint32_t unk1;
+    uint32_t unk2;
+    uint32_t unk3;
+    char VRLE[0x18];
+    uint32_t LRVD;
+    uint32_t unk4;
+    char HRLE[0x18];
+    uint32_t ELHD;
+    uint32_t unk5;
+    char HKEY[0x18];
+    uint32_t ELRH;
+};
+
+struct MinF
+{
+    uint32_t magic; //FNIM
+    uint32_t size;
+    uint32_t OEDV; //OEDV
+    uint32_t unk1;
+    uint32_t unk2;
+    uint32_t unk3;
+    uint32_t width;
+    uint32_t height;
+};
+
+struct mTime
+{
+    uint32_t magic; //EMIT
+    uint32_t size;
+    uint32_t unk1;
+    uint32_t microsecs;
+};
+
+struct Frame
+{
+    uint32_t magic; //MARF
+    uint32_t size;
+    uint32_t unk1;
+    uint32_t unk2;
+    uint32_t TYPE; // ELRH or  ELHD
+    uint32_t offset; //from begin of frame to data
+    uint32_t unk3;
+};
+
+void DHLE(int8_t *dst, int8_t *src,int32_t size)
+{
+    int8_t tmp;
+    int32_t off1, off2,off3;
+    int16_t tmp2;
+    off1=0;
+    off2=0;
+    off3=0;
+
+    while (off1 <= size)
+    {
+        tmp = src[off1];
+        off1++;
+
+        if (tmp < 0)
+        {
+            off3-=tmp;
+            if (tmp < 0)
+            {
+                tmp=abs(tmp);
+                while (tmp!=0)
+                {
+                    tmp2=*(int16_t *)(src + off1);
+                    off2+=2;
+                    *(int16_t *)&dst[off2-2] = tmp2;
+                    off1+=2;
+                    tmp--;
+                }
+            }
+        }
+        else
+            off2+=tmp*2 + 2;
+
+
+    }
+}
+
+void HRLE(int8_t *dst, int8_t *src,int32_t size)
+{
+    int8_t tmp;
+    int32_t off1, off2,off3;
+    int16_t tmp2;
+    int32_t tmp3,tmp4;
+    off1=0;
+    off2=0;
+    off3=0;
+
+    while (off1 <= size)
+    {
+        tmp = src[off1];
+        off1++;
+        tmp3 = tmp;
+
+        if (tmp < 0)
+        {
+            off3-=tmp;
+            if (tmp < 0)
+            {
+                tmp=abs(tmp);
+                while (1)
+                {
+                    tmp2=*(int16_t *)(src + off1);
+                    off2+=2;
+                    *(int16_t *)&dst[off2-2] = tmp2;
+                    off1+=2;
+                    tmp--;
+                    if (tmp==0)
+                        break;
+                }
+            }
+        }
+        else
+        {
+            tmp3 += 2;
+            off1 += 2;
+            tmp2 = *(int16_t *)&src[off1 - 2];
+            if (tmp>-2)
+            {
+                tmp4=tmp+2;
+                while (tmp4>0)
+                {
+                    *(int16_t *)&dst[off2] = tmp2;
+                    off2+=2;
+                    tmp4--;
+                }
+            }
+        }
+
+
+    }
+}
+
+
+
+
+SDL_Surface *rlf_frame(void *buf, int32_t w, int32_t h, int8_t transpose)
+{
+    SDL_Surface *srf = SDL_CreateRGBSurface(SDL_SWSURFACE,w,h,16,0x7C00,0x3E0,0x1F,0);
+
+    SDL_LockSurface(srf);
+
+    if (transpose == 1)
+    {
+        uint16_t *tmp = (uint16_t *)buf;
+        uint16_t *tmp2 = (uint16_t *)srf->pixels;
+
+        for (int32_t j=0; j< h; j++)
+            for (int32_t i=0; i< w; i++)
+            {
+                *tmp2 = tmp[i*h+j];
+                tmp2++;
+            }
+
+    }
+    else
+        memcpy(srf->pixels,buf,w*h*2);
+
+    SDL_UnlockSurface(srf);
+
+    return srf;
+}
+
+
+anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
+{
+#ifdef LOADTRACE
+    printf("loader:\tTry to load %s with ",file);
+#endif
+
+    const char *fil = GetExactFilePath(file);
+
+    if (fil == NULL)
+        return LoadAnimImage(file,mask); //rollback mechanism
+
+#ifdef LOADTRACE
+    printf("RLF-mechanism\n");
+#endif
+
+    FILE *f=fopen(fil,"rb");
+    if (!f)
+        return NULL;
+
+    Header hd;
+    fread(&hd,1,sizeof(Header),f);
+
+    if (hd.magic != 0x524C4546) //RLEF
+        return NULL;
+
+    Cinf cin;
+    fread(&cin,1,sizeof(Cinf),f);
+    MinF mn;
+    fread(&mn,1,sizeof(MinF),f);
+    mTime tm;
+    fread(&tm,1,sizeof(mTime),f);
+
+
+    if (transpose == 1)
+    {
+        mn.height ^=  mn.width;
+        mn.width  ^=  mn.height;
+        mn.height ^=  mn.width;
+    }
+
+    anim_surf *atmp=new(anim_surf);
+
+
+    typedef SDL_Surface* PSDL_Surface;
+
+    atmp->info.time=tm.microsecs / 10;
+    atmp->info.frames=hd.frames;
+    atmp->info.w = mn.width;
+    atmp->info.h = mn.height;
+    atmp->img=new PSDL_Surface[atmp->info.frames];//frames * sizeof(SDL_Surface *));
+
+
+
+    Frame frm;
+    void *buf2=malloc(mn.height*mn.width*4);
+    memset(buf2,0,mn.height*mn.width*2);
+
+    for (uint16_t i=0; i<hd.frames ; i++)
+    {
+        fread(&frm,1,sizeof(Frame),f);
+
+        void *buf=malloc(frm.size-frm.offset);
+        fread(buf,1,frm.size-frm.offset,f);
+
+
+        if (frm.TYPE == 0x44484C45)
+            DHLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset);
+        else
+            HRLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset);
+
+        free(buf);
+
+        atmp->img[i] = rlf_frame(buf2,atmp->info.w,atmp->info.h,transpose);
+        ConvertImage(&atmp->img[i]);
+
+        if (mask != 0 && mask != -1)
+            SDL_SetColorKey(atmp->img[i],SDL_SRCCOLORKEY ,mask);
+
+
+    }
+
+    fclose(f);
+
+    free(buf2);
+
+    return atmp;
 }
 

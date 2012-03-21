@@ -624,7 +624,9 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     //const char *filp=GetFilePath(a3);
 
-    if (tmp->nodes.node_sync->chn == -1 /*|| filp == NULL*/)
+    tmp->nodes.node_sync->chunk = loader_LoadFile(a3);
+
+    if (tmp->nodes.node_sync->chn == -1 || tmp->nodes.node_sync->chunk == NULL)
     {
         printf("ERROR, NO CHANNELS OR NO FILE!\n");
         snd_DeleteSync(tmp);
@@ -639,9 +641,6 @@ int action_syncsound(char *params, int aSlot , pzllst *owner)
 
     if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
         tmp->nodes.node_sync->sub = sub_LoadSubtitles(a3);
-
-
-    tmp->nodes.node_sync->chunk  = loader_LoadFile(a3);
 
     Mix_UnregisterAllEffects(tmp->nodes.node_sync->chn);
 

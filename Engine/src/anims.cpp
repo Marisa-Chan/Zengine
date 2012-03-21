@@ -81,7 +81,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
     nod->nexttick = 0;
     nod->loops=0;
 
-    if (strcasestr(filename,"avi")!=NULL)
+    if (strcasestr(filename,"avi")!=NULL || strcasestr(filename,"mpg")!=NULL)
     {
         nod->anim.avi = new(anim_avi);
         nod->vid=true;
@@ -108,7 +108,8 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
     }
     else
     {
-        nod->anim.rlf = LoadAnimImage(filename,mask);
+        nod->anim.rlf = loader_LoadRlf(filename,Rend_GetRenderer() == RENDER_PANA,mask);
+
         nod->vid=false;
 
         if (nod->framerate == 0)
