@@ -2002,8 +2002,10 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
             char file[16];
 
             sscanf(str,"%s",file);
-            inp->cursor = loader_LoadRlf(file,0,0);
-
+            if (strcasestr(file,"rlf")!=NULL)
+                inp->cursor = loader_LoadRlf(file,0,0);
+            else
+                inp->cursor = LoadAnimImage(file,0);
         }
         else if (strCMP(str,"focus")==0)
         {

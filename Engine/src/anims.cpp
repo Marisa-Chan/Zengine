@@ -108,7 +108,10 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
     }
     else
     {
-        nod->anim.rlf = loader_LoadRlf(filename,Rend_GetRenderer() == RENDER_PANA,mask);
+        if (strcasestr(filename,"rlf")!=NULL)
+            nod->anim.rlf = loader_LoadRlf(filename,Rend_GetRenderer() == RENDER_PANA,mask);
+        else
+            nod->anim.rlf = LoadAnimImage(filename,mask);
 
         nod->vid=false;
 
