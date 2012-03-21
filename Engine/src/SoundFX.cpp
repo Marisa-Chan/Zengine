@@ -208,10 +208,12 @@ int snd_ProcessSync(struct_action_res *nod)
 
     if (!Mix_Playing(mnod->chn) || getGNode(mnod->syncto) == NULL)
         {
+#ifdef TRACE
             if (!Mix_Playing(mnod->chn))
-                printf("Not Played \n");
+                printf("Not Played chan %d syncto %d \n",mnod->chn,mnod->syncto);
             else
                 printf("NULL \n");
+#endif
             snd_DeleteSync(nod);
             return NODE_RET_DELETE;
         }
