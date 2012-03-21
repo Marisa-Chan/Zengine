@@ -692,7 +692,7 @@ SDL_Surface *rlf_frame(void *buf, int32_t w, int32_t h, int8_t transpose)
 anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
 {
 #ifdef LOADTRACE
-    printf("loader:\tTry to load %s with ",file);
+    printf("loader:\trlf\tTry to load %s with ",file);
 #endif
 
     const char *fil = GetExactFilePath(file);
@@ -777,3 +777,65 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
     return atmp;
 }
 
+/*********************************** END RLF ***************************************/
+
+
+
+void loader_LoadZcr(const char *file, Cursor *cur)
+{
+#ifdef LOADTRACE
+    printf("loader:\tzcr\tTry to load %s with ",file);
+#endif
+    const char *fil = GetExactFilePath(file);
+
+    if (fil == NULL)
+    {
+#ifdef LOADTRACE
+    printf("fallback-mechanism\n");
+#endif
+        Mouse_LoadCursor(file,cur);
+        return;
+    }
+#ifdef LOADTRACE
+    printf("ZCR-mechanism\n");
+#endif
+
+    FILE *f=fopen(fil,"rb");
+    if (!f)
+        return;
+
+    uint32_t magic=0;
+    fread(&magic,4,1,f);
+    if (magic  == 0x3152435A)
+    {
+        uint16_t x,y,w,h;
+        fread(&x,2,1,f);
+        fread(&y,2,1,f);
+        fread(&w,2,1,f);
+        fread(&h,2,1,f);
+
+        cur->ox = x;
+        cur->oy = y;
+
+        cur->img = SDL_CreateRGBSurface(SDL_SWSURFACE,w,h,16,0x7C00,0x3E0,0x1F,0);
+
+        SDL_LockSurface(cur->img);
+
+        fread(cur->img->pixels,2,w*h,f);
+
+        SDL_UnlockSurface(cur->img);
+
+        ConvertImage(&cur->img);
+
+        SDL_SetColorKey(cur->img,SDL_SRCCOLORKEY,0);
+    }
+    fclose(f);
+}
+
+void loader_LoadMouseCursor(const char *file, Cursor *cur)
+{
+    if (strcasestr(file,"zcr") != NULL)
+        loader_LoadZcr(file,cur);
+    else
+        Mouse_LoadCursor(file,cur);
+}

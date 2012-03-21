@@ -104,6 +104,7 @@ int main(int argc, char **argv)
     AddReplacer("IFP","WAV");
     AddReplacer("AVI","MPG");
     AddReplacer("RLF","PNG");
+    AddReplacer("ZCR","PNG");
 
 
 
