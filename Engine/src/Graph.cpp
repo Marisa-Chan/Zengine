@@ -130,7 +130,7 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful, 
 
 void ConvertImage(SDL_Surface **tmp)
 {
-    SDL_Surface *tmp2=SDL_ConvertSurface(*tmp,screen->format,0);
+    SDL_Surface *tmp2=SDL_ConvertSurface(*tmp,screen->format,SFTYPE);
     SDL_FreeSurface(*tmp);
     *tmp=tmp2;
 }

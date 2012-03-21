@@ -64,6 +64,7 @@ void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *s
 void FreeAnimImage(anim_surf *anim);
 
 SDL_Surface *LoadConvertImg(const char *file);
+SDL_Surface *LoadConvertImg(const char *file,int s,int8_t transp);
 SDL_Surface *LoadConvertImg(const char *file,uint32_t key);
 
 TTF_Font *GetFontByName(char *name,int size);

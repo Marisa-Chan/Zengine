@@ -193,27 +193,32 @@ void Rend_DrawImageToScr(SDL_Surface *scr,int x, int y)
         DrawImageToSurf(scr,x,y,screen);
 }
 
-void Rend_LoadGamescr(const char *path)
+int8_t Rend_LoadGamescr(const char *file)
 {
+    int8_t good = 1;
     if (scrbuf)
         SDL_FreeSurface(scrbuf);
 
-    scrbuf=LoadConvertImg(path);
+    scrbuf=loader_LoadFile(file,Rend_GetRenderer() == RENDER_PANA);
 
     SDL_FillRect(tempbuf,0,0);
 
     if (!scrbuf)
-        printf("ERROR:  IMG_Load(%s): %s\n\n",path, IMG_GetError());
+        printf("ERROR:  IMG_Load(%s): %s\n\n",file, SDL_GetError());
 
     if (!scrbuf) // no errors if no screen
+    {
+        good = 0;
         scrbuf=CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
+    }
+
 
     if (Renderer != RENDER_TILT)
         pana_PanaWidth = scrbuf->w;
     else
         pana_PanaWidth = scrbuf->h;
 
-    // Effects = 0;
+    return good;
 }
 
 
@@ -1749,17 +1754,15 @@ int32_t Rend_EF_9_Setup(char *mask, char *clouds, int32_t delay,int32_t x, int32
         return -1;
     }
 
-    const char *mask_fil = GetFilePath(mask);
-    const char *cloud_fil = GetFilePath(clouds);
+    ef->effect.ef9.cloud = loader_LoadFile(clouds,0);
+    ef->effect.ef9.mask = loader_LoadFile(mask,0);
 
-    if (mask_fil == NULL || cloud_fil == NULL)
+    if (ef->effect.ef9.cloud == NULL || ef->effect.ef9.mask == NULL)
     {
         Effects_Delete(eftmp);
         return -1;
     }
 
-    ef->effect.ef9.cloud = LoadConvertImg(cloud_fil);
-    ef->effect.ef9.mask = LoadConvertImg(mask_fil);
     ef->effect.ef9.cloud_mod = (int8_t *)calloc(ef->effect.ef9.cloud->w,ef->effect.ef9.cloud->h);
     ef->effect.ef9.mapping = CreateSurface(w,h);
 

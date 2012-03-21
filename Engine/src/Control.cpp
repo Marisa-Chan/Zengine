@@ -342,9 +342,8 @@ void control_slot_draw(ctrlnode *nod)
 #ifdef GAME_NEMESIS
             sprintf(bff,CTRL_SLOT_FILE_NAME,tmp1,slut->distance_id);
 #endif
-            const char *fil = GetFilePath(bff);
-            if (fil)
-                slut->srf=LoadConvertImg(fil,Rend_MapScreenRGB(0,0,0));
+
+            slut->srf=loader_LoadFile(bff,0,Rend_MapScreenRGB(0,0,0));
 
             slut->loaded_img = tmp1;
         }
@@ -2070,10 +2069,9 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
         else if (strCMP(str,"brush_file")==0)
         {
             str=GetParams(str);
-            const char *pth=GetFilePath(str);
-            if (pth)
+            SDL_Surface *tmp = loader_LoadFile(str,0);
+            if (tmp)
             {
-                SDL_Surface *tmp = LoadConvertImg(pth);
                 paint->brush = (uint8_t *)malloc(tmp->w*tmp->h * sizeof(uint8_t));
                 paint->b_w = tmp->w;
                 paint->b_h = tmp->h;
@@ -2140,12 +2138,13 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
         }//if (str[0] == '}')
     }//while (!feof(fl))
 
-    const char *path = GetFilePath(filename);
 
-    if (path)
+    SDL_Surface *tmp = loader_LoadFile(filename,0);
+
+    if (tmp)
     {
         paint->paint = CreateSurface(paint->rectangle.w,paint->rectangle.h);
-        SDL_Surface *tmp = LoadConvertImg(path);
+
         SDL_Rect tr;
         tr.x = paint->rectangle.x;
         tr.y = paint->rectangle.y;

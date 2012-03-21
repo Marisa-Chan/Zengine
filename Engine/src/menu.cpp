@@ -76,16 +76,16 @@ void menu_LoadGraphics_zgi()
     for (int i=1; i<4; i++)
     {
         sprintf(buf,"gmzau%2.2x1.tga",i);
-        menuback[i-1][0] = LoadConvertImg(GetFilePath(buf));
+        menuback[i-1][0] = loader_LoadFile(buf,0);
         sprintf(buf,"gmzau%2.2x1.tga",i+0x10);
-        menuback[i-1][1] = LoadConvertImg(GetFilePath(buf));
+        menuback[i-1][1] = loader_LoadFile(buf,0);
     }
     for (int i=0; i<4; i++)
     {
         sprintf(buf,"gmzmu%2.2x1.tga",i);
-        menubar[i][0] = LoadConvertImg(GetFilePath(buf));
+        menubar[i][0] = loader_LoadFile(buf,0);
         sprintf(buf,"gmznu%2.2x1.tga",i);
-        menubar[i][1] = LoadConvertImg(GetFilePath(buf));
+        menubar[i][1] = loader_LoadFile(buf,0);
     }
 
     for (int i=0; i<256; i++)
@@ -104,10 +104,10 @@ void menu_LoadGraphics_znemesis()
         for (int i=0; i<menu_znemesis_but_frames; i++)
         {
             sprintf(buf,"butfrm%d%d.tga",j,i);
-            menubut_znem[j-1][i] = LoadConvertImg(GetFilePath(buf));
+            menubut_znem[j-1][i] = loader_LoadFile(buf,0);
         }
 
-    menubar_znem = LoadConvertImg(GetFilePath("bar.tga"));
+    menubar_znem = loader_LoadFile("bar.tga",0);
 }
 
 void menu_UpdateMenuBar_zgi()
@@ -516,12 +516,12 @@ void menu_DrawMenuBar_zgi()
                         if (menupicto[itemnum][0] == NULL)
                         {
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
-                            menupicto[itemnum][0] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][0] = loader_LoadFile(buf,0,0);
                         }
                         if (menupicto[itemnum][1] == NULL)
                         {
                             sprintf(buf,"gmzxu%2.2x1.tga",itemnum);
-                            menupicto[itemnum][1] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][1] = loader_LoadFile(buf,0,0);
                         }
                         if (inrect)
                             DrawImage(menupicto[itemnum][1],menu_ScrollPos[menu_ITEM] + itemspace * i,0);
@@ -559,12 +559,12 @@ void menu_DrawMenuBar_zgi()
                         if (menupicto[itemnum][0] == NULL)
                         {
                             sprintf(buf,"gmzwu%2.2x1.tga",itemnum);
-                            menupicto[itemnum][0] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][0] = loader_LoadFile(buf,0,0);
                         }
                         if (menupicto[itemnum][1] == NULL)
                         {
                             sprintf(buf,"gmzxu%2.2x1.tga",itemnum);
-                            menupicto[itemnum][1] = LoadConvertImg(GetFilePath(buf),0);
+                            menupicto[itemnum][1] = loader_LoadFile(buf,0,0);
                         }
                         if (inrect)
                             DrawImage(menupicto[itemnum][1],GAME_W + menu_MAGIC_SPACE + menu_MAGIC_ITEM_W * i-menu_ScrollPos[menu_MAGIC],0);

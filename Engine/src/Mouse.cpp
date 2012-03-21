@@ -116,11 +116,11 @@ void Mouse_LoadCursor(const char *file, Cursor *cur)
     tmp[len-2]='n';
     tmp[len-3]='p';
 
-    tmp2=GetExactFilePath(tmp);
-    if (tmp2==NULL)
-        return;
 
-    cur->img = LoadConvertImg(tmp2,Rend_MapScreenRGB(0,0,0));
+    cur->img = loader_LoadFile(tmp,0,Rend_MapScreenRGB(0,0,0));
+
+    if (cur->img == NULL)
+        return;
 
     tmp[len-2]='o';
     tmp[len-1]='i';

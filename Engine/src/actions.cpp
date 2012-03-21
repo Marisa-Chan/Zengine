@@ -5,11 +5,8 @@ int action_set_screen(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:set_screen  %s\n",params);
 #endif
-    const char *fil = GetFilePath(params);
 
-    if (fil != NULL)
-        Rend_LoadGamescr(fil);
-    else
+    if (Rend_LoadGamescr(params) == 0)
         printf("Can't find %s, screen load failed\n",params);
 
     return ACTION_NORMAL;
@@ -46,10 +43,10 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
         printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
 #endif
-        tmp=LoadConvertImg(GetFilePath(file),Rend_MapScreenRGB(r,g,b));
+        tmp=loader_LoadFile(file,Rend_GetRenderer() == RENDER_PANA, Rend_MapScreenRGB(r,g,b));
     }
     else
-        tmp=LoadConvertImg(GetFilePath(file));
+        tmp=loader_LoadFile(file,Rend_GetRenderer() == RENDER_PANA);
 
     if (!tmp)
         printf("ERROR:  IMG_Load(%s): %s\n\n",params, IMG_GetError());
