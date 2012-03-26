@@ -487,15 +487,15 @@ void Parse_Puzzle_Results_Action(char *instr, MList *lst)
 
 }
 
-int Parse_Puzzle_Flags(puzzlenode *pzl,FILE *fl)
+int Parse_Puzzle_Flags(puzzlenode *pzl,mfile *fl)
 {
     int  good = 0;
     char buf[FILE_LN_BUF];
     char *str;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str=PrepareString(buf);
 
         if (str[0] == '}')
@@ -520,7 +520,7 @@ int Parse_Puzzle_Flags(puzzlenode *pzl,FILE *fl)
     return good;
 }
 
-int Parse_Puzzle_Criteria(puzzlenode *pzl,FILE *fl)
+int Parse_Puzzle_Criteria(puzzlenode *pzl,mfile *fl)
 {
     int  good = 0;
     char buf[FILE_LN_BUF];
@@ -530,9 +530,9 @@ int Parse_Puzzle_Criteria(puzzlenode *pzl,FILE *fl)
 
     AddToMList(pzl->CritList,crit_nodes_lst);
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str=PrepareString(buf);
 
         if (str[0] == '}')
@@ -601,15 +601,15 @@ int Parse_Puzzle_Criteria(puzzlenode *pzl,FILE *fl)
     return good;
 }
 
-int Parse_Puzzle_Results(puzzlenode *pzl,FILE *fl)
+int Parse_Puzzle_Results(puzzlenode *pzl,mfile *fl)
 {
     int  good = 0;
     char buf[FILE_LN_BUF];
     char *str;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str=PrepareString(buf);
 
         if (str[0] == '}')
@@ -632,7 +632,7 @@ int Parse_Puzzle_Results(puzzlenode *pzl,FILE *fl)
     return good;
 }
 
-int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr)
+int Parse_Puzzle(pzllst *lst,mfile *fl,char *ctstr)
 {
     int  good = 0;
 
@@ -655,9 +655,9 @@ int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr)
 
     ScrSys_SetFlag(pzl->slot,0);
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str=PrepareString(buf);
 
         if (str[0] == '}')

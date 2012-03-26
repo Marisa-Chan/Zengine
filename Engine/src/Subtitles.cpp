@@ -5,21 +5,21 @@
 
 struct_textfile *sub_LoadTextFile(const char *file)
 {
-    FILE *f = fopen(file,"rb");
+    mfile *f = mfopen(file);
 
     if (f == NULL)
         return NULL;
 
-    fseek(f,0,SEEK_END);
-    int sz = ftell(f);
-    fseek(f,0,SEEK_SET);
+    m_wide_to_utf8(f);
+
+    int sz = f->size;
 
     struct_textfile *tmp = new(struct_textfile);
 
     tmp->buffer = (char *)calloc(sz+1,1);
 
-    fread(tmp->buffer,sz,1,f);
-    fclose(f);
+    memcpy(tmp->buffer,f->buf,f->size);
+    mfclose(f);
 
 
     int linescount=0;

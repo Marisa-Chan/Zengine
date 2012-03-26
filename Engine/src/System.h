@@ -20,6 +20,7 @@
 #include "config.h"
 #include "types.h"
 
+#include "mfile.h"
 #include "Graph.h"
 #include "Render.h"
 #include "Text.h"

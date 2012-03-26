@@ -33,7 +33,7 @@ struct crit_node
 
 
 pzllst *CreatePzlLst();
-int Parse_Puzzle(pzllst *lst,FILE *fl,char *ctstr);
+int Parse_Puzzle(pzllst *lst,mfile *fl,char *ctstr);
 int Puzzle_try_exec(puzzlenode *pzlnod);
 
 void FlushPuzzleList(pzllst *lst);

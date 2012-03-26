@@ -261,21 +261,23 @@ void ReadSystemStrings(char *filename)
 {
     memset(SystemStrings,0,sizeof(SystemStrings[0])*SYSTEM_STRINGS_NUM);
 
-    FILE *fl = fopen(filename,"rb");
+    mfile *fl = mfopen(filename);
 
     if (fl == NULL)
     {
-        printf("File %s not found\n",pref_FileName);
+        printf("File %s not found\n",filename);
         exit(-1);
     }
+
+    m_wide_to_utf8(fl);
 
     int32_t ii=0;
 
     char buf[FILE_LN_BUF];
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         char *str = TrimRight(buf);
         if (ii<SYSTEM_STRINGS_NUM)
         {
@@ -285,7 +287,7 @@ void ReadSystemStrings(char *filename)
         ii++;
     }
 
-    fclose(fl);
+    mfclose(fl);
 }
 
 char *GetSystemString(int32_t indx)

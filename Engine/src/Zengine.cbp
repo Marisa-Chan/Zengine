@@ -107,6 +107,8 @@
 		<Unit filename="types.h" />
 		<Unit filename="./loader.cpp" />
 		<Unit filename="./loader.h" />
+		<Unit filename="./mfile.cpp" />
+		<Unit filename="./mfile.h" />
 		<Extensions>
 			<envvars />
 			<code_completion>

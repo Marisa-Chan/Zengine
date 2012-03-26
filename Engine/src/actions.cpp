@@ -786,20 +786,19 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     nod->slot = aSlot;
     nod->owner = owner;
 
-    FILE *fl = fopen(fil,"rb");
+    mfile *fl = mfopen(fil);
+    m_wide_to_utf8(fl);
 
-    fseek(fl,0,SEEK_END);
-    int32_t flsize = ftell(fl);
-    fseek(fl,0,SEEK_SET);
+    int32_t flsize = fl->size;
 
     uint8_t *tmp = (uint8_t *)malloc(flsize);
 
     nod->nodes.tty_text->txtbuf = (char *)malloc(flsize);
     memset(nod->nodes.tty_text->txtbuf,0,flsize);
 
-    fread(tmp,flsize,1,fl);
+    memcpy(tmp,fl->buf,fl->size);
 
-    fclose(fl);
+    mfclose(fl);
 
     int32_t j=0;
     for (int32_t i=0; i<flsize; i++)

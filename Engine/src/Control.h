@@ -253,7 +253,7 @@ struct ctrlnode
 
 ctrlnode *Ctrl_CreateNode(int type);
 
-int Parse_Control(MList *controlst,FILE *fl,char *ctstr);
+int Parse_Control(MList *controlst,mfile *fl,char *ctstr);
 void ProcessControls(MList *ctrlst);
 
 bool Ctrl_Eligeblity(int obj, slotnode *slut);

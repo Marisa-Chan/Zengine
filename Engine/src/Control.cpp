@@ -1392,7 +1392,7 @@ int Parse_Control_Flat()
     return 1;
 }
 
-int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Lever(MList *controlst, mfile *fl, uint32_t slot)
 {
     char buf[FILE_LN_BUF];
     char *str;
@@ -1407,9 +1407,9 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 
     char filename[MINIBUFSZ];
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1581,7 +1581,7 @@ int Parse_Control_Lever(MList *controlst, FILE *fl, uint32_t slot)
 }
 
 
-int Parse_Control_HotMov(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_HotMov(MList *controlst, mfile *fl, uint32_t slot)
 {
     char buf[FILE_LN_BUF];
     char *str;
@@ -1596,9 +1596,9 @@ int Parse_Control_HotMov(MList *controlst, FILE *fl, uint32_t slot)
 
     char filename[MINIBUFSZ];
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1668,7 +1668,7 @@ int Parse_Control_HotMov(MList *controlst, FILE *fl, uint32_t slot)
     return 1;
 }
 
-int Parse_Control_Panorama(FILE *fl)
+int Parse_Control_Panorama(mfile *fl)
 {
     char  buf[FILE_LN_BUF];
     char *str;
@@ -1680,9 +1680,9 @@ int Parse_Control_Panorama(FILE *fl)
 
     Rend_SetRenderer (RENDER_PANA);
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1725,7 +1725,7 @@ int Parse_Control_Panorama(FILE *fl)
     return good;
 }
 
-int Parse_Control_Tilt(FILE *fl)
+int Parse_Control_Tilt(mfile *fl)
 {
     char  buf[FILE_LN_BUF];
     char *str;
@@ -1737,9 +1737,9 @@ int Parse_Control_Tilt(FILE *fl)
 
     Rend_SetRenderer (RENDER_TILT);
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1775,7 +1775,7 @@ int Parse_Control_Tilt(FILE *fl)
     return good;
 }
 
-int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Save(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -1820,9 +1820,9 @@ int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
 
 
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1879,7 +1879,7 @@ int Parse_Control_Save(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Titler(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -1891,9 +1891,9 @@ int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
     AddToMList(controlst,ctnode);
     ctnode->slot      = slot;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -1946,7 +1946,7 @@ int Parse_Control_Titler(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Input(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -1960,9 +1960,9 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
     ctnode->slot      = slot;
     SetDirectgVarInt(slot,0);
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2033,7 +2033,7 @@ int Parse_Control_Input(MList *controlst, FILE *fl, uint32_t slot)
 }
 
 
-int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Paint(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -2048,9 +2048,9 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
 
     char filename[MINIBUFSZ];
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2163,7 +2163,7 @@ int Parse_Control_Paint(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Slot(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -2177,9 +2177,9 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
     ctnode->slot      = slot;
     slut->srf         = NULL;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2250,7 +2250,7 @@ int Parse_Control_Slot(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_PushTgl(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -2266,9 +2266,9 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
 
     psh->cursor       = CURSOR_IDLE;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2330,7 +2330,7 @@ int Parse_Control_PushTgl(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Fist(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -2343,9 +2343,9 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
 
     char filename[MINIBUFSZ];
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2514,7 +2514,7 @@ int Parse_Control_Fist(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
+int Parse_Control_Safe(MList *controlst, mfile *fl, uint32_t slot)
 {
     int good = 0;
     char buf[FILE_LN_BUF];
@@ -2525,9 +2525,9 @@ int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
     safenode *safe     = ctnode->node.safe;
     ctnode->slot      = slot;
 
-    while (!feof(fl))
+    while (!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
         str = PrepareString(buf);
 
         if (str[0] == '}')
@@ -2599,7 +2599,7 @@ int Parse_Control_Safe(MList *controlst, FILE *fl, uint32_t slot)
     return good;
 }
 
-int Parse_Control(MList *controlst,FILE *fl,char *ctstr)
+int Parse_Control(MList *controlst,mfile *fl,char *ctstr)
 {
     int  good = 0;
 

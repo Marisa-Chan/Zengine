@@ -211,7 +211,7 @@ void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *contr
 #endif
 
 
-    FILE *fl=fopen(filename,"rb");
+    mfile *fl=mfopen(filename);
     if (fl == NULL)
     {
         printf("Error opening file %s\n",filename);
@@ -221,9 +221,9 @@ void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *contr
 
     char buf[FILE_LN_BUF];
 
-    while(!feof(fl))
+    while(!mfeof(fl))
     {
-        fgets(buf,FILE_LN_BUF,fl);
+        mfgets(buf,FILE_LN_BUF,fl);
 
         char *str=PrepareString(buf);
 
@@ -238,7 +238,7 @@ void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *contr
         }
     }
 
-    fclose(fl);
+    mfclose(fl);
 }
 
 void ScrSys_ClearStateBox()
