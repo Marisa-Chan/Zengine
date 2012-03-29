@@ -352,9 +352,9 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
                     int32_t hh = dx % h;
                     int32_t ww = dx / h;
                     //if (((hh*w+ww)*2 + ddx) <h*2*w)
-                        dst[(hh*w+ww)*2 + ddx] = src[cur];
+                    dst[(hh*w+ww)*2 + ddx] = src[cur];
                     //else
-                     //       printf("asdasdasdas\n");
+                    //       printf("asdasdasdas\n");
                 }
 
 
@@ -387,9 +387,9 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
                         int32_t hh = dx % h;
                         int32_t ww = dx / h;
                         //if (d_cur <h*2*w)
-                            dst[(hh*w+ww)*2 + ddx] = lz[(otsk+j) & 0xfff];
+                        dst[(hh*w+ww)*2 + ddx] = lz[(otsk+j) & 0xfff];
                         //else
-                           // printf("asdasdasdas\n");
+                        // printf("asdasdasdas\n");
                     }
                     lz_pos=(lz_pos+1) & 0xfff;
                     d_cur++;
@@ -566,31 +566,32 @@ struct Frame
     uint32_t unk3;
 };
 
-void DHLE(int8_t *dst, int8_t *src,int32_t size)
+void DHLE(int8_t *dst, int8_t *src,int32_t size,int32_t size2)
 {
     int8_t tmp;
-    int32_t off1, off2,off3;
+    int32_t off1, off2;
     int16_t tmp2;
     off1=0;
     off2=0;
-    off3=0;
 
-    while (off1 <= size)
+    while (off1 < size && off2 < size2)
     {
         tmp = src[off1];
         off1++;
 
         if (tmp < 0)
         {
-            off3-=tmp;
             if (tmp < 0)
             {
                 tmp=abs(tmp);
                 while (tmp!=0)
                 {
-                    tmp2=*(int16_t *)(src + off1);
+                    if (off1+1 >= size || off2+1 >= size2)
+                        return;
+                    tmp2=*(int16_t *)(&src[off1]);
+
+                    *(int16_t *)&dst[off2] = tmp2;
                     off2+=2;
-                    *(int16_t *)&dst[off2-2] = tmp2;
                     off1+=2;
                     tmp--;
                 }
@@ -603,54 +604,53 @@ void DHLE(int8_t *dst, int8_t *src,int32_t size)
     }
 }
 
-void HRLE(int8_t *dst, int8_t *src,int32_t size)
+void HRLE(int8_t *dst, int8_t *src,int32_t size,int32_t size2)
 {
     int8_t tmp;
-    int32_t off1, off2,off3;
+    int32_t off1, off2;
     int16_t tmp2;
-    int32_t tmp3,tmp4;
+    int32_t tmp4;
     off1=0;
     off2=0;
-    off3=0;
 
-    while (off1 <= size)
+    while (off1 < size)
     {
         tmp = src[off1];
         off1++;
-        tmp3 = tmp;
 
         if (tmp < 0)
         {
-            off3-=tmp;
             if (tmp < 0)
             {
                 tmp=abs(tmp);
-                while (1)
+                while (tmp > 0)
                 {
+                    if (off1+1 >= size || off2+1 >= size2)
+                        return;
                     tmp2=*(int16_t *)(src + off1);
+                    *(int16_t *)&dst[off2] = tmp2;
                     off2+=2;
-                    *(int16_t *)&dst[off2-2] = tmp2;
                     off1+=2;
                     tmp--;
-                    if (tmp==0)
-                        break;
                 }
             }
         }
         else
         {
-            tmp3 += 2;
+            if (off1+1 >= size)
+                return;
+
+            tmp2 = *(int16_t *)&src[off1];
             off1 += 2;
-            tmp2 = *(int16_t *)&src[off1 - 2];
-            if (tmp>-2)
+            tmp4=tmp+2;
+
+            while (tmp4>0)
             {
-                tmp4=tmp+2;
-                while (tmp4>0)
-                {
-                    *(int16_t *)&dst[off2] = tmp2;
-                    off2+=2;
-                    tmp4--;
-                }
+                if (off2+1 >= size2)
+                    return;
+                *(int16_t *)&dst[off2] = tmp2;
+                off2+=2;
+                tmp4--;
             }
         }
 
@@ -743,23 +743,29 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
 
 
     Frame frm;
-    void *buf2=malloc(mn.height*mn.width*4);
-    memset(buf2,0,mn.height*mn.width*2);
+    int32_t sz_frame = mn.height*mn.width*2;
+    void *buf2=malloc(sz_frame);
+    memset(buf2,0,sz_frame);
 
     for (uint16_t i=0; i<hd.frames ; i++)
     {
-        fread(&frm,1,sizeof(Frame),f);
+        if (fread(&frm,1,sizeof(Frame),f) == sizeof(Frame))
+            if (frm.size > 0 && frm.size < 0x40000000)
+            {
 
-        void *buf=malloc(frm.size-frm.offset);
-        fread(buf,1,frm.size-frm.offset,f);
+                void *buf=malloc(frm.size-frm.offset);
+                if ( fread(buf,1,frm.size-frm.offset,f) ==  frm.size-frm.offset)
+                {
 
 
-        if (frm.TYPE == 0x44484C45)
-            DHLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset);
-        else
-            HRLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset);
+                    if (frm.TYPE == 0x44484C45)
+                        DHLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset,sz_frame);
+                    else if (frm.TYPE == 0x48524C45)
+                        HRLE((int8_t *)buf2,(int8_t *)buf,frm.size-frm.offset,sz_frame);
+                }
 
-        free(buf);
+                free(buf);
+            }
 
         atmp->img[i] = rlf_frame(buf2,atmp->info.w,atmp->info.h,transpose);
         ConvertImage(&atmp->img[i]);
@@ -791,7 +797,7 @@ void loader_LoadZcr(const char *file, Cursor *cur)
     if (fil == NULL)
     {
 #ifdef LOADTRACE
-    printf("fallback-mechanism\n");
+        printf("fallback-mechanism\n");
 #endif
         Mouse_LoadCursor(file,cur);
         return;
