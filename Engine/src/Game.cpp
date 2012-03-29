@@ -297,20 +297,67 @@ char *GetSystemString(int32_t indx)
     return NULL;
 }
 
-
-
-void ifquit()
+void game_timed_message(int32_t milsecs,const char * str)
 {
-    struct_SubRect *zzz=Rend_CreateSubRect(0,412,640,68);
-    txt_DrawTxtInOneLine(GetSystemString(6),zzz->img);
+    struct_SubRect *zzz=Rend_CreateSubRect(SUB_DEF_RECT);
+    txt_DrawTxtInOneLine(str,zzz->img);
+    Rend_DelaySubDelete(zzz,milsecs);
+}
+
+void game_delay_message(int32_t milsecs,const char * str)
+{
+    struct_SubRect *zzz=Rend_CreateSubRect(SUB_DEF_RECT);
+    txt_DrawTxtInOneLine(str,zzz->img);
     Rend_RenderFunc();
-    //Rend_ProcessSubs();
     Rend_ScreenFlip();
+
+    int32_t cur_time = millisec();
+    int32_t nexttime = cur_time + milsecs;
+
+    FlushKeybKey(SDLK_RETURN);
+    FlushKeybKey(SDLK_SPACE);
+    FlushKeybKey(SDLK_ESCAPE);
+
+    while(!KeyDown(SDLK_SPACE) && !KeyDown(SDLK_RETURN) && !KeyDown(SDLK_ESCAPE) &&  nexttime > cur_time)
+    {
+        UpdateGameSystem();
+        cur_time = millisec();
+        Rend_RenderFunc();
+        Rend_ScreenFlip();
+        SDL_Delay(5);
+    }
+
+
+    Rend_DeleteSubRect(zzz);
+}
+
+bool game_question_message(const char * str)
+{
+    struct_SubRect *zzz=Rend_CreateSubRect(SUB_DEF_RECT);
+    txt_DrawTxtInOneLine(str,zzz->img);
+    Rend_RenderFunc();
+    Rend_ScreenFlip();
+
+    FlushKeybKey(SDLK_y);
+    FlushKeybKey(SDLK_n);
+
     while (!KeyDown(SDLK_y) && !KeyDown(SDLK_n))
     {
         UpdateGameSystem();
+        Rend_RenderFunc();
+        Rend_ScreenFlip();
+        SDL_Delay(5);
     }
+
     Rend_DeleteSubRect(zzz);
+
     if (KeyDown(SDLK_y))
+        return true;
+    return false;
+}
+
+void ifquit()
+{
+    if (game_question_message(GetSystemString(SYSTEM_STR_EXITPROMT)))
         END();
 }

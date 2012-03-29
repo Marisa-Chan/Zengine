@@ -37,6 +37,7 @@ struct struct_SubRect
     int32_t h;
     SDL_Surface *img;
     int32_t id;
+    int32_t timer;
     bool todelete;
 };
 
@@ -100,6 +101,7 @@ void Rend_ClearSubs();
 void Rend_InitSubList();
 void Rend_ProcessSubs();
 struct_SubRect *Rend_GetSubById( int id);
+void Rend_DelaySubDelete(struct_SubRect *sub, int32_t time);
 
 SDL_Surface *Rend_GetGameScreen();
 SDL_Surface *Rend_GetWindowSurface();

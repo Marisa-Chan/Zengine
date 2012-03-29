@@ -715,6 +715,7 @@ struct_SubRect *Rend_CreateSubRect(int x, int y, int w, int h)
     tmp->y = y;
     tmp->todelete = false;
     tmp->id       = subid;
+    tmp->timer = -1;
 
     subid++;
 
@@ -764,6 +765,13 @@ void Rend_ProcessSubs()
     {
         struct_SubRect *subrec = (struct_SubRect *)DataMList(sublist);
 
+        if (subrec->timer >= 0)
+        {
+            subrec->timer -= GetDTime();
+            if (subrec->timer < 0)
+                subrec->todelete = true;
+        }
+
         if (subrec->todelete)
         {
             Rend___DeleteSubRect(subrec);
@@ -774,6 +782,12 @@ void Rend_ProcessSubs()
 
         NextMList(sublist);
     }
+}
+
+void Rend_DelaySubDelete(struct_SubRect *sub, int32_t time)
+{
+    if (time > 0)
+        sub->timer = time;
 }
 
 struct_SubRect *Rend_GetSubById( int id)
