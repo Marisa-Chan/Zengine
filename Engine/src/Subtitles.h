@@ -4,8 +4,7 @@
 #include "Render.h"
 
 
-#define SUB_CORRECT_VERT   (-16)
-#define SUB_CORRECT_HORIZ  0
+
 
 
 struct struct_one_subtitle{

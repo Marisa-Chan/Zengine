@@ -46,4 +46,6 @@ int action_distort(char *params, int aSlot , pzllst *owner);
 int action_preferences(char *params, int aSlot , pzllst *owner);
 int action_region(char *params, int aSlot , pzllst *owner);
 int action_display_message(char *params, int aSlot , pzllst *owner);
+int action_set_venus(char *params, int aSlot , pzllst *owner);
+int action_disable_venus(char *params, int aSlot , pzllst *owner);
 #endif // ACTIONS_H_INCLUDED

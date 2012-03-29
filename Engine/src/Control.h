@@ -61,6 +61,7 @@ struct slotnode
     char distance_id[MINIBUFSZ];
     Rect hotspot;
     //int do_skip;
+    //int8_t event;
     int32_t *eligible_objects;
     int32_t eligable_cnt;
     int16_t cursor;
@@ -232,6 +233,7 @@ struct ctrlnode
 {
     int32_t slot;
     int8_t  type;
+    int32_t venus;
     union node
     {
         slotnode     *slot;
@@ -252,6 +254,8 @@ struct ctrlnode
 
 
 ctrlnode *Ctrl_CreateNode(int type);
+
+void ctrl_setvenus(ctrlnode *nod);
 
 int Parse_Control(MList *controlst,mfile *fl,char *ctstr);
 void ProcessControls(MList *ctrlst);

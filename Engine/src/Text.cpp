@@ -25,7 +25,7 @@ struct_txt_style *txt_NewTxt()
     return txt;
 }
 
-int8_t txt_parse_txt_params(struct_txt_style *style, char *strin, int32_t len)
+int8_t txt_parse_txt_params(struct_txt_style *style, const char *strin, int32_t len)
 {
     char buf[TXT_CFG_BUF_MAX_LEN];
     memcpy(buf,strin,len);
@@ -412,7 +412,7 @@ SDL_Surface *txt_RenderUTF8(TTF_Font *fnt, char *text, struct_txt_style *style)
     return TTF_RenderUTF8_Solid(fnt,text,clr);
 }
 
-void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst)
+void txt_DrawTxtInOneLine(const char *text,SDL_Surface *dst)
 {
     struct_txt_style style,style2;
     txt_init_txt_struct(&style);

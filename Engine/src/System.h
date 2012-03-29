@@ -105,6 +105,7 @@ int GetKeyBuffered(int indx);
 bool CheckKeyboardMessage(const char *msg, int len);
 
 bool FileExist(char * fil);
+int32_t FileSize(const char * fil);
 
 
 void UpdateDTime();

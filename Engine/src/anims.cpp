@@ -263,10 +263,10 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
 
         nod->scal = CreateScaler(nod->anim.avi->img,nod->w,nod->h);
 
-        nod->start= start *2;
-        nod->end= end *2;
+        nod->start= (start+1) *2;
+        nod->end= (end+1) *2;
 
-        SMPEG_renderFrame(nod->anim.avi->mpg,nod->start+1);
+        SMPEG_renderFrame(nod->anim.avi->mpg,nod->start);
     }
     else
     {

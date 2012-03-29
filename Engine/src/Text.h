@@ -42,13 +42,13 @@ struct struct_txt_style{
 
 void txt_init_txt_struct(struct_txt_style *style);
 struct_txt_style *txt_NewTxt();
-int8_t txt_parse_txt_params(struct_txt_style *style, char *string, int32_t len);
+int8_t txt_parse_txt_params(struct_txt_style *style, const char *string, int32_t len);
 void txt_DrawTxtWithJustify(char *txt, TTF_Font *fnt, SDL_Color clr, SDL_Surface *dst, int dy, int justify);
 int32_t txt_get_linelen_for_width();
 void txt_readfontstyle(struct_txt_style *style, char *strin);
 void txt_set_font_style(TTF_Font *font, struct_txt_style *fnt_stl);
 int32_t txt_DrawTxt(char *txt, struct_txt_style *fnt_stl, SDL_Surface *dst);
-void txt_DrawTxtInOneLine(char *text,SDL_Surface *dst);
+void txt_DrawTxtInOneLine(const char *text,SDL_Surface *dst);
 
 struct struct_ttytext
 {

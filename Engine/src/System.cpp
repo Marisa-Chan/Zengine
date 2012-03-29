@@ -64,6 +64,7 @@ void SetHit(SDLKey key)
 void FlushKeybKey(SDLKey key)
 {
     KeyHits[key] = 0;
+    Keys[key] = 0;
 }
 
 int GetKeyBuffered(int indx)
@@ -464,6 +465,18 @@ bool FileExist(char * fil)
         return true;
     }
     return false;
+}
+
+int32_t FileSize(const char * fil)
+{
+    if (FILE * file = fopen(fil, "r"))
+    {
+        fseek(file,0,SEEK_END);
+        int32_t tmp = ftell(file);
+        fclose(file);
+        return tmp;
+    }
+    return -1;
 }
 
 char * TrimLeft(char *buf)

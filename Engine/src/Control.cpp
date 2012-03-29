@@ -215,6 +215,7 @@ ctrlnode *Ctrl_CreateNode(int type)
     tmp = new(ctrlnode);
     tmp->node.unknown = NULL;
     tmp->slot = 0;
+    tmp->venus = -1;
     tmp->type = CTRL_UNKN;
     tmp->func = NULL;
 
@@ -516,8 +517,8 @@ void control_input(ctrlnode *ct)
                 }
                 else if(key == SDLK_RETURN)
                 {
-                    if (tmplen > 0)
-                        inp->enterkey = true;
+                    // if (tmplen > 0)
+                    inp->enterkey = true;
                 }
                 else if(key == SDLK_TAB)
                 {
@@ -550,6 +551,7 @@ void control_input(ctrlnode *ct)
 
             if (MouseUp(SDL_BUTTON_LEFT))
             {
+                ctrl_setvenus(ct);
                 FocusInput = ct->slot;
                 FlushMouseBtn(SDL_BUTTON_LEFT);
             }
@@ -563,6 +565,7 @@ void control_input(ctrlnode *ct)
 
             if (MouseUp(SDL_BUTTON_LEFT))
             {
+                ctrl_setvenus(ct);
                 FocusInput = 0;
                 inp->enterkey = true;
             }
@@ -587,13 +590,14 @@ void control_slot(ctrlnode *ct)
     if (mousein)
     {
 
-      //  if (GetgVarInt(ct->slot)!=0)
+        //  if (GetgVarInt(ct->slot)!=0)
         if (Mouse_IsCurrentCur(CURSOR_IDLE))
             Mouse_SetCursor(slut->cursor);
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
 
+            ctrl_setvenus(ct);
 
             int32_t item = GetgVarInt(ct->slot);
             int32_t mouse_item = GetgVarInt(SLOT_INVENTORY_MOUSE);
@@ -665,6 +669,9 @@ void control_paint(ctrlnode *ct)
 
             if (MouseDown(SDL_BUTTON_LEFT))
             {
+
+                ctrl_setvenus(ct);
+
                 if (mX != paint->last_x || mY != paint->last_y)
                 {
                     SDL_Surface *scrn = Rend_GetLocationScreenImage();
@@ -833,6 +840,9 @@ void control_fist(ctrlnode *ct)
 
         if (MouseUp(SDL_BUTTON_LEFT))
         {
+
+            ctrl_setvenus(ct);
+
             uint32_t old_status = fist->fiststatus;
             fist->fiststatus ^= (1 << n_fist);
 
@@ -995,6 +1005,8 @@ void control_hotmv(ctrlnode *ct)
 
             if (MouseUp(SDL_BUTTON_LEFT))
             {
+                ctrl_setvenus(ct);
+
                 FlushMouseBtn(SDL_BUTTON_LEFT);
 
                 SetgVarInt(ct->slot,1);
@@ -1072,6 +1084,8 @@ void control_safe(ctrlnode *ct)
         if (MouseUp(SDL_BUTTON_LEFT))
         {
             FlushMouseBtn(SDL_BUTTON_LEFT);
+
+            ctrl_setvenus(ct);
 
             float raddeg = 57.29578;//180/3.1415926
             float dd = atan2(mX - safe->center_x,mY - safe->center_y)*raddeg;
@@ -1185,6 +1199,7 @@ void control_push(ctrlnode *ct)
 
         if (pushed == 1)
         {
+            ctrl_setvenus(ct);
 #ifdef TRACE
             printf("Pushed #%d\n",ct->slot);
 #endif
@@ -1210,23 +1225,44 @@ void control_save(ctrlnode *ct)
             {
                 if(sv->forsaving)
                 {
-                    FILE *f = fopen("inquis.sav","wb");
+                    if (strlen(sv->input_nodes[i]->node.inp->text) > 0)
+                    {
+                        char fln[32];
 
-                    for (int j=0; j<MAX_SAVES; j++)
-                        if (j!=i)
-                            fprintf(f,"%s\r\n",sv->Names[j]);
-                        else
-                            fprintf(f,"%s\r\n",sv->input_nodes[i]->node.inp->text);
+                        bool tosave = true;
 
-                    fclose(f);
+                        sprintf(fln,"inqsav%d.sav",i+1);
+                        if (FileExist(fln))
+                        {
+                            if (game_question_message(GetSystemString(SYSTEM_STR_SAVEEXIST)))
+                                tosave = true;
+                            else
+                                tosave = false;
+                        }
 
-                    char fln[32];
 
-                    sprintf(fln,"inqsav%d.sav",i+1);
+                        if (tosave)
+                        {
+                            FILE *f = fopen("inquis.sav","wb");
 
-                    ScrSys_SaveGame(fln);
-                    SetNeedLocate('0','0','0','0',0);
-                    break;
+                            for (int j=0; j<MAX_SAVES; j++)
+                                if (j!=i)
+                                    fprintf(f,"%s\r\n",sv->Names[j]);
+                                else
+                                    fprintf(f,"%s\r\n",sv->input_nodes[i]->node.inp->text);
+
+                            fclose(f);
+
+                            ScrSys_SaveGame(fln);
+                            game_delay_message(1500,GetSystemString(SYSTEM_STR_SAVED));
+                            SetNeedLocate('0','0','0','0',0);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        game_timed_message(2000,GetSystemString(SYSTEM_STR_SAVEEMPTY));
+                    }
                 }
                 else
                 {
@@ -1235,25 +1271,17 @@ void control_save(ctrlnode *ct)
                     sprintf(fln,"inqsav%d.sav",i+1);
 
                     ScrSys_LoadGame(fln);
+
                     break;
                 }
+
+                sv->input_nodes[i]->node.inp->enterkey = false;
             }
 }
 
 void control_lever(ctrlnode *ct)
 {
-    /*FILE *aaa = fopen("temp.txt","wb");
 
-    for (int16_t i=0;i<CTRL_LEVER_MAX_FRAMES;i++)
-    {
-        fprintf("Frame %d:\n",i);
-        for (int16_t j=0; j<CTRL_LEVER_MAX_DIRECTS; j++)
-
-    }
-
-    fclose(aaa);
-    exit(1);
-    */
     levernode *lev = ct->node.lev;
     if (lev->curfrm < CTRL_LEVER_MAX_FRAMES)
     {
@@ -1269,6 +1297,8 @@ void control_lever(ctrlnode *ct)
 
                 if (MouseDown(SDL_BUTTON_LEFT))
                 {
+                    ctrl_setvenus(ct);
+
                     lev->mouse_captured = true;
                     lev->mouse_count = CTRL_LEVER_ANGL_TIME;
                     lev->mouse_angle = -1;
@@ -1355,34 +1385,6 @@ void control_lever(ctrlnode *ct)
 
 
     lev->mouse_count -=GetDTime();
-
-    /*
-    if (lev->mouse_count >= CTRL_LEVER_ANGL_FRAMES)
-    {
-        printf("mouse %d\n",lev->mouse_angle);
-        lev->mouse_count = 0;
-        lev->mouse_angle = -1;
-
-    }
-    else
-    {
-        int16_t tmp = Mouse_GetAngle(lev->last_mouse_x,
-                                     lev->last_mouse_y,
-                                     MouseX(), MouseY());
-        if (tmp >= 0)
-        {
-            if (lev->mouse_count > 1)
-                lev->mouse_angle = (lev->mouse_angle + tmp) >> 1;
-            else
-                lev->mouse_angle = tmp;
-        }
-
-    }
-
-    lev->mouse_count++;
-    lev->last_mouse_x = MouseX();
-    lev->last_mouse_y = MouseY(); */
-
 }
 
 
@@ -1403,7 +1405,6 @@ int Parse_Control_Lever(MList *controlst, mfile *fl, uint32_t slot)
     AddToMList(controlst,ctnode);
 
     ctnode->slot      = slot;
-    //SetDirectgVarInt(slot,0);
 
     char filename[MINIBUFSZ];
 
@@ -1425,6 +1426,11 @@ int Parse_Control_Lever(MList *controlst, mfile *fl, uint32_t slot)
         {
             str   = GetParams(str);
             lev->cursor = Mouse_GetCursorIndex(str);
+        }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
         }
     }
 
@@ -1638,6 +1644,11 @@ int Parse_Control_HotMov(MList *controlst, mfile *fl, uint32_t slot)
             hotm->rect.y = t2;
             hotm->rect.w = t3-t1+1;
             hotm->rect.h = t4-t2+1;
+        }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
         }
     }
 
@@ -2027,6 +2038,11 @@ int Parse_Control_Input(MList *controlst, mfile *fl, uint32_t slot)
             if (tmp != NULL)
                 txt_readfontstyle(&inp->string_chooser_init,tmp);
         }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
+        }
 
     }//while (!feof(fl))
     return good;
@@ -2107,6 +2123,11 @@ int Parse_Control_Paint(MList *controlst, mfile *fl, uint32_t slot)
         {
             str=GetParams(str);
             strcpy(filename,str);
+        }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
         }
         else if (strCMP(str,"eligible_objects")==0)
         {
@@ -2215,6 +2236,11 @@ int Parse_Control_Slot(MList *controlst, mfile *fl, uint32_t slot)
             str=GetParams(str);
             strcpy(slut->distance_id,str);
         }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
+        }
         else if (strCMP(str,"eligible_objects")==0)
         {
             str=GetParams(str);
@@ -2322,6 +2348,11 @@ int Parse_Control_PushTgl(MList *controlst, mfile *fl, uint32_t slot)
             str = GetParams(str);
             psh->count_to = atoi(str)+1;
         }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
+        }
     }
 
     if (good == 1)
@@ -2372,6 +2403,11 @@ int Parse_Control_Fist(MList *controlst, mfile *fl, uint32_t slot)
         {
             str = GetParams(str);
             fist->animation_id = atoi(str);
+        }
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
         }
     }
 
@@ -2590,7 +2626,11 @@ int Parse_Control_Safe(MList *controlst, mfile *fl, uint32_t slot)
         {
             //not needed
         }
-
+        else if (strCMP(str,"venus_id") == 0)
+        {
+            str = GetParams(str);
+            ctnode->venus = atoi(str);
+        }
     }
 
     if (good == 1)
@@ -2876,5 +2916,13 @@ ctrlnode *GetControlByID(int32_t id)
 
 }
 
+void ctrl_setvenus(ctrlnode *nod)
+{
+    if (nod->venus >= 0)
+    {
+        if (GetgVarInt(nod->venus) > 0)
+            SetgVarInt(SLOT_VENUS,nod->venus);
+    }
+}
 
 

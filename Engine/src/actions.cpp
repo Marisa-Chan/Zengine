@@ -267,11 +267,12 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     file[tmp-2]='a';
     file[tmp-3]='w';
 
-    fil=GetFilePath(file);
+    fil=GetExactFilePath(file);
 
     if (fil!=NULL)
     {
-        aud = Mix_LoadWAV(fil);
+        if (FileSize(fil) > 44)
+            aud = Mix_LoadWAV(fil);
     }
 
     file[tmp-1]='b';
@@ -1532,3 +1533,37 @@ int action_display_message(char *params, int aSlot , pzllst *owner)
     return ACTION_NORMAL;
 }
 
+int action_set_venus(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:set_venus(%s)\n",params);
+#endif
+
+    int32_t p1;
+
+    p1 = atoi(params);
+
+    if (p1 > 0)
+    {
+        if (GetgVarInt(p1) > 0)
+            SetgVarInt(SLOT_VENUS,p1);
+    }
+
+    return ACTION_NORMAL;
+}
+
+int action_disable_venus(char *params, int aSlot , pzllst *owner)
+{
+#ifdef TRACE
+    printf("        action:disable_venus(%s)\n",params);
+#endif
+
+    int32_t p1;
+
+    p1 = atoi(params);
+
+    if (p1 > 0)
+        SetgVarInt(p1,0);
+
+    return ACTION_NORMAL;
+}
