@@ -210,6 +210,10 @@ void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *contr
     printf("Loading script file %s\n",filename);
 #endif
 
+    if (control)
+    {
+        Rend_SetRenderer(RENDER_FLAT);
+    }
 
     mfile *fl=mfopen(filename);
     if (fl == NULL)

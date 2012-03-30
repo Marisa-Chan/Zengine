@@ -1,5 +1,5 @@
 Status:   ZGI:RC
-          ZNEMESIS: dev
+          ZNEMESIS: RC
 
 Progress:     [###################-]
              0%         95%        100%
@@ -37,19 +37,13 @@ Thanks w8m (for "unraw" code reverse)
 action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
 
-[Controls Objects]
-control_push_toggle(venus_id): reverse what means "venus_id"
-
-
 [Other]
-* Add Venus events
 * Create database with convert parameters
 * Create utility and scripts for scale for dingoo
 * Clear code
 * Other little things...
 * Add more code for pana and tilt renderers
 * Add fast code for distort effect based on scale-parameter. What code is used we may choose in config.h
-* Add code for save controls for "Do you want to replace and other messages"
 * Add code for input controls for navigation by keyboard
 * Add panorama controls by Keyboard
 
@@ -60,10 +54,8 @@ action_add_preblt	:reverse it
 action_remove_preblt	:reverse it
 action_set_master_volume:reverse it and write code
 action_zoom		:reverse it and write code
-action_set_venus	:reverse it    
-action_disable_venus	:no comments %)     
 
 
 ------------------License--------------------
 
-Mit license for source code (Bin dir not include), see file "LICENSE" for read text of license
+Mit license for source code (Bin dir not included), see file "LICENSE" for read text of license
