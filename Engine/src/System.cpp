@@ -33,7 +33,7 @@ uint8_t *Keys;        //Array with pressed keys (while pressed)
 SDLKey lastkey;
 int16_t keybbuf[KEYBUFLEN] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-int32_t Mx, My;
+int32_t Mx, My, LMx, LMy;
 uint8_t LMstate,Mstate;
 
 int32_t M_dbl_time;
@@ -65,6 +65,8 @@ void FlushKeybKey(SDLKey key)
 {
     KeyHits[key] = 0;
     Keys[key] = 0;
+    if (lastkey == key)
+        lastkey = SDLK_FIRST;
 }
 
 int GetKeyBuffered(int indx)
@@ -117,6 +119,8 @@ void UpdateKeyboard()
 
     M_dbl_clk = false;
     LMstate=Mstate;
+    LMx = Mx;
+    LMy = My;
     Mstate=SDL_GetMouseState(&Mx,&My);
 
     if (MouseHit(SDL_BUTTON_LEFT))
@@ -271,6 +275,13 @@ void FlushMouseBtn(int btn)
     LMstate &= ~SDL_BUTTON(btn);
     if (btn == SDL_BUTTON_LEFT)
         M_dbl_clk = false;
+}
+
+bool MouseMove()
+{
+    if (LMx != Mx || LMy != My)
+        return true;
+    return false;
 }
 
 

@@ -472,24 +472,19 @@ void control_input(ctrlnode *ct)
     inputnode *inp = ct->node.inp;
     bool mousein = false;
 
-    if (inp->readonly)
-    {
-        if ( inp->rectangle.x <= Rend_GetMouseGameX() &&\
-                inp->rectangle.w >= Rend_GetMouseGameX() &&\
-                inp->rectangle.y <= Rend_GetMouseGameY() &&\
-                inp->rectangle.h >= Rend_GetMouseGameY() )
-            mousein = true;
-    }
-    else
-    {
-        if ( inp->hotspot.x <= Rend_GetMouseGameX() &&\
-                inp->hotspot.w >= Rend_GetMouseGameX() &&\
-                inp->hotspot.y <= Rend_GetMouseGameY() &&\
-                inp->hotspot.h >= Rend_GetMouseGameY() )
-            mousein = true;
-    }
+    if ( inp->rectangle.x <= Rend_GetMouseGameX() &&\
+         inp->rectangle.w >= Rend_GetMouseGameX() &&\
+         inp->rectangle.y <= Rend_GetMouseGameY() &&\
+         inp->rectangle.h >= Rend_GetMouseGameY() )
+        mousein = true;
+    if ( inp->hotspot.x <= Rend_GetMouseGameX() &&\
+         inp->hotspot.w >= Rend_GetMouseGameX() &&\
+         inp->hotspot.y <= Rend_GetMouseGameY() &&\
+         inp->hotspot.h >= Rend_GetMouseGameY() )
+        mousein = true;
 
     if (FocusInput == ct->slot)
+    {
         if (!inp->readonly)
         {
             if (KeyAnyHit())
@@ -522,11 +517,53 @@ void control_input(ctrlnode *ct)
                 }
                 else if(key == SDLK_TAB)
                 {
-                    //TODO
+                    if (inp->next_tab > 0)
+                        FocusInput = inp->next_tab;
+
+                    FlushKeybKey(SDLK_TAB);
+                }
+                else if(key == SDLK_ESCAPE)
+                {
+                    inp->text[0] = 0;
+                    inp->textchanged = true;
                 }
 
             }
         }
+        else
+        {
+            if (KeyHit(SDLK_TAB))
+            {
+                if (inp->next_tab > 0)
+                {
+                    int32_t cycle = inp->next_tab;
+                    ctrlnode *c_tmp = ct;
+                    while(cycle > 0 && cycle != ct->slot && c_tmp != NULL)
+                    {
+                        c_tmp = GetControlByID(cycle);
+
+                        if (c_tmp)
+                            if (c_tmp->type == CTRL_INPUT)
+                            {
+                                if (strlen(c_tmp->node.inp->text) > 0)
+                                {
+                                    FocusInput = cycle;
+                                    break;
+                                }
+                                else
+                                    cycle = c_tmp->node.inp->next_tab;
+                            }
+                    }
+                }
+
+                FlushKeybKey(SDLK_TAB);
+            }
+            else if (KeyHit(SDLK_RETURN))
+            {
+                inp->enterkey = true;
+            }
+        }
+    }
 
     if (inp->readonly)
     {
@@ -561,7 +598,8 @@ void control_input(ctrlnode *ct)
             if (Mouse_IsCurrentCur(CURSOR_IDLE))
                 Mouse_SetCursor(CURSOR_ACTIVE);
 
-            FocusInput = ct->slot;
+            if (MouseMove())
+                FocusInput = ct->slot;
 
             if (MouseUp(SDL_BUTTON_LEFT))
             {
@@ -2007,6 +2045,11 @@ int Parse_Control_Input(MList *controlst, mfile *fl, uint32_t slot)
             // str=GetParams(str);
             //  inp->frame = atoi(str);
         }//if (str[0] == '}')
+        else if (strCMP(str,"next_tabstop")==0)
+        {
+            str = GetParams(str);
+            inp->next_tab = atoi(str);
+        }
         else if (strCMP(str,"cursor_animation")==0)
         {
             str=GetParams(str);
@@ -2901,19 +2944,23 @@ void FlushControlList(MList *lst)
 ctrlnode *GetControlByID(int32_t id)
 {
     MList *lst = Getctrl();
+    pushMList(lst);
     StartMList(lst);
     while (!eofMList(lst))
     {
         ctrlnode *nod=(ctrlnode *)DataMList(lst);
 
         if (nod->slot == id)
+        {
+            popMList(lst);
             return nod;
+        }
 
         NextMList(lst);
     }
 
+    popMList(lst);
     return NULL;
-
 }
 
 void ctrl_setvenus(ctrlnode *nod)
