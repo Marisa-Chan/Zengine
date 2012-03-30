@@ -213,8 +213,6 @@ Mix_Chunk *Load_ZNEM(const char *file,  char type)
 
     char low = tolower(type);
 
-
-
     if ( low < 'p' )
     {
         if ( low >= 'j' )
@@ -228,7 +226,19 @@ Mix_Chunk *Load_ZNEM(const char *file,  char type)
         low -= '\'';
     low -= '0';
 
-    pkd = 1;
+    char buf[4];
+    int32_t t_len = strlen(file);
+
+    buf[0] = file[t_len-3];
+    buf[1] = file[t_len-2];
+    buf[2] = file[t_len-1];
+    buf[3] = 0;
+
+    if (strCMP(buf,"ifp") == 0)
+        pkd = 0;
+    else
+        pkd = 1;
+
     freq = znem_freq[low % 16];
     bits = znem_bits[low % 4];
     stereo = znem_stereo[low % 2];
@@ -599,8 +609,6 @@ void DHLE(int8_t *dst, int8_t *src,int32_t size,int32_t size2)
         }
         else
             off2+=tmp*2 + 2;
-
-
     }
 }
 
@@ -653,8 +661,6 @@ void HRLE(int8_t *dst, int8_t *src,int32_t size,int32_t size2)
                 tmp4--;
             }
         }
-
-
     }
 }
 
