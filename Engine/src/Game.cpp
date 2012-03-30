@@ -71,7 +71,7 @@ void InitGameLoop()
     //\Hack
 
 
-   // Rend_EF_Wave_Setup(10,360,3,5,4,1,0.1);
+    // Rend_EF_Wave_Setup(10,360,3,5,4,1,0.1);
 }
 
 
@@ -80,8 +80,119 @@ void InitGameLoop()
 
 void EasterEggsAndDebug()
 {
+    char message_buffer[STRBUFSZ];
+
     if (KeyAnyHit())
     {
+
+
+//        if (CheckKeyboardMessage("M?????T?",8))
+//        {
+//            char abc[6];
+//            abc[0] = GetKeyBuffered(6);
+//            abc[1] = GetKeyBuffered(5);
+//            abc[2] = GetKeyBuffered(4);
+//            abc[3] = GetKeyBuffered(3);
+//            abc[4] = GetKeyBuffered(2);
+//            abc[5] = 0;
+//            int ii = atoi(abc);
+//            abc[0] = GetKeyBuffered(0);
+//            abc[1] = 0;
+//            int ii2 = atoi(abc);
+//            SetgVarInt(ii,ii2);
+//        }
+
+
+  #ifdef GAME_ZGI
+        if (CheckKeyboardMessage("IMNOTDEAF",9))
+        {
+            //TODO: unknown
+        }
+
+        if (CheckKeyboardMessage("3100OPB",7))
+        {
+            sprintf(message_buffer,"Current location: %c%c%c%c",GetgVarInt(SLOT_WORLD),
+                    GetgVarInt(SLOT_ROOM),
+                    GetgVarInt(SLOT_NODE),
+                    GetgVarInt(SLOT_VIEW));
+            game_timed_debug_message(3000,message_buffer);
+        }
+
+
+        if (CheckKeyboardMessage("KILLMENOW",9))
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('g', 'j', 'd', 'e', 0);
+            SetgVarInt(2201,35);
+        }
+
+
+        if (CheckKeyboardMessage("MIKESPANTS",10) )
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('g', 'j', 't', 'm', 0);
+        }
+ #endif
+
+#ifdef GAME_NEMESIS
+        if (CheckKeyboardMessage("CHLOE",5))
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('t', 'm', '2', 'g', 0);
+            SetgVarInt(224,1);
+        }
+
+        if (CheckKeyboardMessage("77MASSAVE",9))
+        {
+            sprintf(message_buffer,"Current location: %c%c%c%c",GetgVarInt(SLOT_WORLD),
+                    GetgVarInt(SLOT_ROOM),
+                    GetgVarInt(SLOT_NODE),
+                    GetgVarInt(SLOT_VIEW));
+            game_timed_debug_message(3000,message_buffer);
+        }
+
+
+        if (CheckKeyboardMessage("IDKFA",5))
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('t', 'w', '3', 'f', 0);
+            SetgVarInt(249,1);
+        }
+
+
+        if (CheckKeyboardMessage("309NEWDORMA",11) )
+        {
+            NeedToLoadScript  = true;
+            SetNeedLocate('g', 'j', 'g', 'j', 0);
+        }
+
+        if (CheckKeyboardMessage("HELLOSAILOR",11) )
+        {
+            if (GetgVarInt(SLOT_WORLD) == 'v' && GetgVarInt(SLOT_ROOM) == 'b' &&
+                GetgVarInt(SLOT_NODE)  == '1' && GetgVarInt(SLOT_VIEW) == '0')
+                sprintf(message_buffer,"0 %s 0","v000hpta.raw");
+            else
+                sprintf(message_buffer,"0 %s 0","v000hnta.raw");
+
+            action_universe_music(message_buffer,0,GetUni());
+        }
+ #endif
+
+
+        if (CheckKeyboardMessage("FRAME",5))
+        {
+            sprintf(message_buffer,"FPS: %d",GetFps());
+            game_timed_debug_message(3000,message_buffer);
+        }
+
+        if (CheckKeyboardMessage("COMPUTERARCH",12))
+        {
+            //TODO: var-watcher
+        }
+
+        if (CheckKeyboardMessage("XYZZY",5))
+            SetDirectgVarInt(SLOT_DEBUGCHEATS, 1 - GetgVarInt(SLOT_DEBUGCHEATS));
+
         if (GetgVarInt(SLOT_DEBUGCHEATS) == 1)
             if (CheckKeyboardMessage("GO????",6))
             {
@@ -92,81 +203,12 @@ void EasterEggsAndDebug()
                               GetKeyBuffered(0),0);
             }
 
-/* Debug */
-//        if (CheckKeyboardMessage("QWE",3))
-//        {
-//            printf("16186 %d\n",GetgVarInt(16186));
-//            printf("05574 %d\n",GetgVarInt(5574));
-//            printf("05580 %d\n",GetgVarInt(5580));
-//            printf("16187 %d\n",GetgVarInt(16187));
-//            printf("5208 %d\n",GetgVarInt(5208));
-//            printf("1001 %d\n",GetgVarInt(1001));
-//        }
-
-        if (CheckKeyboardMessage("M?????T?",8))
-            {
-                char abc[6];
-                abc[0] = GetKeyBuffered(6);
-                abc[1] = GetKeyBuffered(5);
-                abc[2] = GetKeyBuffered(4);
-                abc[3] = GetKeyBuffered(3);
-                abc[4] = GetKeyBuffered(2);
-                abc[5] = 0;
-                int ii = atoi(abc);
-                abc[0] = GetKeyBuffered(0);
-                abc[1] = 0;
-                int ii2 = atoi(abc);
-                SetgVarInt(ii,ii2);
-            }
-
-        if (CheckKeyboardMessage("DBGONOFF",8))
-            SetDirectgVarInt(SLOT_DEBUGCHEATS, 1 - GetgVarInt(SLOT_DEBUGCHEATS));
-
-        if (CheckKeyboardMessage("COMPUTERARCH",12))
-            {
-                //TODO: var-watcher
-            }
-
-        if (CheckKeyboardMessage("FFRAME",6))
-            {
-                //TODO: print current fps
-            }
-
-        if (CheckKeyboardMessage("IMNOTDEAFF",10))
-            {
-                //TODO: unknown
-            }
-
-        if (CheckKeyboardMessage("3100OPB",7))
-                printf("Current Location: %c%c%c%c\n",GetgVarInt(SLOT_WORLD),
-                                                      GetgVarInt(SLOT_ROOM),
-                                                      GetgVarInt(SLOT_NODE),
-                                                      GetgVarInt(SLOT_VIEW));
-
-
-        if (CheckKeyboardMessage("KILLMENOW",9))
-            {
-                //TODO: go to hell :3
-                NeedToLoadScript  = true;
-                SetNeedLocate('g', 'j', 'd', 'e', 0);
-                SetgVarInt(2201,35);
-            }
-
-
-        if (CheckKeyboardMessage("MIKESPANTS",10) )
+        if (KeyDown(SDLK_v) && KeyDown(SDLK_LCTRL))
         {
-            NeedToLoadScript  = true;
-            SetNeedLocate('g', 'j', 't', 'm', 0);
+            sprintf(message_buffer,"<FONT \"ZorkNormal\" BOLD on JUSTIFY center POINT 18 RED 150 GREEN 100 BLUE 50>Zengine %s:<RED 255 GREEN 255 BLUE 255><NEWLINE>%s",ZENGINE_VER,GAME_TITLE);
+            game_timed_message(3000,message_buffer);
         }
 
-        if (CheckKeyboardMessage("Q",1) )
-        {
-//            SetgVarInt(159,GetgVarInt(159)+1);
-//            printf("\n%d\n",GetgVarInt(23107));
-//            printf("%d\n",GetgVarInt(23109));
-//            printf("%d\n",GetgVarInt(23115));
-//            printf("%d\n",GetgVarInt(23116));
-        }
     }
 }
 
@@ -300,6 +342,16 @@ char *GetSystemString(int32_t indx)
 void game_timed_message(int32_t milsecs,const char * str)
 {
     struct_SubRect *zzz=Rend_CreateSubRect(SUB_DEF_RECT);
+    txt_DrawTxtInOneLine(str,zzz->img);
+    Rend_DelaySubDelete(zzz,milsecs);
+}
+
+void game_timed_debug_message(int32_t milsecs,const char * str)
+{
+    int32_t tmp_up = 40;
+    if (tmp_up < GAMESCREEN_Y)
+        tmp_up = GAMESCREEN_Y;
+    struct_SubRect *zzz=Rend_CreateSubRect(0,0,GAMESCREEN_W,tmp_up);
     txt_DrawTxtInOneLine(str,zzz->img);
     Rend_DelaySubDelete(zzz,milsecs);
 }

@@ -34,6 +34,7 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X);
 void ReadSystemStrings(char *filename);
 char *GetSystemString(int32_t indx);
 
+void game_timed_debug_message(int32_t milsecs,const char * str);
 void game_timed_message(int32_t milsecs,const char * str);
 void game_delay_message(int32_t milsecs,const char * str);
 bool game_question_message(const char * str);

@@ -1,9 +1,12 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
+#define ZENGINE_VER  "0.9"
+
 #ifdef GAME_ZGI
 //TITLE
 #define TITLE       "Z-Engine: Zork Grand Inquisitor (RC1) [build: "__DATE__" "__TIME__"]"
+#define GAME_TITLE  "Zork: Grand Inquisitor"
 
 //ScriptSystem params
 #define VAR_SLOTS_MAX      20000 //For nemesis 30000
@@ -129,6 +132,7 @@
 
 //TITLE
 #define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
+#define GAME_TITLE  "Zork: Nemesis"
 
 //ScriptSystem params
 #define VAR_SLOTS_MAX      30000 //For nemesis 30000
@@ -257,6 +261,7 @@
 
 #define CHANGELOCATIONDELAY 2
 #define MINIBUFSZ           32
+#define STRBUFSZ            512
 
 #define EFFECTS_MAX_CNT     32
 
