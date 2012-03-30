@@ -92,7 +92,7 @@
 #define InitView    'y'
 
 //Save
-#define SAVEBUFFER_SIZE     VAR_SLOTS_MAX*4+12+16+8+8+100*16
+#define SAVEBUFFER_SIZE     (VAR_SLOTS_MAX*4+12+16+8+8+100*16)
 #define MAX_SAVES           100
 #define SAVE_NAME_MAX_LEN   20
 
@@ -116,6 +116,9 @@
 //titler-control
 #define CTRL_TITLER_MAX_STRINGS  128
 
+//save-control
+#define CTRL_SAVE_FILE   "inquis.sav"
+#define CTRL_SAVE_SAVES  "inqsav%d.sav"
 
 
 #elif GAME_NEMESIS
@@ -204,7 +207,7 @@
 #define InitView    'y'
 
 //Save
-#define SAVEBUFFER_SIZE     VAR_SLOTS_MAX*4+12+16+8+8+100*16
+#define SAVEBUFFER_SIZE     (VAR_SLOTS_MAX*4+12+16+8+8+100*16)
 #define MAX_SAVES           100
 #define SAVE_NAME_MAX_LEN   20
 
@@ -228,6 +231,9 @@
 //titler-control
 #define CTRL_TITLER_MAX_STRINGS  128
 
+//save-control
+#define CTRL_SAVE_FILE   "nemesis.sav"
+#define CTRL_SAVE_SAVES  "nemsav%d.sav"
 
 #else
 

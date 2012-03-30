@@ -391,14 +391,8 @@ void control_input_draw(ctrlnode *ct)
 
     if (FocusInput == ct->slot)
     {
-
-        if (inp->readonly)
+        if (!inp->readonly)
         {
-
-        }
-        else
-        {
-
             if (inp->cursor != NULL)
             {
 
@@ -418,7 +412,6 @@ void control_input_draw(ctrlnode *ct)
                     inp->frame = 0;
             }
         }
-
     }
 }
 
@@ -1269,7 +1262,7 @@ void control_save(ctrlnode *ct)
 
                         bool tosave = true;
 
-                        sprintf(fln,"inqsav%d.sav",i+1);
+                        sprintf(fln,CTRL_SAVE_SAVES,i+1);
                         if (FileExist(fln))
                         {
                             if (game_question_message(GetSystemString(SYSTEM_STR_SAVEEXIST)))
@@ -1281,7 +1274,7 @@ void control_save(ctrlnode *ct)
 
                         if (tosave)
                         {
-                            FILE *f = fopen("inquis.sav","wb");
+                            FILE *f = fopen(CTRL_SAVE_FILE,"wb");
 
                             for (int j=0; j<MAX_SAVES; j++)
                                 if (j!=i)
@@ -1306,7 +1299,7 @@ void control_save(ctrlnode *ct)
                 {
                     char fln[32];
 
-                    sprintf(fln,"inqsav%d.sav",i+1);
+                    sprintf(fln,CTRL_SAVE_SAVES,i+1);
 
                     ScrSys_LoadGame(fln);
 
@@ -1838,10 +1831,10 @@ int Parse_Control_Save(MList *controlst, mfile *fl, uint32_t slot)
     ctnode->slot      = slot;
     SetDirectgVarInt(slot,0);
 
-    FILE *f = fopen("inquis.sav","rb");
+    FILE *f = fopen(CTRL_SAVE_FILE,"rb");
     if (f == NULL)
     {
-        f = fopen("inquis.sav","wb");
+        f = fopen(CTRL_SAVE_FILE,"wb");
         for(int i=0; i< MAX_SAVES; i++)
             fprintf(f,"\r\n");
         fseek(f,0,SEEK_SET);
@@ -1855,7 +1848,7 @@ int Parse_Control_Save(MList *controlst, mfile *fl, uint32_t slot)
         if (strlen(str)>0)
         {
             char fln[32];
-            sprintf(fln,"inqsav%d.sav",i+1);
+            sprintf(fln,CTRL_SAVE_SAVES,i+1);
             FILE *d = fopen(fln,"rb");
             if (d!= NULL)
             {
