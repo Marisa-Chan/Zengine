@@ -30,7 +30,7 @@ const int32_t t2[] = {0x0007,0x0008,0x0009,0x000A,0x000B,0x000C,0x000D,0x000E,
                       0x3BB9,0x41B2,0x4844,0x4F7E,0x5771,0x602F,0x69CE,0x7462,0x7FFF
                      };
 
-void adpcm8_decode(void *in, void *out, uint stereo, uint n)
+void adpcm8_decode(void *in, void *out, int8_t stereo, int32_t n)
 {
     uint8_t *m1;
     uint16_t *m2;

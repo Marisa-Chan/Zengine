@@ -4,9 +4,9 @@
 #define ap_tolower(c) (tolower(((unsigned char)(c))))
 #define ap_toupper(c) (toupper(((unsigned char)(c))))
 
-char *strcasestr( char *h, char *n )
+char *strcasestr(const char *h,const char *n )
 { /* h="haystack", n="needle" */
-char *a=h, *e=n;
+const char *a=h, *e=n;
 
 if( !h || !*h || !n || !*n ) { return 0; }
 while( *a && *e ) {
@@ -17,5 +17,5 @@ else {
 ++a; ++e;
 }
 }
-return *e ? 0 : h;
+return (char *)(*e ? 0 : h);
 }
