@@ -92,7 +92,7 @@ void adpcm8_decode(void *in, void *out, int8_t stereo, int32_t n)
 struct ZGI_SND_PARAMS
 {
     int8_t pkd;
-    int16_t freq;
+    uint16_t freq;
     int8_t bits;
     int8_t stereo;
     uint8_t chr;
