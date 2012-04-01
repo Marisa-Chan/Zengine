@@ -121,7 +121,6 @@ void EasterEggsAndDebug()
 
         if (CheckKeyboardMessage("KILLMENOW",9))
         {
-            NeedToLoadScript  = true;
             SetNeedLocate('g', 'j', 'd', 'e', 0);
             SetgVarInt(2201,35);
         }
@@ -137,7 +136,6 @@ void EasterEggsAndDebug()
 #ifdef GAME_NEMESIS
         if (CheckKeyboardMessage("CHLOE",5))
         {
-            NeedToLoadScript  = true;
             SetNeedLocate('t', 'm', '2', 'g', 0);
             SetgVarInt(224,1);
         }
@@ -154,7 +152,6 @@ void EasterEggsAndDebug()
 
         if (CheckKeyboardMessage("IDKFA",5))
         {
-            NeedToLoadScript  = true;
             SetNeedLocate('t', 'w', '3', 'f', 0);
             SetgVarInt(249,1);
         }
@@ -162,7 +159,6 @@ void EasterEggsAndDebug()
 
         if (CheckKeyboardMessage("309NEWDORMA",11) )
         {
-            NeedToLoadScript  = true;
             SetNeedLocate('g', 'j', 'g', 'j', 0);
         }
 
@@ -196,20 +192,40 @@ void EasterEggsAndDebug()
         if (GetgVarInt(SLOT_DEBUGCHEATS) == 1)
             if (CheckKeyboardMessage("GO????",6))
             {
-                NeedToLoadScript = true;
                 SetNeedLocate(GetKeyBuffered(3),
                               GetKeyBuffered(2),
                               GetKeyBuffered(1),
                               GetKeyBuffered(0),0);
             }
 
-        if (KeyDown(SDLK_v) && KeyDown(SDLK_LCTRL))
+        if (KeyDown(SDLK_v) && (KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL)))
         {
             sprintf(message_buffer,"<FONT \"ZorkNormal\" BOLD on JUSTIFY center POINT 18 RED 150 GREEN 100 BLUE 50>Zengine %s:<RED 255 GREEN 255 BLUE 255><NEWLINE>%s",ZENGINE_VER,GAME_TITLE);
             game_timed_message(3000,message_buffer);
         }
 
     }
+}
+
+void shortcuts()
+{
+    int32_t m_en = menu_GetMenuBarVal();
+
+    if (KeyHit(SDLK_s) && (KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL)))
+        if (m_en & menu_BAR_SAVE)
+            SetNeedLocate(SaveWorld,SaveRoom,SaveNode,SaveView,0);
+
+    if (KeyHit(SDLK_r) && (KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL)))
+        if (m_en & menu_BAR_RESTORE)
+            SetNeedLocate(LoadWorld,LoadRoom,LoadNode,LoadView,0);
+
+    if (KeyHit(SDLK_p) && (KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL)))
+        if (m_en & menu_BAR_SETTINGS)
+            SetNeedLocate(PrefWorld,PrefRoom,PrefNode,PrefView,0);
+
+    if (KeyHit(SDLK_q) && (KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL)))
+        if (m_en & menu_BAR_EXIT)
+            ifquit();
 }
 
 void GameLoop()
@@ -295,6 +311,7 @@ void GameLoop()
     }
 
     EasterEggsAndDebug();
+    shortcuts();
 
     Rend_ScreenFlip();
 }
