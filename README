@@ -44,8 +44,6 @@ action_clear_system_message :reverse it
 * Other little things...
 * Add more code for pana and tilt renderers
 * Add fast code for distort effect based on scale-parameter. What code is used we may choose in config.h
-* Add code for input controls for navigation by keyboard
-* Add panorama controls by Keyboard
 
 --------------TODO if needed (not used)-----------------
 

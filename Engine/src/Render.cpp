@@ -598,7 +598,18 @@ void Rend_DrawPanorama()
 
 void Rend_PanaMouseInteract()
 {
-    int32_t tt = *view_X;
+
+    if (KeyDown(SDLK_LEFT))
+    {
+        int32_t speed = GetgVarInt(SLOT_KBD_ROTATE_SPEED) / 10;
+        *view_X -= (pana_ReversePana == false ? speed: -speed);
+    }
+    else if (KeyDown(SDLK_RIGHT))
+    {
+        int32_t speed = GetgVarInt(SLOT_KBD_ROTATE_SPEED) / 10;
+        *view_X += (pana_ReversePana == false ? speed: -speed);
+    }
+
     if (Rend_MouseInGamescr())
     {
         if (MouseX() > GAMESCREEN_X + GAMESCREEN_W - GAMESCREEN_P)
@@ -617,6 +628,8 @@ void Rend_PanaMouseInteract()
             *view_X -= (pana_ReversePana == false ? param: -param);
         }
     }
+
+    int32_t tt = *view_X;
 
     if (tt < pana_Zero)
     {
@@ -993,6 +1006,17 @@ void Rend_DrawTilt()
 
 void Rend_tilt_MouseInteract()
 {
+    if (KeyDown(SDLK_UP))
+    {
+        int32_t speed = GetgVarInt(SLOT_KBD_ROTATE_SPEED) / 10;
+        *view_X -= (pana_ReversePana == false ? speed: -speed);
+    }
+    else if (KeyDown(SDLK_DOWN))
+    {
+        int32_t speed = GetgVarInt(SLOT_KBD_ROTATE_SPEED) / 10;
+        *view_X += (pana_ReversePana == false ? speed: -speed);
+    }
+
     if (Rend_MouseInGamescr())
     {
         if (MouseY() > GAMESCREEN_Y + GAMESCREEN_H - GAMESCREEN_P)
