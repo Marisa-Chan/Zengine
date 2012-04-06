@@ -1962,13 +1962,15 @@ int Parse_Control_Titler(MList *controlst, mfile *fl, uint32_t slot)
             if (tmp != NULL)
             {
                 titler->num_strings = 0;
-                FILE *fl2 = fopen (tmp,"rb");
+                mfile *fl2 = mfopen (tmp);
+
+                m_wide_to_utf8(fl2);
 
                 char bf[FILE_LN_BUF];
 
-                while (!feof(fl2) && titler->num_strings<CTRL_TITLER_MAX_STRINGS)
+                while (!mfeof(fl2) && titler->num_strings<CTRL_TITLER_MAX_STRINGS)
                 {
-                    fgets(bf,FILE_LN_BUF,fl2);
+                    mfgets(bf,FILE_LN_BUF,fl2);
                     char *str2 = PrepareString(bf);
                     int32_t bflen = strlen(str2);
                     if (bf > 0)
@@ -1980,7 +1982,7 @@ int Parse_Control_Titler(MList *controlst, mfile *fl, uint32_t slot)
                     titler->num_strings++;
                 }
 
-                fclose(fl2);
+                mfclose(fl2);
 
             }
         }
