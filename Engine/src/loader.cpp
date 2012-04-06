@@ -440,7 +440,24 @@ void de_lz(SDL_Surface *srf,uint8_t *src,uint32_t size, int32_t transpose)
 
 }
 
+void flip_vertical(SDL_Surface *srf)
+{
+    SDL_LockSurface(srf);
 
+    uint8_t *a = (uint8_t *)srf->pixels;
+
+    int32_t num = srf->h / 2;
+    for (int32_t i=0; i<num; i++)
+        for (int32_t j=0; j<srf->pitch; j++)
+        {
+            a[i*srf->pitch + j] ^= a[(srf->h-i-1)*srf->pitch + j];
+            a[(srf->h-i-1)*srf->pitch + j] ^= a[i*srf->pitch + j];
+            a[i*srf->pitch + j] ^= a[(srf->h-i-1)*srf->pitch + j];
+
+        }
+
+    SDL_UnlockSurface(srf);
+}
 
 SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,uint32_t ckey)
 {
@@ -505,6 +522,15 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
         else
         {
             srf = IMG_Load_RW(SDL_RWFromMem(f->buf,f->size),0);
+            if (!srf)
+            {
+                mfseek(f,12);
+                uint16_t wi,hi;
+                mfread(&wi,2,f);
+                mfread(&hi,2,f);
+                srf = buf_to_surf(f->buf + 18,wi,hi,transpose);
+                flip_vertical(srf);
+            }
             mfclose(f);
         }
     }
@@ -694,7 +720,7 @@ void HRLE(int8_t *dst, int8_t *src,int32_t size,int32_t size2)
 
 
 
-SDL_Surface *rlf_frame(void *buf, int32_t w, int32_t h, int8_t transpose)
+SDL_Surface *buf_to_surf(void *buf, int32_t w, int32_t h, int8_t transpose)
 {
     SDL_Surface *srf = SDL_CreateRGBSurface(SDL_SWSURFACE,w,h,16,0x7C00,0x3E0,0x1F,0);
 
@@ -838,7 +864,7 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
                 free(buf);
             }
 
-        atmp->img[i] = rlf_frame(buf2,atmp->info.w,atmp->info.h,transpose);
+        atmp->img[i] = buf_to_surf(buf2,atmp->info.w,atmp->info.h,transpose);
         ConvertImage(&atmp->img[i]);
 
         if (mask != 0 && mask != -1)
