@@ -29,10 +29,10 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 
     SDL_Surface *tmp = NULL;
 
-    const char * path = GetFilePath(file);
+  //  const char * path = GetFilePath(file);
 
-    if (!path)
-        return ACTION_NORMAL;
+   // if (!path)
+    //    return ACTION_NORMAL;
 
     if (tmp2 != -1)
     {
@@ -510,9 +510,42 @@ int music_music(char *params, int aSlot, pzllst *owner, bool universe)
 
         nod->nodes.node_music->universe = universe;
 
+        int st = strlen(file);
+
         nod->nodes.node_music->chunk = loader_LoadFile(file);
 
-        int st = strlen(file);
+        if (nod->nodes.node_music->chunk == NULL)
+        {
+            file[st-1] = 'w';
+            file[st-2] = 'a';
+            file[st-3] = 'r';
+
+            nod->nodes.node_music->chunk = loader_LoadFile(file);
+
+            if (nod->nodes.node_music->chunk == NULL)
+            {
+                file[st-1] = 'p';
+                file[st-2] = 'f';
+                file[st-3] = 'i';
+
+                nod->nodes.node_music->chunk = loader_LoadFile(file);
+
+                if (nod->nodes.node_music->chunk == NULL)
+                {
+                    file[st-1] = 'c';
+                    file[st-2] = 'r';
+                    file[st-3] = 's';
+
+                    nod->nodes.node_music->chunk = loader_LoadFile(file);
+                }
+            }
+        }
+
+        if (nod->nodes.node_music->chunk == NULL)
+        {
+            snd_DeleteWav(nod);
+            return ACTION_NORMAL;
+        }
 
         file[st-1] = 'b';
         file[st-2] = 'u';
