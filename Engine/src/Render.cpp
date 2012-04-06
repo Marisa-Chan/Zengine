@@ -1272,7 +1272,7 @@ int32_t Rend_EF_Light_Setup(char *string, int32_t x, int32_t y, int32_t w, int32
 
         if (GAME_BPP == 32)
         {
-            dlt = FiveBitToEightBitLookupTable[(dlt & 0x1F)];
+            dlt = FiveBitToEightBitLookupTable_SDL[(dlt & 0x1F)];
             dlt = SDL_MapRGB(scrbuf->format,dlt,dlt,dlt);
         }
         else if (GAME_BPP == 16)

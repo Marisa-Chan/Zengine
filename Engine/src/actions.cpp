@@ -37,9 +37,9 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
     if (tmp2 != -1)
     {
         int r,g,b;
-        b=FiveBitToEightBitLookupTable[((tmp2 >> 10 ) & 0x1F)];
-        g=FiveBitToEightBitLookupTable[((tmp2 >> 5 ) & 0x1F)];
-        r=FiveBitToEightBitLookupTable[(tmp2 & 0x1F)];
+        b=FiveBitToEightBitLookupTable_SDL[((tmp2 >> 10 ) & 0x1F)];
+        g=FiveBitToEightBitLookupTable_SDL[((tmp2 >> 5 ) & 0x1F)];
+        r=FiveBitToEightBitLookupTable_SDL[(tmp2 & 0x1F)];
 #ifdef TRACE
         printf("        action:set_partial_screen Color Key (%x %x %x)\n",r,g,b);
 #endif
@@ -412,9 +412,9 @@ int action_animplay(char *params, int aSlot , pzllst *owner)
 
     if (mask2 != -1 && mask2 != 0)
     {
-        b=FiveBitToEightBitLookupTable[((mask2 >> 10 ) & 0x1F)];
-        g=FiveBitToEightBitLookupTable[((mask2 >> 5 ) & 0x1F)];
-        r=FiveBitToEightBitLookupTable[(mask2 & 0x1F)];
+        b=FiveBitToEightBitLookupTable_SDL[((mask2 >> 10 ) & 0x1F)];
+        g=FiveBitToEightBitLookupTable_SDL[((mask2 >> 5 ) & 0x1F)];
+        r=FiveBitToEightBitLookupTable_SDL[(mask2 & 0x1F)];
         mask2=r | g<<8 | b<<16;
     }
 
