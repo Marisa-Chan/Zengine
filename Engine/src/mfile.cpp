@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
+#include "System.h"
 #include "mfile.h"
 
 mfile *mfopen(const char *file)
@@ -29,6 +30,44 @@ mfile *mfopen(const char *file)
     return tmp;
 }
 
+mfile *mfopen(FManNode *nod)
+{
+    mfile *tmp = NULL;
+
+    if (nod->zfs)
+    {
+        tmp = new mfile;
+        tmp->buf = (char *)loader_zload(nod->zfs);
+        tmp->pos = 0;
+        tmp->size = nod->zfs->size;
+    }
+    else
+    {
+        FILE *fl = fopen(nod->Path,"rb");
+        if (!fl)
+            return NULL;
+
+        tmp = new mfile;
+
+        fseek(fl,0,SEEK_END);
+
+        tmp->size = ftell(fl);
+
+        fseek(fl,0,SEEK_SET);
+
+        tmp->pos = 0;
+
+        tmp->buf = (char *)malloc(tmp->size);
+
+        fread(tmp->buf,tmp->size,1,fl);
+
+        fclose(fl);
+    }
+
+
+    return tmp;
+}
+
 mfile *mfopen_mem(void *buf, int32_t size)
 {
 
@@ -43,6 +82,23 @@ mfile *mfopen_mem(void *buf, int32_t size)
     return tmp;
 }
 
+bool mfread(void *buf, int32_t bytes, mfile *file)
+{
+    if (file->pos + bytes > file->size)
+        return false;
+
+    memcpy(buf, file->buf + file->pos, bytes);
+
+    file->pos+=bytes;
+
+    return true;
+}
+
+void mfseek(mfile *fil, int32_t pos)
+{
+    if (pos <= fil->size && pos >= 0)
+        fil->pos = pos;
+}
 
 void mfclose(mfile *fil)
 {

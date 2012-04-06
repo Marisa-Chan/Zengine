@@ -175,7 +175,7 @@ int *getdirectvar(uint32_t indx);
 
 
 
-void LoadScriptFile(pzllst *lst, const char *filename, bool control, MList *controlst);
+void LoadScriptFile(pzllst *lst, FManNode *filename, bool control, MList *controlst);
 void InitScriptsEngine();
 
 void FillStateBoxFromList(pzllst *lst);

@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-struct_textfile *sub_LoadTextFile(const char *file)
+struct_textfile *sub_LoadTextFile(FManNode *file)
 {
     mfile *f = mfopen(file);
 
@@ -98,7 +98,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
 
     struct_subtitles *tmp;
 
-    const char *fil = GetFilePath(filename);
+    FManNode *fil = FindInBinTree(filename);
     if (fil == NULL)
         return NULL;
 
@@ -108,10 +108,10 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
     tmp->SubRect = NULL;
     tmp->subscount = 0;
 
-    FILE *f = fopen(fil,"rb");
-    while (!feof(f))
+    mfile *f = mfopen(fil);
+    while (!mfeof(f))
     {
-        fgets(buf,FILE_LN_BUF,f);
+        mfgets(buf,FILE_LN_BUF,f);
         str1 = TrimLeft(buf);
 
         int32_t t_len = strlen(str1);
@@ -144,7 +144,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
         }
         else if (strCMP(str1,"TextFile") == 0)
         {
-            const char *fil2 = GetFilePath(str2);
+            FManNode *fil2 = FindInBinTree(str2);
             if (fil2 == NULL)
             {
                 delete tmp;
@@ -177,7 +177,7 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
         }
 
     }
-    fclose(f);
+    mfclose(f);
 
     return tmp;
 }

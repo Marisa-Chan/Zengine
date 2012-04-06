@@ -88,6 +88,7 @@ struct FManNode
 {
     char *File;
     char *Path;
+    zfs_file *zfs;
 };
 
 struct FManRepNode

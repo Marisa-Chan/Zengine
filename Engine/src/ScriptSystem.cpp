@@ -204,10 +204,10 @@ void InitScriptsEngine()
 
 
 
-void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *controlst)
+void LoadScriptFile(pzllst *lst,FManNode *filename, bool control, MList *controlst)
 {
 #ifdef TRACE
-    printf("Loading script file %s\n",filename);
+    printf("Loading script file %s\n",filename->File);
 #endif
 
     if (control)
@@ -218,7 +218,7 @@ void LoadScriptFile(pzllst *lst,const char *filename, bool control, MList *contr
     mfile *fl=mfopen(filename);
     if (fl == NULL)
     {
-        printf("Error opening file %s\n",filename);
+        printf("Error opening file %s\n",filename->File);
         exit(1);
         return;
     }
@@ -549,7 +549,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[3]=temp.View;
         tm[4]=0;
         sprintf(buf,"%s.scr",tm);
-        const char *fil = GetExactFilePath(buf);
+        FManNode *fil = FindInBinTree(buf);
         if (fil != NULL)
             LoadScriptFile(view,fil,true,ctrl);
 
@@ -568,7 +568,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[2]=0;
         sprintf(buf,"%s.scr",tm);
 
-        const char *fil = GetExactFilePath(buf);
+        FManNode *fil = FindInBinTree(buf);
         if (fil != NULL)
             LoadScriptFile(room,fil,false,NULL);
     }
@@ -585,7 +585,7 @@ void ScrSys_ChangeLocation(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t 
         tm[1]=0;
         sprintf(buf,"%s.scr",tm);
 
-        const char *fil = GetExactFilePath(buf);
+        FManNode *fil = FindInBinTree(buf);
         if (fil != NULL)
             LoadScriptFile(world,fil,false,NULL);
 

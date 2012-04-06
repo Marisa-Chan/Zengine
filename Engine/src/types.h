@@ -17,5 +17,7 @@ struct struct_subtitles;
 
 struct struct_effect;
 
+struct FManNode;
+
 struct ctrlnode;
 #endif

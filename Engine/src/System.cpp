@@ -379,7 +379,11 @@ void ListDir(char *dir)
     DIR *dr=opendir(buf);
 
     if (dr == NULL)
+    {
+        loader_openzfs(dir,FMan);
         return;
+    }
+
 
     dirent *de=readdir(dr);
     while (de)
@@ -399,6 +403,7 @@ void ListDir(char *dir)
                 nod->Path=(char *) malloc(strlen(buf2)+1);
                 strcpy(nod->Path,buf2);
                 nod->File=nod->Path+len+1;
+                nod->zfs = NULL;
 
                 AddToBinTree(nod);
             }
@@ -406,56 +411,6 @@ void ListDir(char *dir)
     }
     closedir(dr);
 
-}
-
-
-
-char *GetExactFilePath2(char *chr)
-{
-    StartMList(FMan);
-    while(!eofMList(FMan))
-    {
-        FManNode* nod=(FManNode*)DataMList(FMan);
-        if (strcasecmp(nod->File,chr)==0)
-            {
-                return nod->Path;
-            }
-        NextMList(FMan);
-    }
-    printf("file %s not found!\n",chr);
-    return NULL;
-}
-
-char *GetFilePath2(char *chr)
-{
-    char buf[255];
-    strcpy(buf,chr);
-
-    StartMList(FManRepl);
-    while(!eofMList(FManRepl))
-    {
-        FManRepNode *repnod=(FManRepNode *)DataMList(FManRepl);
-        char *tmp=strcasestr(buf,repnod->ext);
-        if (tmp!=NULL)
-            {
-                strcpy(tmp,repnod->ext2);
-                break;
-            }
-        NextMList(FManRepl);
-    }
-
-    StartMList(FMan);
-    while(!eofMList(FMan))
-    {
-        FManNode* nod=(FManNode*)DataMList(FMan);
-        if (strcasecmp(nod->File,buf)==0)
-            {
-                return nod->Path;
-            }
-        NextMList(FMan);
-    }
-    printf("Can't find %s\n",chr);
-    return NULL;
 }
 
 void AddReplacer(const char *ext, const char *ext2)
@@ -689,8 +644,11 @@ const char *GetFilePath(const char *chr)
     }
 
     FManNode *nod = FindInBinTree(buf);
+
     if (nod != NULL)
-        return nod->Path;
+        if (nod->zfs == NULL)
+            return nod->Path;
+
 #ifdef TRACE
     printf("Can't find %s\n",chr);
 #endif
@@ -701,7 +659,9 @@ const char *GetExactFilePath(const char *chr)
 {
     FManNode *nod = FindInBinTree(chr);
     if (nod != NULL)
-        return nod->Path;
+        if (nod->zfs == NULL)
+            return nod->Path;
+
 #ifdef TRACE
     printf("Can't find %s\n",chr);
 #endif

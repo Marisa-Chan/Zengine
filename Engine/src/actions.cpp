@@ -770,7 +770,7 @@ int action_ttytext(char *params, int aSlot , pzllst *owner)
     w-=x;
     h-=y;
 
-    const char *fil = GetFilePath(chars);
+    FManNode *fil = FindInBinTree(chars);
 
     if (fil == NULL)
     {

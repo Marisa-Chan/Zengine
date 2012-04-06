@@ -51,7 +51,7 @@ void SetNeedLocate(uint8_t w, uint8_t r,uint8_t v1, uint8_t v2, int32_t X)
 void InitGameLoop()
 {
     pzllst *uni = GetUni();
-    LoadScriptFile(uni,GetExactFilePath("universe.scr"),false,NULL);
+    LoadScriptFile(uni,FindInBinTree("universe.scr"),false,NULL);
 
     ScrSys_ChangeLocation(InitWorld,InitRoom,InitNode,InitView,0,true);
 

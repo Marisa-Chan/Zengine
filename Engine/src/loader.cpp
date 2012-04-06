@@ -124,7 +124,7 @@ static const ZGI_SND_PARAMS zg[24]= {{0,0x2B11, 0x8, 0x0, '4'},
     {1,0xAC44, 0x10,0x1, 'u'}
 };
 
-Mix_Chunk *Load_ZGI(const char *file, char type)
+Mix_Chunk *Load_ZGI(FManNode *file, char type)
 {
     int32_t freq;
     int32_t bits;
@@ -152,14 +152,10 @@ Mix_Chunk *Load_ZGI(const char *file, char type)
     if (indx == -1)
         return NULL;
 
-    FILE *f = fopen(file,"rb");
-    fseek(f,0,SEEK_END);
-    size = ftell(f);
-    fseek(f,0,SEEK_SET);
+    mfile *f = mfopen(file);
+    size = f->size;
 
-    void *fil = malloc(size);
-    fread(fil,size,1,f);
-    fclose(f);
+    void *fil = f->buf;
 
     if (pkd == 1)
         size2 = size*2 + 0x2C;
@@ -191,7 +187,7 @@ Mix_Chunk *Load_ZGI(const char *file, char type)
     else
         memcpy(&raw_i[11],fil,size);
 
-    free(fil);
+    mfclose(f);
 
     return Mix_LoadWAV_RW(SDL_RWFromMem(raw_w,size2),1);
 }
@@ -202,7 +198,7 @@ int znem_bits[4] =  {  8, 8, 0x10, 0x10};
 
 int znem_stereo[2] = {0, 1};
 
-Mix_Chunk *Load_ZNEM(const char *file,  char type)
+Mix_Chunk *Load_ZNEM(FManNode *file,  char type)
 {
     int32_t freq;
     int32_t bits;
@@ -227,11 +223,11 @@ Mix_Chunk *Load_ZNEM(const char *file,  char type)
     low -= '0';
 
     char buf[4];
-    int32_t t_len = strlen(file);
+    int32_t t_len = strlen(file->File);
 
-    buf[0] = file[t_len-3];
-    buf[1] = file[t_len-2];
-    buf[2] = file[t_len-1];
+    buf[0] = file->File[t_len-3];
+    buf[1] = file->File[t_len-2];
+    buf[2] = file->File[t_len-1];
     buf[3] = 0;
 
     if (strCMP(buf,"ifp") == 0)
@@ -243,14 +239,11 @@ Mix_Chunk *Load_ZNEM(const char *file,  char type)
     bits = znem_bits[low % 4];
     stereo = znem_stereo[low % 2];
 
-    FILE *f = fopen(file,"rb");
-    fseek(f,0,SEEK_END);
-    size = ftell(f);
-    fseek(f,0,SEEK_SET);
+    mfile *f = mfopen(file);
+    size = f->size;
 
-    void *fil = malloc(size);
-    fread(fil,size,1,f);
-    fclose(f);
+    void *fil = f->buf;
+
 
     if (pkd == 1)
         size2 = size*2 + 0x2C;
@@ -282,7 +275,7 @@ Mix_Chunk *Load_ZNEM(const char *file,  char type)
     else
         memcpy(&raw_i[11],fil,size);
 
-    free(fil);
+    mfclose(f);
 
     return Mix_LoadWAV_RW(SDL_RWFromMem(raw_w,size2),1);
 }
@@ -291,10 +284,14 @@ Mix_Chunk *loader_LoadFile(const char *file)
 {
     char buf[4];
 
-    const char *fil = GetExactFilePath(file);
+    FManNode *mfil = FindInBinTree(file);
 
-    if (!fil)
+    const char *fil = NULL;
+
+    if (!mfil)
         fil = GetFilePath(file);
+    else
+        fil = mfil->File;
 
     if (!fil)
         return NULL;
@@ -308,19 +305,21 @@ Mix_Chunk *loader_LoadFile(const char *file)
 
     Mix_Chunk *chunk;
 
-    if ((strCMP(buf,"src") == 0) || (strCMP(buf,"raw") == 0) || (strCMP(buf,"ifp") == 0))
+    if (((strCMP(buf,"src") == 0) || (strCMP(buf,"raw") == 0) || (strCMP(buf,"ifp") == 0)) && (mfil != NULL))
     {
 #ifdef GAME_ZGI
-        chunk = Load_ZGI(fil,fil[t_len-5]);
+        chunk = Load_ZGI(mfil,fil[t_len-5]);
 #endif
 #ifdef GAME_NEMESIS
-        chunk = Load_ZNEM(fil,fil[t_len-6]);
+        chunk = Load_ZNEM(mfil,fil[t_len-6]);
 #endif
     }
-    else
+    else if (!mfil)
     {
         chunk = Mix_LoadWAV(fil);
     }
+    else
+        return NULL;
 
     return chunk;
 }
@@ -330,7 +329,7 @@ Mix_Chunk *loader_LoadFile(const char *file)
 
 /***********************************TGZ_Support *******************************/
 
-void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t transpose)
+void de_lz(SDL_Surface *srf,uint8_t *src,uint32_t size, int32_t transpose)
 {
     uint8_t     lz[0x1000];
     uint32_t    lz_pos=0x0fee;
@@ -339,12 +338,19 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
 
     memset(&lz[0],0,0x1000);
 
+    SDL_LockSurface(srf);
+
+    uint8_t *dst = (uint8_t *)srf->pixels;
+
+    bool need_correction = (srf->w != (srf->pitch / srf->format->BytesPerPixel));
+    int32_t vpitch = srf->w * 2;
+
     while(cur<size)
     {
         bl=src[cur];
         mk=1;
 
-        for (i=0; i<=7; i++)
+        for (i=0; i < 8; i++)
         {
             if ((bl & mk)==mk)
             {
@@ -353,20 +359,27 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
 
                 lz[lz_pos]=src[cur];
 
+                int32_t index = 0;
+
                 if (transpose == 0)
-                    dst[d_cur]=src[cur];
+                    index = d_cur;
                 else
                 {
                     int32_t dx = d_cur/2;
                     int32_t ddx = d_cur & 1;
-                    int32_t hh = dx % h;
-                    int32_t ww = dx / h;
-                    //if (((hh*w+ww)*2 + ddx) <h*2*w)
-                    dst[(hh*w+ww)*2 + ddx] = src[cur];
-                    //else
-                    //       printf("asdasdasdas\n");
+                    int32_t hh = dx % srf->h;
+                    int32_t ww = dx / srf->h;
+                    index = (hh * srf->w + ww)*2 + ddx;
                 }
 
+                if (need_correction)
+                {
+                    int32_t cary  = index / vpitch;
+                    int32_t cary2 = index % vpitch;
+                    index = cary * srf->pitch + cary2;
+                }
+
+                dst[index] = src[cur];
 
                 d_cur++;
                 lz_pos = (lz_pos+1) & 0xfff;
@@ -388,20 +401,30 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
                 for(j = 0; j <= loops; j++)
                 {
                     lz[lz_pos]=lz[(otsk+j) & 0xfff];
+
+                    int32_t index = 0;
+
                     if (transpose == 0)
-                        dst[d_cur]=lz[(otsk+j) & 0xfff];
+                        index = d_cur;
                     else
                     {
                         int32_t dx = d_cur/2;
                         int32_t ddx = d_cur & 1;
-                        int32_t hh = dx % h;
-                        int32_t ww = dx / h;
-                        //if (d_cur <h*2*w)
-                        dst[(hh*w+ww)*2 + ddx] = lz[(otsk+j) & 0xfff];
-                        //else
-                        // printf("asdasdasdas\n");
+                        int32_t hh = dx % srf->h;
+                        int32_t ww = dx / srf->h;
+                        index = (hh * srf->w + ww)*2 + ddx;
                     }
-                    lz_pos=(lz_pos+1) & 0xfff;
+
+                    if (need_correction)
+                    {
+                        int32_t cary  = index / vpitch;
+                        int32_t cary2 = index % vpitch;
+                        index = cary * srf->pitch + cary2;
+                    }
+
+                    dst[index] = lz[lz_pos];
+
+                    lz_pos = (lz_pos+1) & 0xfff;
                     d_cur++;
                 }
             };
@@ -413,6 +436,8 @@ void de_lz(uint8_t *dst,uint8_t *src,uint32_t size,int32_t w, int32_t h, int32_t
         cur++;
     };
 
+    SDL_UnlockSurface(srf);
+
 }
 
 
@@ -421,10 +446,14 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
 {
     char buf[4];
 
-    const char *fil = GetExactFilePath(file);
+    FManNode *mfil = FindInBinTree(file);
 
-    if (!fil)
+    const char *fil = NULL;
+
+    if (!mfil)
         fil = GetFilePath(file);
+    else
+        fil = mfil->File;
 
     if (!fil)
         return NULL;
@@ -438,27 +467,27 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
 
     SDL_Surface *srf=NULL;
 
-    if ((strCMP(buf,"tga") == 0))
+    if ((strCMP(buf,"tga") == 0) && (mfil != NULL))
     {
-        FILE *f = fopen(fil,"rb");
+        mfile *f = mfopen(mfil);
         uint32_t magic;
-        fread(&magic,4,1,f);
+        mfread(&magic,4,f);
         if (magic  == 0x005A4754)
         {
 
-            fseek(f,0,SEEK_END);
-            int32_t pksz = ftell(f) - 0x10;
-            fseek(f,8,SEEK_SET);
+            int32_t pksz = f->size - 0x10;
+
+            mfseek(f,8);
 
             int32_t wi;
-            fread(&wi,4,1,f);
+            mfread(&wi,4,f);
 
             int32_t hi;
-            fread(&hi,4,1,f);
+            mfread(&hi,4,f);
 
             uint8_t *mem = (uint8_t *)malloc(pksz);
-            fread(mem,1,pksz,f);
-            fclose(f);
+            mfread(mem,pksz,f);
+            mfclose(f);
 
             if (transpose)
             {
@@ -469,32 +498,30 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
 
             srf = SDL_CreateRGBSurface(SDL_SWSURFACE,wi,hi,16,0x7C00,0x3E0,0x1F,0);
 
-            SDL_LockSurface(srf);
-
-
-
-            de_lz((uint8_t *)srf->pixels,mem,pksz,wi,hi,transpose);
-
-            SDL_UnlockSurface(srf);
+            de_lz(srf,mem,pksz,transpose);
 
             free(mem);
         }
         else
         {
-            fclose(f);
-            srf = IMG_Load(fil);
+            srf = IMG_Load_RW(SDL_RWFromMem(f->buf,f->size),0);
+            mfclose(f);
         }
     }
-    else
+    else if (!mfil)
     {
         srf = IMG_Load(fil);
     }
+    else
+        return NULL;
 
     if (srf)
+    {
         ConvertImage(&srf);
 
-    if (key != 0)
-        SDL_SetColorKey(srf,SDL_SRCCOLORKEY,ckey);
+        if (key != 0)
+            SDL_SetColorKey(srf,SDL_SRCCOLORKEY,ckey);
+    }
 
     return srf;
 }
@@ -673,21 +700,59 @@ SDL_Surface *rlf_frame(void *buf, int32_t w, int32_t h, int8_t transpose)
 
     SDL_LockSurface(srf);
 
+    bool need_correction = (srf->w != (srf->pitch / srf->format->BytesPerPixel));
+    int32_t vpitch = srf->pitch / 2;
+
     if (transpose == 1)
     {
         uint16_t *tmp = (uint16_t *)buf;
         uint16_t *tmp2 = (uint16_t *)srf->pixels;
 
-        for (int32_t j=0; j< h; j++)
-            for (int32_t i=0; i< w; i++)
-            {
-                *tmp2 = tmp[i*h+j];
-                tmp2++;
-            }
+        if (need_correction)
+        {
+            int32_t idx = 0;
+
+            for (int32_t j=0; j< h; j++)
+                for (int32_t i=0; i< w; i++)
+                {
+                    int32_t real_idx = ((idx / w) * vpitch) + (idx % w);
+                    tmp2[real_idx] = tmp[i*h+j];
+                    idx++;
+                }
+
+        }
+        else
+        {
+            for (int32_t j=0; j< h; j++)
+                for (int32_t i=0; i< w; i++)
+                {
+                    *tmp2 = tmp[i*h+j];
+                    tmp2++;
+                }
+        }
 
     }
     else
-        memcpy(srf->pixels,buf,w*h*2);
+    {
+        if (need_correction)
+        {
+            uint16_t *tmp = (uint16_t *)buf;
+            uint16_t *tmp2 = (uint16_t *)srf->pixels;
+
+            int32_t idx = 0;
+
+            for (int32_t j=0; j< h; j++)
+                for (int32_t i=0; i< w; i++)
+                {
+                    int32_t real_idx = ((idx / w) * vpitch) + (idx % w);
+                    tmp2[real_idx] = tmp[j*h+i];
+                    idx++;
+                }
+        }
+        else
+            memcpy(srf->pixels,buf,w*h*2);
+    }
+
 
     SDL_UnlockSurface(srf);
 
@@ -701,7 +766,7 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
     printf("loader:\trlf\tTry to load %s with ",file);
 #endif
 
-    const char *fil = GetExactFilePath(file);
+    FManNode *fil = FindInBinTree(file);
 
     if (fil == NULL)
         return LoadAnimImage(file,mask); //rollback mechanism
@@ -710,22 +775,22 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
     printf("RLF-mechanism\n");
 #endif
 
-    FILE *f=fopen(fil,"rb");
+    mfile *f=mfopen(fil);
     if (!f)
         return NULL;
 
     Header hd;
-    fread(&hd,1,sizeof(Header),f);
+    mfread(&hd,sizeof(Header),f);
 
     if (hd.magic != 0x524C4546) //RLEF
         return NULL;
 
     Cinf cin;
-    fread(&cin,1,sizeof(Cinf),f);
+    mfread(&cin,sizeof(Cinf),f);
     MinF mn;
-    fread(&mn,1,sizeof(MinF),f);
+    mfread(&mn,sizeof(MinF),f);
     mTime tm;
-    fread(&tm,1,sizeof(mTime),f);
+    mfread(&tm,sizeof(mTime),f);
 
 
     if (transpose == 1)
@@ -755,12 +820,12 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
 
     for (uint16_t i=0; i<hd.frames ; i++)
     {
-        if (fread(&frm,1,sizeof(Frame),f) == sizeof(Frame))
+        if (mfread(&frm,sizeof(Frame),f))
             if (frm.size > 0 && frm.size < 0x40000000)
             {
 
                 void *buf=malloc(frm.size-frm.offset);
-                if ( fread(buf,1,frm.size-frm.offset,f) ==  frm.size-frm.offset)
+                if (mfread(buf,frm.size-frm.offset,f))
                 {
 
 
@@ -782,7 +847,7 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
 
     }
 
-    fclose(f);
+    mfclose(f);
 
     free(buf2);
 
@@ -792,15 +857,16 @@ anim_surf *loader_LoadRlf(const char *file, int8_t transpose,int32_t mask)
 /*********************************** END RLF ***************************************/
 
 
+/******************** ZCR ************************/
 
 void loader_LoadZcr(const char *file, Cursor *cur)
 {
 #ifdef LOADTRACE
     printf("loader:\tzcr\tTry to load %s with ",file);
 #endif
-    const char *fil = GetExactFilePath(file);
+    FManNode *fl = FindInBinTree(file);
 
-    if (fil == NULL)
+    if (fl == NULL)
     {
 #ifdef LOADTRACE
         printf("fallback-mechanism\n");
@@ -812,19 +878,19 @@ void loader_LoadZcr(const char *file, Cursor *cur)
     printf("ZCR-mechanism\n");
 #endif
 
-    FILE *f=fopen(fil,"rb");
+    mfile *f=mfopen(fl);
     if (!f)
         return;
 
     uint32_t magic=0;
-    fread(&magic,4,1,f);
+    mfread(&magic,4,f);
     if (magic  == 0x3152435A)
     {
         uint16_t x,y,w,h;
-        fread(&x,2,1,f);
-        fread(&y,2,1,f);
-        fread(&w,2,1,f);
-        fread(&h,2,1,f);
+        mfread(&x,2,f);
+        mfread(&y,2,f);
+        mfread(&w,2,f);
+        mfread(&h,2,f);
 
         cur->ox = x;
         cur->oy = y;
@@ -833,7 +899,7 @@ void loader_LoadZcr(const char *file, Cursor *cur)
 
         SDL_LockSurface(cur->img);
 
-        fread(cur->img->pixels,2,w*h,f);
+        mfread(cur->img->pixels,2*w*h,f);
 
         SDL_UnlockSurface(cur->img);
 
@@ -841,7 +907,7 @@ void loader_LoadZcr(const char *file, Cursor *cur)
 
         SDL_SetColorKey(cur->img,SDL_SRCCOLORKEY,0);
     }
-    fclose(f);
+    mfclose(f);
 }
 
 void loader_LoadMouseCursor(const char *file, Cursor *cur)
@@ -851,3 +917,119 @@ void loader_LoadMouseCursor(const char *file, Cursor *cur)
     else
         Mouse_LoadCursor(file,cur);
 }
+
+/******************** ZCR END************************/
+
+
+
+
+
+/******************** ZFS Routines************************/
+
+struct header_zfs
+{
+    uint32_t magic;
+    uint32_t unk1;
+    uint32_t unk2;
+    uint32_t files_perblock;
+    uint32_t files_cnt;
+    uint32_t xor_key;
+    uint32_t Offset_files;
+};
+
+struct file_header_zfs
+{
+    char        name[0x10];
+    uint32_t    offset;
+    uint32_t    id;
+    uint32_t    size;
+    uint32_t    time;
+    uint32_t    unk2;
+};
+
+static MList *zfs_arch_list = NULL;
+
+void loader_openzfs(const char *file , MList *list)
+{
+    FILE *fl = fopen(file,"rb");
+    if (!fl)
+        return;
+
+    header_zfs hdr;
+    fread(&hdr,sizeof(hdr),1,fl);
+
+    if (hdr.magic != 0x4653465A)
+    {
+        fclose(fl);
+        return;
+    }
+
+    zfs_arch *tmp = new(zfs_arch);
+    tmp->fl = fl;
+    tmp->xor_key = hdr.xor_key;
+
+    if (!zfs_arch_list)
+        zfs_arch_list = CreateMList();
+
+    AddToMList(zfs_arch_list,tmp);
+
+
+    uint32_t nextpos=hdr.Offset_files;
+
+    while (nextpos!=0)
+    {
+
+        fseek(fl,nextpos,0);
+        fread(&nextpos,4,1,fl);
+
+        for (uint32_t i=0; i<hdr.files_perblock; i++)
+        {
+            //fseek(f,pos,0);
+            file_header_zfs fil;
+            fread(&fil,sizeof(fil),1,fl);
+
+            if (strlen(fil.name)>0)
+            {
+                FManNode *nod = new(FManNode);
+                AddToMList(list,nod);
+
+                nod->Path=(char *) malloc(strlen(fil.name)+1);
+                strcpy(nod->Path,fil.name);
+                nod->File=nod->Path;
+
+                nod->zfs = new(zfs_file);
+                nod->zfs->archive = tmp;
+                nod->zfs->offset = fil.offset;
+                nod->zfs->size = fil.size;
+
+                AddToBinTree(nod);
+            }
+        }
+    }
+}
+
+void unxor(void *buf,uint32_t size,uint32_t xork)
+{
+    uint32_t cnt=size >> 2;
+    uint32_t *px=(uint32_t *)buf;
+
+    for (uint32_t i=0;i<cnt;i++)
+        px[i]^=xork;
+}
+
+void *loader_zload(zfs_file *fil)
+{
+    fseek(fil->archive->fl,fil->offset,SEEK_SET);
+
+    void *buf = malloc(fil->size);
+
+    fread(buf,fil->size,1,fil->archive->fl);
+
+    if (fil->archive->xor_key != 0)
+        unxor(buf,fil->size,fil->archive->xor_key);
+
+    return buf;
+}
+
+/******************** ZFS END************************/
+
