@@ -164,6 +164,16 @@ sub ConvertAVI #0 - src file, 1 - dst file, 2 - renderer
 		}
 		system("rm -f ./temp/$tempname.dump");
 	}
+	elsif ($_[2] eq "6") # streamvideo (with audio!)
+	{
+		system("$mencoder \"$_[0]\" -of mpeg -mpegopts format=mpeg1 -ovc lavc -lavcopts vcodec=mpeg1video:keyint=1 -vf eq2=1.0:1.11:0.0,softskip,harddup,rotate=90,flip,rotate=90,flip -fps 15 -ofps 30 -nosound -o ./temp/$tempname.mpg &>/dev/null");
+		system("$mpla -dumpaudio \"$_[0]\" -dumpfile ./temp/$tempname.dump &>/dev/null");
+		if (-s "./temp/$tempname.dump" > 44)
+		{
+		system("./progs/_sfx ./temp/$tempname.dump ./temp/$tempname.wav 0 22050 1");
+		}
+		system("rm -f ./temp/$tempname.dump");
+	}
 	
 	if (-e "./temp/$tempname.mpg")
 		{system("mv -n ./temp/$tempname.mpg \"$dst\"");}
