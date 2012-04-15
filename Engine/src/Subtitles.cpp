@@ -114,7 +114,10 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
         mfgets(buf,FILE_LN_BUF,f);
         str1 = TrimLeft(buf);
 
+        str2 = NULL;
+
         int32_t t_len = strlen(str1);
+
         for (int i=0; i<t_len; i++)
             if (str1[i] == ':')
             {
@@ -122,58 +125,62 @@ struct_subtitles *sub_LoadSubtitles(char *filename)
                 str2 = str1+i+1;
                 break;
             }
-        for (int i=strlen(str2)-1; i>=0; i--)
-            if (str2[i] == '~' || str2[i]==0x0A || str2[i]==0x0D)
-                str2[i] = 0x0;
 
-        if (strCMP(str1,"Initialization") == 0)
+        if (str2 != NULL)
         {
-            ;
-        }
-        else if (strCMP(str1,"Rectangle") == 0)
-        {
-            int x;
-            int y;
-            int x2;
-            int y2;
-            sscanf(str2,"%d %d %d %d",&x,&y,&x2,&y2);
-            tmp->SubRect = Rend_CreateSubRect(x + GAMESCREEN_X + SUB_CORRECT_HORIZ + GAMESCREEN_FLAT_X,
-                                              y + GAMESCREEN_Y + SUB_CORRECT_VERT,
-                                              x2-x+1,
-                                              y2-y+1);
-        }
-        else if (strCMP(str1,"TextFile") == 0)
-        {
-            FManNode *fil2 = FindInBinTree(str2);
-            if (fil2 == NULL)
+            for (int i=strlen(str2)-1; i>=0; i--)
+                if (str2[i] == '~' || str2[i]==0x0A || str2[i]==0x0D)
+                    str2[i] = 0x0;
+
+            if (strCMP(str1,"Initialization") == 0)
             {
-                delete tmp;
-                return NULL;
+                ;
             }
-
-            tmp->txt = sub_LoadTextFile(fil2);
-            tmp->subs = (struct_one_subtitle *)calloc(tmp->txt->count,sizeof(struct_one_subtitle));
-            subscount = tmp->txt->count;
-        }
-        else//it's must be sub info
-        {
-            int st;
-            int en;
-            int sb;
-            if ( sscanf(str2,"(%d,%d)=%d",&st,&en,&sb) == 3)
+            else if (strCMP(str1,"Rectangle") == 0)
             {
-                if (subscount == 0 || sb > subscount)
+                int x;
+                int y;
+                int x2;
+                int y2;
+                sscanf(str2,"%d %d %d %d",&x,&y,&x2,&y2);
+                tmp->SubRect = Rend_CreateSubRect(x + GAMESCREEN_X + SUB_CORRECT_HORIZ + GAMESCREEN_FLAT_X,
+                                                  y + GAMESCREEN_Y + SUB_CORRECT_VERT,
+                                                  x2-x+1,
+                                                  y2-y+1);
+            }
+            else if (strCMP(str1,"TextFile") == 0)
+            {
+                FManNode *fil2 = FindInBinTree(str2);
+                if (fil2 == NULL)
                 {
-                    printf("Error in subs %s\n",filename);
-                    exit(-1);
+                    delete tmp;
+                    return NULL;
                 }
-                tmp->subs[tmp->subscount].start = st;
-                tmp->subs[tmp->subscount].stop  = en;
-                tmp->subs[tmp->subscount].sub  = sb;
 
-                tmp->subscount++;
+                tmp->txt = sub_LoadTextFile(fil2);
+                tmp->subs = (struct_one_subtitle *)calloc(tmp->txt->count,sizeof(struct_one_subtitle));
+                subscount = tmp->txt->count;
             }
+            else//it's must be sub info
+            {
+                int st;
+                int en;
+                int sb;
+                if ( sscanf(str2,"(%d,%d)=%d",&st,&en,&sb) == 3)
+                {
+                    if (subscount == 0 || sb > subscount)
+                    {
+                        printf("Error in subs %s\n",filename);
+                        exit(-1);
+                    }
+                    tmp->subs[tmp->subscount].start = st;
+                    tmp->subs[tmp->subscount].stop  = en;
+                    tmp->subs[tmp->subscount].sub  = sb;
 
+                    tmp->subscount++;
+                }
+
+            }
         }
 
     }
