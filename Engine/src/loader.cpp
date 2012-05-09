@@ -459,6 +459,61 @@ void flip_vertical(SDL_Surface *srf)
     SDL_UnlockSurface(srf);
 }
 
+void flip_horizont(SDL_Surface *srf)
+{
+    SDL_LockSurface(srf);
+
+    if (srf->format->BitsPerPixel == 32)
+    {
+        int32_t num = srf->w / 2;
+        int32_t maxw = srf->w - 1;
+        for (int32_t i=0; i<num; i++)
+            for (int32_t j=0; j<srf->h; j++)
+            {
+                uint32_t *a = (uint32_t *) ((uint8_t *)srf->pixels + j*srf->pitch);
+
+                a[i] ^= a[maxw - i];
+                a[maxw - i] ^= a[i];
+                a[i] ^= a[maxw - i];
+
+            }
+
+    }
+    else if (srf->format->BitsPerPixel == 16)
+    {
+        int32_t num = srf->w / 2;
+        int32_t maxw = srf->w - 1;
+        for (int32_t i=0; i<num; i++)
+            for (int32_t j=0; j<srf->h; j++)
+            {
+                uint16_t *a = (uint16_t *) ((uint8_t *)srf->pixels + j*srf->pitch);
+
+                a[i] ^= a[maxw - i];
+                a[maxw - i] ^= a[i];
+                a[i] ^= a[maxw - i];
+
+            }
+    }
+    else if (srf->format->BitsPerPixel == 8)
+    {
+        int32_t num = srf->w / 2;
+        int32_t maxw = srf->w - 1;
+        for (int32_t i=0; i<num; i++)
+            for (int32_t j=0; j<srf->h; j++)
+            {
+                uint8_t *a = (uint8_t *)srf->pixels + j*srf->pitch;
+
+                a[i] ^= a[maxw - i];
+                a[maxw - i] ^= a[i];
+                a[i] ^= a[maxw - i];
+            }
+    }
+
+
+
+    SDL_UnlockSurface(srf);
+}
+
 SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,uint32_t ckey)
 {
     char buf[4];
@@ -528,8 +583,18 @@ SDL_Surface *loader_Load_GF_File(const char *file, int8_t transpose,int8_t key,u
                 uint16_t wi,hi;
                 mfread(&wi,2,f);
                 mfread(&hi,2,f);
-                srf = buf_to_surf(f->buf + 18,wi,hi,transpose);
-                flip_vertical(srf);
+                if (transpose == 1)
+                {
+                    srf = buf_to_surf(f->buf + 18,hi,wi,transpose);
+                    flip_horizont(srf);
+                }
+                else
+                {
+                    srf = buf_to_surf(f->buf + 18,wi,hi,transpose);
+                    flip_vertical(srf);
+                }
+
+
             }
             mfclose(f);
         }
@@ -1039,7 +1104,7 @@ void unxor(void *buf,uint32_t size,uint32_t xork)
     uint32_t cnt=size >> 2;
     uint32_t *px=(uint32_t *)buf;
 
-    for (uint32_t i=0;i<cnt;i++)
+    for (uint32_t i=0; i<cnt; i++)
         px[i]^=xork;
 }
 

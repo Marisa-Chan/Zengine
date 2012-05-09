@@ -68,6 +68,12 @@ void InitGameLoop()
         SetDirectgVarInt(SLOT_PANAROTATE_SPEED,570);
     if (GetgVarInt(SLOT_KBD_ROTATE_SPEED) == 0)
         SetDirectgVarInt(SLOT_KBD_ROTATE_SPEED,60);
+
+    //needed for znemesis
+    SetDirectgVarInt(SLOT_CPU, 1);
+    SetDirectgVarInt(SLOT_PLATFORM, 0);
+    SetDirectgVarInt(SLOT_WIN958, 0);
+
     //\Hack
 
 
