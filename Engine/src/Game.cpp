@@ -69,11 +69,6 @@ void InitGameLoop()
     if (GetgVarInt(SLOT_KBD_ROTATE_SPEED) == 0)
         SetDirectgVarInt(SLOT_KBD_ROTATE_SPEED,60);
 
-    //needed for znemesis
-    SetDirectgVarInt(SLOT_CPU, 1);
-    SetDirectgVarInt(SLOT_PLATFORM, 0);
-    SetDirectgVarInt(SLOT_WIN958, 0);
-
     //\Hack
 
 
@@ -107,7 +102,10 @@ void EasterEggsAndDebug()
 //            int ii2 = atoi(abc);
 //            SetgVarInt(ii,ii2);
 //        }
-
+        if (CheckKeyboardMessage("Q",1))
+        {
+            printf("94 %d\n3263 %d\n",GetgVarInt(94),GetgVarInt(3263));
+        }
 
   #ifdef GAME_ZGI
         if (CheckKeyboardMessage("IMNOTDEAF",9))

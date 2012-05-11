@@ -197,6 +197,11 @@ void InitScriptsEngine()
 
     memset(Flags,0x0,VAR_SLOTS_MAX * sizeof(uint8_t));
 
+    //needed for znemesis
+    SetDirectgVarInt(SLOT_CPU, 1);
+    SetDirectgVarInt(SLOT_PLATFORM, 0);
+    SetDirectgVarInt(SLOT_WIN958, 0);
+
     ScrSys_LoadPreferences();
 }
 
@@ -633,8 +638,13 @@ void FillStateBoxFromList(pzllst *lst)
     {
         puzzlenode *pzlnod=(puzzlenode *)DataMList(lst->_list);
 
+#ifdef GAME_NEMESIS
+        //Nemesis don't use statebox, but this engine does
+        AddPuzzleToStateBox(pzlnod->slot,pzlnod);
+#else
         if (ScrSys_GetFlag(pzlnod->slot) & FLAG_ONCE_PER_I)
             AddPuzzleToStateBox(pzlnod->slot,pzlnod);
+#endif
 
         StartMList(pzlnod->CritList);
         while (!eofMList(pzlnod->CritList))

@@ -178,12 +178,13 @@ int action_add(char *params, int aSlot , pzllst *owner)
     printf("        action:add(%s)\n",params);
 #endif
 
-    char slot[16],number[16];
-    int tmp;
-    sscanf(params,"%s %s",slot, number);
+    char number[16];
+    int slot;
+//    int tmp;
+    sscanf(params,"%d, %s",&slot, number);
 
-    tmp = GetIntVal(slot);
-    SetgVarInt(tmp, GetgVarInt(tmp) + GetIntVal(number));
+    //tmp = GetIntVal(slot);
+    SetgVarInt(slot, GetgVarInt(slot) + GetIntVal(number));
 
     return ACTION_NORMAL;
 }
@@ -936,7 +937,7 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
     {
         struct_action_res *nod = (struct_action_res *)DataMList(all);
 
-        if (nod->slot == slot)
+        if (nod->slot == slot && nod->node_type != NODE_TYPE_ANIMPRE)
         {
             ScrSys_DeleteNode(nod);
 

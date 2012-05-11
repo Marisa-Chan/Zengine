@@ -236,9 +236,9 @@ void DrawAnimImage(anim_surf *anim, int x, int y, int frame)
     int32_t frames = anim->info.frames;
     if (frame >= frames)
     {
-#ifdef TRACE
-        printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
-#endif
+//#ifdef TRACE
+//        printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
+//#endif
         return;
     }
 
@@ -252,9 +252,9 @@ void DrawAnimImageToSurf(anim_surf *anim, int x, int y, int frame,SDL_Surface *s
     int32_t frames = anim->info.frames;
     if (frame >= frames)
     {
-#ifdef TRACE
-        printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
-#endif
+//#ifdef TRACE
+//        printf("Error, required frame(%d) of animation is out of range (%d) \n",frame,anim->info.frames);
+//#endif
         return;
     }
 

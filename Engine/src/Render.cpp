@@ -598,6 +598,7 @@ void Rend_DrawPanorama()
 
 void Rend_PanaMouseInteract()
 {
+    int32_t tt = *view_X;
 
     if (KeyDown(SDLK_LEFT))
     {
@@ -629,7 +630,6 @@ void Rend_PanaMouseInteract()
         }
     }
 
-    int32_t tt = *view_X;
 
     if (tt < pana_Zero)
     {
@@ -1841,14 +1841,14 @@ void Rend_EF_9_Draw(struct_effect *ef)
                 {
                     if (mp[xx] == 0)
                     {
-                        if ((aa[xx] & 0xFF) <= 0x16)
+                        if ((aa[xx] & 0xFF) <= 0x10)
                             mp[xx] = 1;
                         else
                             aa[xx] -= 0x0080808;
                     }
                     else
                     {
-                        if ((aa[xx] & 0xFF) >= 0x7F)
+                        if ((aa[xx] & 0xFF) >= 0xEF)
                             mp[xx] = 0;
                         else
                             aa[xx] += 0x0080808;
@@ -1856,16 +1856,21 @@ void Rend_EF_9_Draw(struct_effect *ef)
 
                 }
 
-                uint32_t tmp1 = aa[0];
-                int8_t   tmp2 = mp[0];
+                int32_t shift_num = GetgVarInt(SLOT_EF9_SPEED);
 
-                for(int32_t xx=0; xx<clouds->w-1; xx++)
+                for(int32_t sn = 0; sn < shift_num; sn++)
                 {
-                    aa[xx] = aa[xx+1];
-                    mp[xx] = mp[xx+1];
+                    uint32_t tmp1 = aa[0];
+                    int8_t   tmp2 = mp[0];
+
+                    for(int32_t xx=0; xx<clouds->w-1; xx++)
+                    {
+                        aa[xx] = aa[xx+1];
+                        mp[xx] = mp[xx+1];
+                    }
+                    aa[clouds->w-1] = tmp1;
+                    mp[clouds->w-1] = tmp2;
                 }
-                aa[clouds->w-1] = tmp1;
-                mp[clouds->w-1] = tmp2;
 
                 aa += clouds->w;
                 mp += clouds->w;
@@ -1921,7 +1926,24 @@ void Rend_EF_9_Draw(struct_effect *ef)
                     if (mskpx[x] != 0)
                     {
                         uint32_t m_r, m_g, m_b;
-                        COLOR_RGBA32(mskpx[x],m_r,m_g,m_b);
+                        //COLOR_RGBA32(mskpx[x],m_r,m_g,m_b);
+
+                        m_r = GetgVarInt(SLOT_EF9_R);
+                        m_g = GetgVarInt(SLOT_EF9_G);
+                        m_b = GetgVarInt(SLOT_EF9_B);
+
+                        if (m_r >= 32)
+                            m_r = 31;
+
+                        if (m_g >= 32)
+                            m_g = 31;
+
+                        if (m_b >= 32)
+                            m_b = 31;
+
+                        m_r = FiveBitToEightBitLookupTable[m_r];
+                        m_g = FiveBitToEightBitLookupTable[m_g];
+                        m_b = FiveBitToEightBitLookupTable[m_b];
 
                         uint32_t c_r, c_g, c_b;
                         COLOR_RGBA32(cldpx[x],c_r,c_g,c_b);

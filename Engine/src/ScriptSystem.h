@@ -52,6 +52,10 @@
                                     //To change - type DBGONOFF
 #define SLOT_JAPANESEFONTS     75
 #define SLOT_BRIGHTNESS        77
+#define SLOT_EF9_B             91
+#define SLOT_EF9_G             92
+#define SLOT_EF9_R             93
+#define SLOT_EF9_SPEED         94
 #define SLOT_INV_STORAGE_S1   100
 #define SLOT_INV_STORAGE_0    101
 #define SLOT_INV_STORAGE_1    102
