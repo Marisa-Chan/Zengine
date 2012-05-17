@@ -78,4 +78,7 @@ void DrawScalerToScreen(scaler *scal,int16_t x, int16_t y);
 int32_t GetFps();
 void FpsCounter();
 
+void setGamma(float val);
+float getGamma();
+
 #endif // GRAPH_H_INCLUDED

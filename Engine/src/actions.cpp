@@ -34,7 +34,7 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
    // if (!path)
     //    return ACTION_NORMAL;
 
-    if (tmp2 != -1)
+    if (tmp2 > 0)
     {
         int r,g,b;
         b=FiveBitToEightBitLookupTable_SDL[((tmp2 >> 10 ) & 0x1F)];
@@ -117,8 +117,6 @@ int action_timer(char *params, int aSlot, pzllst *owner)
 int action_change_location(char *params, int aSlot , pzllst *owner)
 {
 
-    //need reverse from 0x00409891
-
 #ifdef TRACE
     printf("        action:change_location(%s)\n",params);
 #endif
@@ -127,7 +125,7 @@ int action_change_location(char *params, int aSlot , pzllst *owner)
     char tmp2[4];
     char tmp3[4];
     char tmp4[16];
-    sscanf(params,"%c, %c, %c%c, %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
+    sscanf(params,"%c %c %c%c %s",tmp,tmp2,tmp3,tmp3+1,tmp4);
 
     SetNeedLocate(tolower(tmp[0]),tolower(tmp2[0]),tolower(tmp3[0]), tolower(tmp3[1]), GetIntVal(tmp4));
 
@@ -181,7 +179,7 @@ int action_add(char *params, int aSlot , pzllst *owner)
     char number[16];
     int slot;
 //    int tmp;
-    sscanf(params,"%d, %s",&slot, number);
+    sscanf(params,"%d %s",&slot, number);
 
     //tmp = GetIntVal(slot);
     SetgVarInt(slot, GetgVarInt(slot) + GetIntVal(number));
@@ -1208,7 +1206,7 @@ int action_attenuate(char *params, int aSlot , pzllst *owner)
     int slot;
     int att;
 
-    sscanf(params,"%d, %d",&slot,&att);
+    sscanf(params,"%d %d",&slot,&att);
 
     att = floor(32767.0 / ((float)abs(att)) * 255.0);
 
@@ -1327,7 +1325,7 @@ int action_rotate_to(char *params, int aSlot , pzllst *owner)
     int32_t topos;
     int32_t time;
 
-    sscanf(params,"%d, %d",&topos,&time);
+    sscanf(params,"%d %d",&topos,&time);
 
     int32_t maxX = Rend_GetPanaWidth();
     int32_t curX = GetgVarInt(SLOT_VIEW_POS);
@@ -1484,7 +1482,7 @@ int action_region(char *params, int aSlot , pzllst *owner)
             waveln,
             speed;
 
-            sscanf(addition,"%d,%d,%d,%f,%f,%f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
+            sscanf(addition,"%d %d %d %f %f %f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
 
             nod->nodes.node_region = Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
 
@@ -1530,7 +1528,7 @@ int action_region(char *params, int aSlot , pzllst *owner)
             int32_t d,d2;
             char buff[MINIBUFSZ];
 
-            sscanf(addition,"%d,%d,%s",&d,&d2,buff);
+            sscanf(addition,"%d %d %s",&d,&d2,buff);
 
             nod->nodes.node_region = Rend_EF_9_Setup(art,buff,delay,x,y,w,h);
 

@@ -153,6 +153,8 @@ int main(int argc, char **argv)
         //SDL_Flip;
     }
 
+    SDL_SetGamma(1.0,1.0,1.0);
+
     SDL_Quit();
 
 

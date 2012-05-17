@@ -791,7 +791,7 @@ SDL_Surface *buf_to_surf(void *buf, int32_t w, int32_t h, int8_t transpose)
 
     SDL_LockSurface(srf);
 
-    bool need_correction = (srf->w != (srf->pitch / srf->format->BytesPerPixel));
+    bool need_correction = ((srf->w * srf->format->BytesPerPixel) != srf->pitch);
     int32_t vpitch = srf->pitch / 2;
 
     if (transpose == 1)
@@ -836,7 +836,7 @@ SDL_Surface *buf_to_surf(void *buf, int32_t w, int32_t h, int8_t transpose)
                 for (int32_t i=0; i< w; i++)
                 {
                     int32_t real_idx = ((idx / w) * vpitch) + (idx % w);
-                    tmp2[real_idx] = tmp[j*h+i];
+                    tmp2[real_idx] = tmp[j*w+i];
                     idx++;
                 }
         }

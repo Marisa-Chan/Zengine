@@ -316,13 +316,7 @@ void control_slot_draw(ctrlnode *nod)
 {
     slotnode *slut = nod->node.slot;
 
-    //rectangleRGBA(screen,slut->hotspot.x,slut->hotspot.y+GAME_Y,slut->hotspot.w,slut->hotspot.h+GAME_Y,255,0,0,255);
-
-
     int tmp1 = GetgVarInt(nod->slot);
-
-    //printf("%d %d\n",nod->slot,tmp1);
-    //bool in = Ctrl_Eligeblity(tmp1,slut);
 
     if (tmp1 != 0)
     {
@@ -350,7 +344,19 @@ void control_slot_draw(ctrlnode *nod)
         }
 
         if (slut->srf)
-            Rend_DrawImageUpGamescr(slut->srf,    slut->rectangle.x + GAMESCREEN_FLAT_X,  slut->rectangle.y);
+        {
+            int32_t drawx = slut->rectangle.x;
+            int32_t drawy = slut->rectangle.y;
+
+            if ((slut->rectangle.w - slut->rectangle.x) > slut->srf->w)
+                drawx = slut->rectangle.x + ((slut->rectangle.w - slut->rectangle.x) - slut->srf->w) / 2 ;
+
+            if ((slut->rectangle.h - slut->rectangle.y) > slut->srf->h)
+                drawy = slut->rectangle.y + ((slut->rectangle.h - slut->rectangle.y) - slut->srf->h) / 2 ;
+
+            Rend_DrawImageUpGamescr(slut->srf,    drawx + GAMESCREEN_FLAT_X,  drawy);
+        }
+
     }
     else
     {
@@ -1629,7 +1635,7 @@ int Parse_Control_HotMov(MList *controlst, mfile *fl, uint32_t slot)
     AddToMList(controlst,ctnode);
 
     ctnode->slot      = slot;
-    //SetDirectgVarInt(slot,0);
+    SetDirectgVarInt(slot,0);
 
     char filename[MINIBUFSZ];
 
@@ -2344,7 +2350,7 @@ int Parse_Control_PushTgl(MList *controlst, mfile *fl, uint32_t slot)
         {
             psh->flat=true;
             str = GetParams(str);
-            sscanf(str,"%d, %d, %d, %d",&psh->x,&psh->y,&psh->w,&psh->h);
+            sscanf(str,"%d %d %d %d",&psh->x,&psh->y,&psh->w,&psh->h);
 #ifdef FULLTRACE
             printf("    Flat %d %d %d %d %d\n",psh->x,psh->y,psh->w,psh->h,psh->flat);
 #endif
@@ -2353,7 +2359,7 @@ int Parse_Control_PushTgl(MList *controlst, mfile *fl, uint32_t slot)
         {
             psh->flat=true;
             str = GetParams(str);
-            sscanf(str,"%d, %d, %d, %d",&psh->x,&psh->y,&psh->w,&psh->h);
+            sscanf(str,"%d %d %d %d",&psh->x,&psh->y,&psh->w,&psh->h);
 #ifdef FULLTRACE
             printf("    Warp %d %d %d %d %d\n",psh->x,psh->y,psh->w,psh->h,psh->flat);
 #endif

@@ -514,6 +514,8 @@ char * GetParams(char *str)
         {
             return str+i+1;
         }
+        else if (str[i] == ',')
+            str[i] = ' ';
     }
     return (char *)" ";
 }

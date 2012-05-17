@@ -178,7 +178,14 @@ void Rend_DrawImageToGamescr(anim_surf *scr,int x, int y, int frame)
 void Rend_DrawImageUpGamescr(SDL_Surface *scr,int x, int y)
 {
     if (tempbuf)
-        DrawImageToSurf(scr,x,y,tempbuf);
+    {
+        if (Renderer == RENDER_FLAT)
+            DrawImageToSurf(scr,x,y,tempbuf);
+        else if (Renderer == RENDER_PANA)
+            DrawImageToSurf(scr,x,y,tempbuf);
+        else if (Renderer == RENDER_TILT)
+            DrawImageToSurf(scr,x,y+GAMESCREEN_H_2-*view_X,tempbuf);
+    }
 }
 
 void Rend_DrawImageUpGamescr(anim_surf *scr,int x, int y, int frame)
@@ -365,6 +372,10 @@ void Rend_SetRenderer(int meth)
 {
     Renderer = meth;
     pana_ReversePana = false;
+    Rend_tilt_SetLinscale(0.64999998);
+    Rend_tilt_SetAngle(60.0);
+    Rend_pana_SetLinscale(1.0);
+    Rend_pana_SetAngle(60.0);
 }
 
 void Rend_SetReversePana(bool pana)
@@ -852,6 +863,7 @@ void Rend_ScreenFlip()
 float tilt_angle=60.0;
 float tilt_linscale=1.0;
 bool  tilt_Reverse = false;
+int32_t tilt_gap = GAMESCREEN_H_2;
 
 void Rend_tilt_SetAngle(float angle)
 {
@@ -860,7 +872,10 @@ void Rend_tilt_SetAngle(float angle)
 
 void Rend_tilt_SetLinscale(float linscale)
 {
-    tilt_linscale = linscale;
+    tilt_linscale = fabs(linscale);
+    if (tilt_linscale > 1.0 || tilt_linscale == 0)
+        tilt_linscale = 1.0;
+    tilt_gap = (float(GAMESCREEN_H_2) * tilt_linscale);
 }
 
 void Rend_tilt_SetTable()
@@ -1035,10 +1050,10 @@ void Rend_tilt_MouseInteract()
         }
     }
 
-    if (*view_X >= (pana_PanaWidth - GAMESCREEN_H_2))
-        *view_X = pana_PanaWidth - GAMESCREEN_H_2;
-    if (*view_X <= GAMESCREEN_H_2)
-        *view_X = GAMESCREEN_H_2;
+    if (*view_X >= (pana_PanaWidth - tilt_gap))
+        *view_X = pana_PanaWidth - tilt_gap;
+    if (*view_X <= tilt_gap)
+        *view_X = tilt_gap;
 }
 
 float Rend_GetRendererAngle()

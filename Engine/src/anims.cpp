@@ -235,6 +235,7 @@ int anim_ProcessAnimPrePlayNode(struct_action_res *nod)
     {
         if (!pre->point->playing)
         {
+            SetgVarInt(nod->slot,2);
             anim_DeleteAnimPrePlayNode(nod);
             return NODE_RET_DELETE;
         }
@@ -397,7 +398,7 @@ int anim_DeleteAnimPrePlayNode(struct_action_res *nod)
 
     if (nod->slot > 0)
     {
-        SetgVarInt(nod->slot,2);
+        //SetgVarInt(nod->slot,2);
         setGNode(nod->slot,NULL);
     }
 

@@ -86,6 +86,20 @@ void EasterEggsAndDebug()
     if (KeyAnyHit())
     {
 
+        if ((KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL) ) && (KeyHit(SDLK_EQUALS) || KeyHit(SDLK_PLUS)))
+        {
+            setGamma(getGamma() + 0.1);
+            sprintf(message_buffer,"Gamma: %1.1f",getGamma());
+            game_timed_debug_message(1500,message_buffer);
+        }
+
+        if ((KeyDown(SDLK_LCTRL) || KeyDown(SDLK_RCTRL) )&& (KeyHit(SDLK_UNDERSCORE) || KeyHit(SDLK_MINUS)))
+        {
+            setGamma(getGamma() - 0.1);
+            sprintf(message_buffer,"Gamma: %1.1f",getGamma());
+            game_timed_debug_message(1500,message_buffer);
+        }
+
 
 //        if (CheckKeyboardMessage("M?????T?",8))
 //        {
@@ -102,10 +116,6 @@ void EasterEggsAndDebug()
 //            int ii2 = atoi(abc);
 //            SetgVarInt(ii,ii2);
 //        }
-        if (CheckKeyboardMessage("Q",1))
-        {
-            printf("94 %d\n3263 %d\n",GetgVarInt(94),GetgVarInt(3263));
-        }
 
   #ifdef GAME_ZGI
         if (CheckKeyboardMessage("IMNOTDEAF",9))

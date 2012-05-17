@@ -21,6 +21,8 @@ static uint16_t width ,\
 height,\
 bpp;
 
+static float mgamma=1.0;
+
 #define SFTYPE  SDL_SWSURFACE
 //#define SFTYPE  SDL_HWSURFACE
 
@@ -133,6 +135,19 @@ SDL_Surface *InitGraphicAndSound(uint16_t wi, uint16_t he, uint16_t b,bool ful, 
     return screen;
 }
 
+void setGamma(float val)
+{
+    if (val > 0.4 && val < 2.1)
+    {
+        mgamma = val;
+        SDL_SetGamma(mgamma,mgamma,mgamma);
+    }
+}
+
+float getGamma()
+{
+    return mgamma;
+}
 
 void ConvertImage(SDL_Surface **tmp)
 {
