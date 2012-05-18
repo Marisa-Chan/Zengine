@@ -916,8 +916,8 @@ int Puzzle_try_exec(puzzlenode *pzlnod) //, pzllst *owner)
 
     if (GetgVarInt(pzlnod->slot) != 1)
     {
-        if (pzlnod->owner->exec_times == 0)
-            if (! ScrSys_GetFlag(pzlnod->slot) & FLAG_DO_ME_NOW)
+        if (pzlnod->owner->exec_times == 0 )
+            if (!(ScrSys_GetFlag(pzlnod->slot) & FLAG_DO_ME_NOW))
                 return ACTION_NORMAL;
         if (examine_criterias(pzlnod))
         {

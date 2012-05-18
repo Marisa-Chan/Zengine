@@ -9,9 +9,6 @@ int action_set_screen(char *params, int aSlot , pzllst *owner)
     if (Rend_LoadGamescr(params) == 0)
         printf("Can't find %s, screen load failed\n",params);
 
-    ScrSys_HardFlushResourcesByType(NODE_TYPE_ANIMPLAY);
-    ScrSys_HardFlushResourcesByType(NODE_TYPE_ANIMPRPL);
-
     return ACTION_NORMAL;
 }
 

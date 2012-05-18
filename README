@@ -1,17 +1,62 @@
-Status:   ZGI:RC
-          ZNEMESIS: RC
+Progress:     [####################]
+             0%         100%       100%
 
-Progress:     [###################-]
-             0%         95%        100%
+ZGI Code:     [####################]
+             0%         100%       100%
 
-ZGI Code:     [###################-]  //TESTING!
-             0%         98%        100%
-
-Nemesis Code: [##################--]
-             0%         90%        100%
+Nemesis Code: [####################]
+             0%         100%       100%
 
 
+Wooooooo, I completely passed both games on my Zengine.
 
+[How to run on linux:]
+For running games you need original games.
+
+1. Copy files from disks likes as on windows.
+2. Create folder "video"
+3. Run script for coverting videos :
+   cd Bin/autotool/linux/
+   ./video_converter.pl db /path/to/game/files/  path/to/game/files/video
+   
+   db - files_zgi or files_znem
+   
+4. Create folder "FONTS" and copy needed fonts(at least one file)
+5. Create file Zork.dir and write to this file releative paths to folder with resources and to *.zfs file
+   Each entry must by splited by new line
+   
+   Example:
+   Addon
+   Addon/subpatch.zfs
+   ZNEMSCR/ASCR.ZFS
+   ZNEMSCR/GSCR.ZFS
+   ZNEMSCR/CURSOR.ZFS
+   ZNEMSCR/CSCR.ZFS
+   ZNEMSCR/TSCR.ZFS
+   ZNEMSCR/ESCR.ZFS
+   ZNEMSCR/VSCR.ZFS
+   ZNEMSCR/MSCR.ZFS
+   ZASSETS
+   ZASSETS/ENDGAME
+   ZASSETS/CONSERV
+   ZASSETS/GLOBAL
+   ZASSETS/GLOBAL/VENUS
+   ZASSETS/GLOBAL2
+   ZASSETS/MONAST
+   ZASSETS/GLOBAL3
+   ZASSETS/CASTLE
+   ZASSETS/TEMPLE
+   ZASSETS/ASYLUM
+   VIDEO
+   
+6. -------
+7. Profit!
+
+
+
+
+
+-----------------bottom--------------------
 
 VIDEO: 
 29.10.2010: http://www.youtube.com/watch?v=a88-Jgt5Grw
@@ -38,12 +83,11 @@ action_copy_file	    :reverse it (not needed ?)
 action_clear_system_message :reverse it
 
 [Other]
-* Create database with convert parameters
 * Create utility and scripts for scale for dingoo
 * Clear code
 * Other little things...
 * Add more code for pana and tilt renderers
-* Add fast code for distort effect based on scale-parameter. What code is used we may choose in config.h
+* Add fast code for distort effect based on scale-parameter.
 
 --------------TODO if needed (not used)-----------------
 
@@ -56,4 +100,4 @@ action_zoom		:reverse it and write code
 
 ------------------License--------------------
 
-Mit license for source code (Bin dir not included), see file "LICENSE" for read text of license
+Mit license for source code (Bin dir not included), read file "LICENSE"
