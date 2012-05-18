@@ -9,6 +9,9 @@ int action_set_screen(char *params, int aSlot , pzllst *owner)
     if (Rend_LoadGamescr(params) == 0)
         printf("Can't find %s, screen load failed\n",params);
 
+    ScrSys_HardFlushResourcesByType(NODE_TYPE_ANIMPLAY);
+    ScrSys_HardFlushResourcesByType(NODE_TYPE_ANIMPRPL);
+
     return ACTION_NORMAL;
 }
 
@@ -697,6 +700,7 @@ int action_animpreload(char *params, int aSlot , pzllst *owner)
     if (getGNode(aSlot) != NULL)
         return ACTION_NORMAL;
 
+
     char name[64];
     char u1[16];
     char u2[16];
@@ -935,9 +939,32 @@ int stopkiller(char *params, int aSlot , pzllst *owner, bool iskillfunc)
     {
         struct_action_res *nod = (struct_action_res *)DataMList(all);
 
-        if (nod->slot == slot && nod->node_type != NODE_TYPE_ANIMPRE)
+        if (nod->slot == slot)
         {
-            ScrSys_DeleteNode(nod);
+            if (nod->node_type == NODE_TYPE_ANIMPRE)
+            {
+                if (nod->nodes.node_animpre->playing)
+                {
+                    if (iskillfunc)
+                        ScrSys_DeleteNode(nod);
+                    else
+                    {
+                        nod->nodes.node_animpre->playing = false;
+                        break;
+                    }
+
+                }
+                else
+                {
+                    if (iskillfunc)
+                        ScrSys_DeleteNode(nod);
+                    else
+                        break;
+                }
+
+            }
+            else
+                ScrSys_DeleteNode(nod);
 
             DeleteCurrent(all);
             break;
@@ -977,9 +1004,9 @@ int action_stop(char *params, int aSlot , pzllst *owner)
 #endif
 
 #ifdef TRACE
-    int result = stopkiller(params,aSlot,owner, true);
+    int result = stopkiller(params,aSlot,owner, false);
 #else
-    stopkiller(params,aSlot,owner, true);
+    stopkiller(params,aSlot,owner, false);
 #endif
 
 #ifdef TRACE
@@ -1040,6 +1067,7 @@ int action_crossfade(char *params, int aSlot , pzllst *owner)
 #ifdef TRACE
     printf("        action:crossfade(%s)\n",params);
 #endif
+
     //crossfade(%d %d %d %d %d %d %ld)
     // item1 item2 fromvol1 fromvol2 tovol1 tovol2 time_in_millisecs
     uint32_t item,item2;
@@ -1435,6 +1463,63 @@ int action_preferences(char *params, int aSlot , pzllst *owner)
 }
 
 
+const char * get_addition(const char* str)
+{
+    const char *s = str;
+    int32_t len = strlen(str);
+
+    int32_t pos = 0;
+    int32_t num = 0;
+    bool whitespace = true;
+
+    while (pos<len)
+    {
+        if (whitespace)
+        {
+            if (str[pos] != ' ')
+            {
+                whitespace = false;
+                num++;
+            }
+
+        }
+        else
+        {
+            if (str[pos] == ' ')
+            {
+                whitespace = true;
+                if (num >= 9)
+                {
+                    s = str + pos;
+                    break;
+                }
+            }
+        }
+        pos++;
+    }
+    return s;
+}
+
+void useart_recovery(char* str)
+{
+    int32_t len = strlen(str);
+
+    int32_t pos = 0;
+
+    bool bracket = false;
+
+    while (pos<len)
+    {
+        if (str[pos] == '[')
+            bracket = true;
+        else if (str[pos] == ']')
+            bracket = false;
+        else if (str[pos] == ' ' && bracket)
+                str[pos] = ',';
+        pos++;
+    }
+}
+
 //Graphic effects
 int action_region(char *params, int aSlot , pzllst *owner)
 {
@@ -1457,8 +1542,11 @@ int action_region(char *params, int aSlot , pzllst *owner)
     int32_t unk2;
     char    addition[128];
 
+    useart_recovery(params);
+
     if (sscanf(params,"%s %d %d %d %d %d %d %d %d %s",art,&x,&y,&w,&h,&delay,&type,&unk1,&unk2,addition)== 10 )
     {
+        strcpy(addition,get_addition(params));
         w-=(x-1);
         h-=(y-1);
         switch(type)
@@ -1481,8 +1569,8 @@ int action_region(char *params, int aSlot , pzllst *owner)
             float amplitude,
             waveln,
             speed;
-
             sscanf(addition,"%d %d %d %f %f %f",&s_x,&s_y,&frames,&amplitude,&waveln,&speed);
+
 
             nod->nodes.node_region = Rend_EF_Wave_Setup(delay,frames,s_x,s_y,amplitude,waveln,speed);
 

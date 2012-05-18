@@ -219,7 +219,6 @@ int8_t Rend_LoadGamescr(const char *file)
         scrbuf=CreateSurface(GAMESCREEN_W,GAMESCREEN_H);
     }
 
-
     if (Renderer != RENDER_TILT)
         pana_PanaWidth = scrbuf->w;
     else
@@ -372,9 +371,9 @@ void Rend_SetRenderer(int meth)
 {
     Renderer = meth;
     pana_ReversePana = false;
-    Rend_tilt_SetLinscale(0.64999998);
+    Rend_tilt_SetLinscale(0.65);
     Rend_tilt_SetAngle(60.0);
-    Rend_pana_SetLinscale(1.0);
+    Rend_pana_SetLinscale(0.55);
     Rend_pana_SetAngle(60.0);
 }
 
@@ -668,6 +667,8 @@ void Rend_PanaMouseInteract()
 
 void Rend_MouseInteractOfRender()
 {
+    if (GetgVarInt(SLOT_PANAROTATE_SPEED) == 0)
+        SetgVarInt(SLOT_PANAROTATE_SPEED, 700);
     if (Renderer == RENDER_PANA)
         Rend_PanaMouseInteract();
     else if (Renderer == RENDER_TILT)

@@ -22,7 +22,7 @@ struct_textfile *sub_LoadTextFile(FManNode *file)
     mfclose(f);
 
 
-    int linescount=0;
+    int linescount=1;
 
     for (int i=0; i<sz; i++)
         if (tmp->buffer[i] == 0x0A)

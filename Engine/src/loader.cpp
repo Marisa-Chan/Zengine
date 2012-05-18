@@ -230,10 +230,12 @@ Mix_Chunk *Load_ZNEM(FManNode *file,  char type)
     buf[2] = file->File[t_len-1];
     buf[3] = 0;
 
-    if (strCMP(buf,"ifp") == 0)
+    if (strCMP(buf,"ifp") == 0 || type == '6')
         pkd = 0;
     else
         pkd = 1;
+
+
 
     freq = znem_freq[low % 16];
     bits = znem_bits[low % 4];

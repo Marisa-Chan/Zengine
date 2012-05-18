@@ -191,6 +191,7 @@ int ScrSys_DeleteNode(struct_action_res *nod);
 
 void ScrSys_FlushResourcesByOwner(pzllst *owner);
 void ScrSys_FlushResourcesByType(int type);
+void ScrSys_HardFlushResourcesByType(int type);
 
 void ShakeStateBox(uint32_t indx);
 

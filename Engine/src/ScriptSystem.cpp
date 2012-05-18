@@ -986,6 +986,24 @@ void ScrSys_FlushResourcesByType(int type)
 
 }
 
+void ScrSys_HardFlushResourcesByType(int type)
+{
+    MList *all = GetAction_res_List();
+
+    StartMList(all);
+    while(!eofMList(all))
+    {
+        struct_action_res *nod = (struct_action_res *)DataMList(all);
+
+        if (nod->node_type == type)
+            if (ScrSys_DeleteNode(nod) == NODE_RET_DELETE)
+                DeleteCurrent(all);
+
+        NextMList(all);
+    }
+
+}
+
 struct_action_res *ScrSys_CreateActRes(int type)
 {
     struct_action_res *tmp = new(struct_action_res);
