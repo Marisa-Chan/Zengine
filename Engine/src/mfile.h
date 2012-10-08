@@ -10,6 +10,7 @@ struct mfile
 
 mfile *mfopen(const char *file);
 mfile *mfopen(FManNode *nod);
+int32_t mfsize(FManNode *nod);
 void mfclose(mfile *fil);
 bool mfeof(mfile *fil);
 bool mfread(void *buf, int32_t bytes, mfile *file);

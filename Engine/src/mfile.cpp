@@ -68,6 +68,14 @@ mfile *mfopen(FManNode *nod)
     return tmp;
 }
 
+int32_t mfsize(FManNode *nod)
+{
+    if (nod->zfs)
+        return nod->zfs->size;
+
+    return FileSize(nod->Path);
+}
+
 mfile *mfopen_mem(void *buf, int32_t size)
 {
 

@@ -298,6 +298,9 @@ Mix_Chunk *loader_LoadFile(const char *file)
     if (!fil)
         return NULL;
 
+    if (mfsize(mfil) < 10)
+        return NULL;
+
     int32_t t_len = strlen(fil);
 
     buf[0] = fil[t_len-3];
