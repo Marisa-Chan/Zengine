@@ -82,11 +82,11 @@ bool CheckKeyboardMessage(const char *msg, int len)
     if (len > KEYBUFLEN)
         return false;
     for (int i=0; i<len; i++)
-        {
-            int ki=GetWinKey((SDLKey)keybbuf[KEYBUFLEN-i-1]);
-            if (msg[len-i-1] != ki   &&   msg[len-i-1] != '?')
-                return false;
-        }
+    {
+        int ki=GetWinKey((SDLKey)keybbuf[KEYBUFLEN-i-1]);
+        if (msg[len-i-1] != ki   &&   msg[len-i-1] != '?')
+            return false;
+    }
 
 
     return true;
@@ -370,10 +370,10 @@ void ListDir(char *dir)
     int len=strlen(buf);
 
     if (buf[len-1] == '/' || buf[len-1] == '\\')
-        {
-            buf[len-1]=0;
-            len--;
-        }
+    {
+        buf[len-1]=0;
+        len--;
+    }
 
 
     DIR *dr=opendir(buf);
@@ -394,19 +394,19 @@ void ListDir(char *dir)
         if (de->d_type==DT_REG)
             if (strcmp(de->d_name,"..")!=0 && strcmp(de->d_name,".")!=0 && de->d_type == DT_REG)
 #endif
-            {
-                sprintf(buf2,"%s/%s",buf,de->d_name);
+        {
+            sprintf(buf2,"%s/%s",buf,de->d_name);
 
-                FManNode *nod = new(FManNode);
-                AddToMList(FMan,nod);
+            FManNode *nod = new(FManNode);
+            AddToMList(FMan,nod);
 
-                nod->Path=(char *) malloc(strlen(buf2)+1);
-                strcpy(nod->Path,buf2);
-                nod->File=nod->Path+len+1;
-                nod->zfs = NULL;
+            nod->Path=(char *) malloc(strlen(buf2)+1);
+            strcpy(nod->Path,buf2);
+            nod->File=nod->Path+len+1;
+            nod->zfs = NULL;
 
-                AddToBinTree(nod);
-            }
+            AddToBinTree(nod);
+        }
         de=readdir(dr);
     }
     closedir(dr);
@@ -557,7 +557,7 @@ void AddToBinTree(FManNode *nod)
     char buffer[255];
     int32_t t_len = strlen(nod->File);
 
-    for (int i=0; i<t_len;i++)
+    for (int i=0; i<t_len; i++)
         buffer[i]=tolower(nod->File[i]);
 
     buffer[t_len] = 0x0;
@@ -567,27 +567,31 @@ void AddToBinTree(FManNode *nod)
 
     BinTreeNd **treenod = &root;
     t_len = strlen(buffer);
-    for (int j=0; j<t_len;j++)
+    for (int j=0; j<t_len; j++)
         for (int i=0; i<8; i++)
-            {
-                int bit = ((buffer[j]) >> i) & 1;
-                if (bit)
-                    treenod = &((*treenod)->one);
-                else
-                    treenod = &((*treenod)->zero);
+        {
+            int bit = ((buffer[j]) >> i) & 1;
+            if (bit)
+                treenod = &((*treenod)->one);
+            else
+                treenod = &((*treenod)->zero);
 
-                if (*treenod == NULL)
-                    *treenod = CreateBinTreeNd();
-            }
+            if (*treenod == NULL)
+                *treenod = CreateBinTreeNd();
+        }
     if ((*treenod)->nod == NULL) //we don't need to reSet nodes (ADDON and patches don't work without it)
         (*treenod)->nod = nod;
+    else if (mfsize((*treenod)->nod) < 10)
+        if (mfsize(nod) >= 10)
+            (*treenod)->nod = nod;
+
 }
 
 FManNode *FindInBinTree(const char *chr)
 {
     char buffer[255];
     int32_t t_len = strlen(chr);
-    for (int i=0; i<t_len;i++)
+    for (int i=0; i<t_len; i++)
         buffer[i]=tolower(chr[i]);
 
     buffer[t_len] = 0x0;
@@ -595,18 +599,18 @@ FManNode *FindInBinTree(const char *chr)
     BinTreeNd *treenod = root;
 
     t_len = strlen(buffer);
-    for (int j=0; j<t_len;j++)
+    for (int j=0; j<t_len; j++)
         for (int i=0; i<8; i++)
-            {
-                int bit = ((buffer[j]) >> i) & 1;
-                if (bit)
-                    treenod = treenod->one;
-                else
-                    treenod = treenod->zero;
+        {
+            int bit = ((buffer[j]) >> i) & 1;
+            if (bit)
+                treenod = treenod->one;
+            else
+                treenod = treenod->zero;
 
-                if (treenod == NULL)
-                    return NULL;
-            }
+            if (treenod == NULL)
+                return NULL;
+        }
 
     return treenod->nod;
 }
@@ -638,10 +642,10 @@ const char *GetFilePath(const char *chr)
         FManRepNode *repnod=(FManRepNode *)DataMList(FManRepl);
         char *tmp=strcasestr(buf,repnod->ext);
         if (tmp!=NULL)
-            {
-                strcpy(tmp,repnod->ext2);
-                break;
-            }
+        {
+            strcpy(tmp,repnod->ext2);
+            break;
+        }
         NextMList(FManRepl);
     }
 
