@@ -1,3 +1,6 @@
+ADDED AVI SUPPORT!!!
+NOW IT'S EASY TO PLAY
+
 Progress:     [####################]
              0%         100%       100%
 
@@ -10,19 +13,14 @@ Nemesis Code: [####################]
 
 Wooooooo, I completely passed both games on my Zengine.
 
-[How to run on linux:]
+[How to run it:]
 For running games you need original games.
 
-1. Copy files from disks likes as on windows.
-2. Create folder "video"
-3. Run script for coverting videos :
-   cd Bin/autotool/linux/
-   ./video_converter.pl db /path/to/game/files/  path/to/game/files/video
-   
-   db - files_zgi or files_znem
-   
-4. Create folder "FONTS" and copy needed fonts(at least one file)
-5. Create file Zork.dir and write to this file releative paths to folder with resources and to *.zfs file
+1. Copy files from disks likes as on windows (http://home.earthlink.net/~infernofilecabinet4/XpSetupsU_Z/Guest/zorkgiCD.htm).
+
+2. Create folder "FONTS" and copy needed fonts(at least one file)
+
+3. Create file Zork.dir (or try one from "conf" dir) and write to this file releative paths to folder with resources and to *.zfs file
    Each entry must by splited by new line
    
    Example:
@@ -49,10 +47,6 @@ For running games you need original games.
    ZASSETS/ASYLUM
    VIDEO
    
-6. -------
-7. Profit!
-
-
 P.S. You may change gamma level by "CTRL"+"+" and "CTRL"+"-"
 
 

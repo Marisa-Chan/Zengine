@@ -3,10 +3,9 @@ CXX = g++
 MINGW = /usr/i486-mingw32
 CC_WIN = i486-mingw32-gcc
 CXX_WIN = i486-mingw32-g++
-LIBS = -Bstatic -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lsmpeg
-LIBS_WIN = -L$(MINGW)/lib/ -lmingw32  -lSDL  -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lsmpeg -lSDL.dll -mwindows
+LIBS = -Bstatic -lSDL -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf
+LIBS_WIN = -L$(MINGW)/lib/ -lmingw32  -lSDL  -lSDL_image -lSDL_gfx -lSDLmain -lSDL_mixer -lSDL_ttf -lSDL.dll -mwindows
 TARGET = Zengine
-TARGET_WIN = $(TARGET).exe
 OBJS =  \
 	actions.cpp\
 	Control.cpp\
@@ -30,7 +29,9 @@ OBJS =  \
 	loader.cpp\
 	mfile.cpp\
 	inventory.cpp\
-	intro.cpp
+	intro.cpp\
+	avi_duck/simple_avi.cpp\
+	avi_duck/truemotion1.cpp
 	
 WINOBJ = \
 	win_funct.cpp
@@ -43,11 +44,11 @@ linux_znem: $(OBJS)
 	$(CXX) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
 win32_zgi: $(OBJS) $(WINOBJ)
-	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
-	$(CXX_WIN) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET)_wide.exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 win32_znem: $(OBJS) $(WINOBJ)
-	$(CXX_WIN) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET_WIN) $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	$(CXX_WIN) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 clean:
 	rm -f $(TARGET) $(TARGET_DINGOO) *.o
