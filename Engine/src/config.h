@@ -1,7 +1,11 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#define ZENGINE_VER  "0.9"
+#define ZENGINE_VER  "1.0"
+
+
+//if you plan to build engine with smpeg support
+//#define SMPEG_SUPPORT
 
 #ifdef GAME_ZGI
 //TITLE

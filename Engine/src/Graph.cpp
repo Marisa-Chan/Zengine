@@ -382,6 +382,8 @@ void DeleteScaler(scaler *scal)
 
 void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst)
 {
+    if (!scal)
+        return;
     if ((scal->surf->format->BytesPerPixel != dst->format->BytesPerPixel) ||
             x >= dst->w || y >= dst->h || x<= -scal->w || y<= -scal->h)
         return;

@@ -11,9 +11,8 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/files/Games/Zork" />
+				<Option parameters="/media/202/zgi_eng/game" />
 				<Compiler>
-					<Add option="-march=core2" />
 					<Add option="-g" />
 					<Add option="-DTRACE" />
 					<Add option="-DGAME_ZGI" />
@@ -24,7 +23,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/166/games/ZGI/pacs" />
+				<Option parameters="/media/202/zgi_eng/game" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-DGAME_ZGI" />
@@ -33,12 +32,24 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="Debug_nemesis">
-				<Option output="bin/Debug_nemesis/Zengine" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug_nemesis/" />
+			<Target title="Nemesis Debug">
+				<Option output="bin/Debug/Zengine" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/media/166/games/NEMESIS/MY" />
+				<Option parameters="/media/202/zmemesis" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DTRACE" />
+					<Add option="-DGAME_NEMESIS" />
+				</Compiler>
+			</Target>
+			<Target title="Copy of Nemesis Debug">
+				<Option output="bin/Debug/Zengine" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="/media/1000/Temp/zork_nem/ZORKNEM_I" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DTRACE" />
@@ -47,7 +58,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-fexpensive-optimizations" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/SDL" />
@@ -58,7 +68,6 @@
 			<Add option="-lSDL_gfx" />
 			<Add option="-lSDL_mixer" />
 			<Add option="-lSDL_ttf" />
-			<Add option="-lsmpeg" />
 			<Add option="-lrt" />
 		</Linker>
 		<Unit filename="Control.cpp" />
@@ -69,8 +78,8 @@
 		<Unit filename="Graph.h" />
 		<Unit filename="Mouse.cpp" />
 		<Unit filename="Mouse.h" />
-		<Unit filename="./Optimiz.cpp" />
-		<Unit filename="./Optimiz.h" />
+		<Unit filename="Optimiz.cpp" />
+		<Unit filename="Optimiz.h" />
 		<Unit filename="Puzzle.cpp" />
 		<Unit filename="Puzzle.h" />
 		<Unit filename="Render.cpp" />
@@ -81,8 +90,8 @@
 		<Unit filename="Sound.h" />
 		<Unit filename="SoundFX.cpp" />
 		<Unit filename="SoundFX.h" />
-		<Unit filename="./Subtitles.cpp" />
-		<Unit filename="./Subtitles.h" />
+		<Unit filename="Subtitles.cpp" />
+		<Unit filename="Subtitles.h" />
 		<Unit filename="System.cpp" />
 		<Unit filename="System.h" />
 		<Unit filename="Text.cpp" />
@@ -94,21 +103,24 @@
 		<Unit filename="actions.h" />
 		<Unit filename="anims.cpp" />
 		<Unit filename="anims.h" />
-		<Unit filename="./config.h" />
+		<Unit filename="avi_duck/simple_avi.cpp" />
+		<Unit filename="avi_duck/simple_avi.h" />
+		<Unit filename="avi_duck/truemotion1.cpp" />
+		<Unit filename="avi_duck/truemotion1data.h" />
+		<Unit filename="config.h" />
 		<Unit filename="intro.cpp" />
 		<Unit filename="intro.h" />
-		<Unit filename="inventory.cpp" />
-		<Unit filename="inventory.h" />
-		<Unit filename="main.cpp" />
-		<Unit filename="./menu.cpp" />
-		<Unit filename="./menu.h" />
-		<Unit filename="mylist.cpp" />
-		<Unit filename="mylist.h" />
-		<Unit filename="types.h" />
+		<Unit filename="./inventory.cpp" />
+		<Unit filename="./inventory.h" />
 		<Unit filename="./loader.cpp" />
 		<Unit filename="./loader.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="menu.cpp" />
+		<Unit filename="menu.h" />
 		<Unit filename="./mfile.cpp" />
 		<Unit filename="./mfile.h" />
+		<Unit filename="mylist.cpp" />
+		<Unit filename="mylist.h" />
 		<Extensions>
 			<envvars />
 			<code_completion>

@@ -24,5 +24,12 @@ struct zfs_file
 void loader_openzfs(const char *file , MList *list);
 void *loader_zload(zfs_file *fil);
 
+struct adpcm_context
+{
+    int32_t t[4];
+    uint32_t j;
+};
+
+void adpcm8_decode(void *in, void *out, int8_t stereo, int32_t n,adpcm_context *ctx);
 
 #endif // LOADER_H_INCLUDED

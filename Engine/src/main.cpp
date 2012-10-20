@@ -7,8 +7,6 @@
 #include "Graph.h"
 #include "intro.h"
 
-using namespace std;
-
 bool done = false;
 
 void END()
@@ -102,7 +100,7 @@ int main(int argc, char **argv)
     AddReplacer("RAW","WAV");
     AddReplacer("SRC","WAV");
     AddReplacer("IFP","WAV");
-    AddReplacer("AVI","MPG");
+    //AddReplacer("AVI","MPG");
     AddReplacer("RLF","PNG");
     AddReplacer("ZCR","PNG");
 

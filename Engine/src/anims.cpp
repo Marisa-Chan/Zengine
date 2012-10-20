@@ -19,7 +19,7 @@ animnode *anim_CreateAnim()
     tmp->unk2    = 0;
     tmp->mask    = 0;
     tmp->framerate = 0;
-    tmp->vid     = false;
+    tmp->vid     = 0;
     tmp->w       = 0;
     tmp->x       = 0;
     tmp->y       = 0;
@@ -81,23 +81,45 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
     nod->nexttick = 0;
     nod->loops=0;
 
-    if (strcasestr(filename,"avi")!=NULL || strcasestr(filename,"mpg")!=NULL)
+    if (strcasestr(filename,"avi")!=NULL)
     {
         nod->anim.avi = new(anim_avi);
-        nod->vid=true;
+        nod->vid=1;
 
-        nod->anim.avi->mpg=SMPEG_new(GetFilePath(filename),&nod->anim.avi->inf,0);
+        nod->anim.avi->av = avi_openfile(GetFilePath(filename),Rend_GetRenderer() == RENDER_PANA);
         int16_t w,h;
 
-        w = nod->anim.avi->inf.width;
-        h = nod->anim.avi->inf.height;
+        w = nod->anim.avi->av->w;
+        h = nod->anim.avi->av->h;
 
         nod->anim.avi->img = CreateSurface(w,h);
 
-        SMPEG_setdisplay(nod->anim.avi->mpg,nod->anim.avi->img,0,0);
-        SMPEG_setdisplayregion(nod->anim.avi->mpg, 0, 0, nod->anim.avi->inf.width,nod->anim.avi->inf.height);
-
         nod->anim.avi->lastfrm = -1;
+
+        if (nod->framerate == 0)
+            nod->framerate = nod->anim.avi->av->header.mcrSecPframe / 1000; //~15fps
+
+        nod->rel_h = h;
+        nod->rel_w = w;
+    }
+#ifdef SMPEG_SUPPORT
+    else if (strcasestr(filename,"mpg")!=NULL)
+    {
+        nod->anim.mpg = new(anim_mpg);
+        nod->vid=2;
+
+        nod->anim.mpg->mpg=SMPEG_new(GetFilePath(filename),&nod->anim.mpg->inf,0);
+        int16_t w,h;
+
+        w = nod->anim.mpg->inf.width;
+        h = nod->anim.mpg->inf.height;
+
+        nod->anim.mpg->img = CreateSurface(w,h);
+
+        SMPEG_setdisplay(nod->anim.mpg->mpg,nod->anim.mpg->img,0,0);
+        SMPEG_setdisplayregion(nod->anim.mpg->mpg, 0, 0, nod->anim.mpg->inf.width,nod->anim.mpg->inf.height);
+
+        nod->anim.mpg->lastfrm = -1;
 
         if (nod->framerate == 0)
             nod->framerate = FPS_DELAY; //~15fps
@@ -106,6 +128,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         nod->rel_w = w;
 
     }
+#endif
     else
     {
         if (strcasestr(filename,"rlf")!=NULL)
@@ -113,7 +136,7 @@ void anim_LoadAnim(animnode *nod,char *filename,int u1, int u2, int32_t mask, in
         else
             nod->anim.rlf = LoadAnimImage(filename,mask);
 
-        nod->vid=false;
+        nod->vid=0;
 
         if (nod->framerate == 0)
             nod->framerate = nod->anim.rlf->info.time;
@@ -138,16 +161,26 @@ void anim_ProcessAnim(animnode *mnod)
         {
             mnod->nexttick = mnod->framerate;
 
-            if (mnod->vid)
+            if (mnod->vid == 1)
             {
-                SMPEG_renderFrame(mnod->anim.avi->mpg,
+                avi_renderframe(mnod->anim.avi->av,mnod->CurFr);
+                avi_to_surf(mnod->anim.avi->av,mnod->anim.avi->img);
+                Rend_DrawScalerToGamescr(mnod->scal,
+                                         mnod->x,
+                                         mnod->y);
+            }
+#ifdef SMPEG_SUPPORT
+            else if (mnod->vid == 2)
+            {
+                SMPEG_renderFrame(mnod->anim.mpg->mpg,
                                   mnod->CurFr+1);
 
                 Rend_DrawScalerToGamescr(mnod->scal,
-                                        mnod->x,
-                                        mnod->y);
+                                         mnod->x,
+                                         mnod->y);
                 mnod->CurFr++;
             }
+#endif
             else
                 Rend_DrawImageToGamescr(mnod->anim.rlf,
                                         mnod->x,
@@ -258,18 +291,33 @@ int anim_PlayAnim(animnode *nod,int x, int y, int w, int h, int start, int end, 
     nod->x = x;
     nod->y = y;
 
-    if (nod->vid)
+    if (nod->vid == 1)
     {
         if (nod->scal != NULL)
             DeleteScaler(nod->scal);
 
         nod->scal = CreateScaler(nod->anim.avi->img,nod->w,nod->h);
 
+        nod->start= start;
+        nod->end= end;
+
+        avi_renderframe(nod->anim.avi->av,nod->start);
+        avi_to_surf(nod->anim.avi->av,nod->anim.avi->img);
+    }
+#ifdef SMPEG_SUPPORT
+    else if (nod->vid == 2)
+    {
+        if (nod->scal != NULL)
+            DeleteScaler(nod->scal);
+
+        nod->scal = CreateScaler(nod->anim.mpg->img,nod->w,nod->h);
+
         nod->start= (start+1) *2;
         nod->end= (end+1) *2;
 
-        SMPEG_renderFrame(nod->anim.avi->mpg,nod->start);
+        SMPEG_renderFrame(nod->anim.mpg->mpg,nod->start);
     }
+#endif
     else
     {
         nod->start= start;
@@ -288,16 +336,14 @@ void anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t
 
     if (mnod)
     {
-        if (mnod->vid)
+        if (mnod->vid == 1)
         {
             if (mnod->anim.avi != NULL)
             {
                 if (mnod->anim.avi->lastfrm != frame)
                 {
-                    SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2);
-                    SMPEG_renderFrame(mnod->anim.avi->mpg, frame*2+1);
-                    if (mnod->anim.avi->lastfrm > frame)
-                        SMPEG_renderFinal(mnod->anim.avi->mpg,mnod->anim.avi->img,0,0);
+                    avi_renderframe(mnod->anim.avi->av,frame);
+                    avi_to_surf(mnod->anim.avi->av,mnod->anim.avi->img);
                 }
 
 
@@ -314,13 +360,42 @@ void anim_RenderAnimFrame(animnode *mnod,int16_t x, int16_t y,int16_t w, int16_t
                     mnod->scal = CreateScaler(mnod->anim.avi->img,w,h);
 
                 Rend_DrawScalerToGamescr(mnod->scal,x,y);
-
-                //Rend_DrawImageToGamescr(mnod->anim.avi->img, x, y);
             }
         }
-        else
-            if (mnod->anim.rlf != NULL)
-                Rend_DrawImageToGamescr(mnod->anim.rlf, x, y, frame);
+#ifdef SMPEG_SUPPORT
+        else if (mnod->vid == 2)
+        {
+            if (mnod->anim.mpg != NULL)
+            {
+                if (mnod->anim.mpg->lastfrm != frame)
+                {
+                    SMPEG_renderFrame(mnod->anim.mpg->mpg, frame*2);
+                    SMPEG_renderFrame(mnod->anim.mpg->mpg, frame*2+1);
+                    if (mnod->anim.mpg->lastfrm > frame)
+                        SMPEG_renderFinal(mnod->anim.mpg->mpg,mnod->anim.mpg->img,0,0);
+                }
+
+
+                mnod->anim.mpg->lastfrm = frame;
+
+                if (mnod->scal)
+                    if (mnod->scal->w != w || mnod->scal->h != h)
+                    {
+                        DeleteScaler(mnod->scal);
+                        mnod->scal = NULL;
+                    }
+
+                if (!mnod->scal)
+                    mnod->scal = CreateScaler(mnod->anim.mpg->img,w,h);
+
+                Rend_DrawScalerToGamescr(mnod->scal,x,y);
+
+                //Rend_DrawImageToGamescr(mnod->anim.mpg->img, x, y);
+            }
+        }
+#endif
+        else if (mnod->anim.rlf != NULL)
+            Rend_DrawImageToGamescr(mnod->anim.rlf, x, y, frame);
     }
 }
 
@@ -329,14 +404,24 @@ void anim_DeleteAnim(animnode *nod)
     if (nod->scal != NULL)
         DeleteScaler(nod->scal);
 
-    if (nod->vid)
+    if (nod->vid == 1)
     {
         if (nod->anim.avi->img)
             SDL_FreeSurface(nod-> anim.avi ->img);
-        SMPEG_stop(     nod-> anim.avi ->mpg);
-        SMPEG_delete(   nod-> anim.avi ->mpg);
+
+        avi_close(nod->anim.avi->av);
         delete nod->anim.avi;
     }
+#ifdef SMPEG_SUPPORT
+    else if (nod->vid == 2)
+    {
+        if (nod->anim.mpg->img)
+            SDL_FreeSurface(nod-> anim.mpg ->img);
+        SMPEG_stop(     nod-> anim.mpg ->mpg);
+        SMPEG_delete(   nod-> anim.mpg ->mpg);
+        delete nod->anim.mpg;
+    }
+#endif
     else
         FreeAnimImage(nod->anim.rlf);
 

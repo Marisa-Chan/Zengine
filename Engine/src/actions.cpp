@@ -29,9 +29,9 @@ int action_set_partial_screen(char *params, int aSlot , pzllst *owner)
 
     SDL_Surface *tmp = NULL;
 
-  //  const char * path = GetFilePath(file);
+    //  const char * path = GetFilePath(file);
 
-   // if (!path)
+    // if (!path)
     //    return ACTION_NORMAL;
 
     if (tmp2 > 0)
@@ -249,102 +249,188 @@ int action_streamvideo(char *params, int aSlot , pzllst *owner)
     ww=GetIntVal(w) - xx +1;
     hh=GetIntVal(h) - yy +1;
 
-    anim_avi *anm=new(anim_avi);
-    Mix_Chunk *aud=NULL;
-
-    fil = GetFilePath(file);
-    if (fil == NULL)
-        return ACTION_NORMAL;
-    anm->mpg=SMPEG_new(fil,&anm->inf,0);
-
-    anm->img = CreateSurface(anm->inf.width,anm->inf.height);
-    scaler *scl = CreateScaler(anm->img,ww,hh);
-
-
     tmp=strlen(file);
-    file[tmp-1]='v';
-    file[tmp-2]='a';
-    file[tmp-3]='w';
 
-    fil=GetExactFilePath(file);
-
-    if (fil!=NULL)
+#ifdef SMPEG_SUPPORT
+    if (strCMP((file + tmp - 3),"mpg") == 0)
     {
-        if (FileSize(fil) > 44)
-            aud = Mix_LoadWAV(fil);
-    }
 
-    file[tmp-1]='b';
-    file[tmp-2]='u';
-    file[tmp-3]='s';
+        anim_mpg *anm=new(anim_mpg);
+        Mix_Chunk *aud=NULL;
 
-    struct_subtitles *subs=NULL;
-    if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
-        subs = sub_LoadSubtitles(file);
+        fil = GetFilePath(file);
+        if (fil == NULL)
+            return ACTION_NORMAL;
+        anm->mpg=SMPEG_new(fil,&anm->inf,0);
 
-    SMPEG_setdisplay(anm->mpg,anm->img,0,0);
-    SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
-    SMPEG_renderFrame(anm->mpg,1);
-    SMPEG_play(anm->mpg);
+        anm->img = CreateSurface(anm->inf.width,anm->inf.height);
+        scaler *scl = CreateScaler(anm->img,ww,hh);
 
-    if (aud!=NULL)
-    {
-        tmp=GetFreeChannel();
-        Mix_UnregisterAllEffects(tmp);
-        Mix_PlayChannel(tmp,aud,0);
-        //if (u2 == 0)
-        //{
-        //    SaveVol();
-        //    SilenceVol();
-        //}
-        Mix_Volume(tmp,127);
-    }
 
-    while(SMPEG_status(anm->mpg) != SMPEG_STOPPED)
-    {
-        UpdateGameSystem();
+//        tmp=strlen(file);
+        file[tmp-1]='v';
+        file[tmp-2]='a';
+        file[tmp-3]='w';
 
-        if (KeyHit(SDLK_SPACE))
-            SMPEG_stop(anm->mpg);
-        DrawScalerToScreen(scl,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
+        fil=GetExactFilePath(file);
 
-        if (subs != NULL)
+        if (fil!=NULL)
         {
-            SMPEG_getinfo(anm->mpg,&anm->inf);
-            sub_ProcessSub(subs,anm->inf.current_frame/2);
+            if (FileSize(fil) > 44)
+                aud = Mix_LoadWAV(fil);
         }
 
-        Rend_ProcessSubs();
+        file[tmp-1]='b';
+        file[tmp-2]='u';
+        file[tmp-3]='s';
 
-        Rend_ScreenFlip();
-        //SDL_Flip(screen);
+        struct_subtitles *subs=NULL;
+        if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+            subs = sub_LoadSubtitles(file);
+
+        SMPEG_setdisplay(anm->mpg,anm->img,0,0);
+        SMPEG_setdisplayregion(anm->mpg, 0, 0, anm->inf.width,anm->inf.height);
+        SMPEG_renderFrame(anm->mpg,1);
+        SMPEG_play(anm->mpg);
+
+        if (aud!=NULL)
+        {
+            tmp=GetFreeChannel();
+            Mix_UnregisterAllEffects(tmp);
+            Mix_PlayChannel(tmp,aud,0);
+            //if (u2 == 0)
+            //{
+            //    SaveVol();
+            //    SilenceVol();
+            //}
+            Mix_Volume(tmp,127);
+        }
+
+        while(SMPEG_status(anm->mpg) != SMPEG_STOPPED)
+        {
+            UpdateGameSystem();
+
+            if (KeyHit(SDLK_SPACE))
+                SMPEG_stop(anm->mpg);
+            DrawScalerToScreen(scl,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
+
+            if (subs != NULL)
+            {
+                SMPEG_getinfo(anm->mpg,&anm->inf);
+                sub_ProcessSub(subs,anm->inf.current_frame/2);
+            }
+
+            Rend_ProcessSubs();
+
+            Rend_ScreenFlip();
+            //SDL_Flip(screen);
 
 
-        int delay = 15;
-        if (anm->inf.current_fps != 0)
-            delay = 1000/anm->inf.current_fps;
-        if (delay > 200 || delay < 0)
-            SDL_Delay(15);
-        else
-            SDL_Delay(delay);
+            int delay = 15;
+            if (anm->inf.current_fps != 0)
+                delay = 1000/anm->inf.current_fps;
+            if (delay > 200 || delay < 0)
+                SDL_Delay(15);
+            else
+                SDL_Delay(delay);
+        }
+
+        if (aud!=NULL)
+        {
+            //if (u2 == 0)
+            //   RestoreVol();
+            Mix_HaltChannel(tmp);
+            Mix_FreeChunk(aud);
+        }
+
+        if (subs != NULL)
+            sub_DeleteSub(subs);
+
+        SMPEG_stop(anm->mpg);
+        SMPEG_delete(anm->mpg);
+        delete anm;
+
+        DeleteScaler(scl);
     }
-
-    if (aud!=NULL)
+    else
+#endif
     {
-        //if (u2 == 0)
-        //   RestoreVol();
-        Mix_HaltChannel(tmp);
-        Mix_FreeChunk(aud);
+        anim_avi *anm=new(anim_avi);
+        Mix_Chunk *aud=NULL;
+
+        fil = GetFilePath(file);
+
+        if (fil == NULL)
+            return ACTION_NORMAL;
+
+        anm->av=avi_openfile(fil);
+
+        anm->img = CreateSurface(anm->av->w,anm->av->h);
+        scaler *scl = CreateScaler(anm->img,ww,hh);
+
+        file[tmp-1]='b';
+        file[tmp-2]='u';
+        file[tmp-3]='s';
+
+        struct_subtitles *subs=NULL;
+        if (GetgVarInt(SLOT_SUBTITLE_FLAG) == 1)
+            subs = sub_LoadSubtitles(file);
+
+        aud = avi_get_audio(anm->av);
+        if (aud!=NULL)
+        {
+            tmp=GetFreeChannel();
+            Mix_UnregisterAllEffects(tmp);
+            Mix_PlayChannel(tmp,aud,0);
+            Mix_Volume(tmp,127);
+        }
+
+        avi_play(anm->av);
+
+        while(anm->av->status == AVI_PLAY)
+        {
+            UpdateGameSystem();
+
+            if (KeyHit(SDLK_SPACE))
+                avi_stop(anm->av);
+
+            avi_to_surf(anm->av,anm->img);
+            //DrawImage(anm->img,0,0);
+            DrawScalerToScreen(scl,GAMESCREEN_X+xx+GAMESCREEN_FLAT_X,GAMESCREEN_Y+yy); //it's direct rendering without game screen update
+
+            avi_update(anm->av);
+
+            if (subs != NULL)
+                sub_ProcessSub(subs,anm->av->cframe);
+
+            Rend_ProcessSubs();
+
+            Rend_ScreenFlip();
+            //SDL_Flip(screen);
+
+            int32_t delay = anm->av->header.mcrSecPframe/2000;
+
+            if (delay > 200 || delay < 0)
+                SDL_Delay(15);
+           else
+                SDL_Delay(delay);
+        }
+
+        if (aud!=NULL)
+        {
+            //if (u2 == 0)
+            //   RestoreVol();
+            Mix_HaltChannel(tmp);
+            Mix_FreeChunk(aud);
+        }
+
+        if (subs != NULL)
+            sub_DeleteSub(subs);
+
+        avi_close(anm->av);
+        delete anm;
+        DeleteScaler(scl);
     }
-
-    if (subs != NULL)
-        sub_DeleteSub(subs);
-
-    SMPEG_stop(anm->mpg);
-    SMPEG_delete(anm->mpg);
-    delete anm;
-
-    DeleteScaler(scl);
 
     return ACTION_NORMAL;
 }
@@ -1512,7 +1598,7 @@ void useart_recovery(char* str)
         else if (str[pos] == ']')
             bracket = false;
         else if (str[pos] == ' ' && bracket)
-                str[pos] = ',';
+            str[pos] = ',';
         pos++;
     }
 }

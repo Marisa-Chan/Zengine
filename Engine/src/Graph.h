@@ -6,7 +6,12 @@
 #include <SDL/SDL_gfxPrimitives.h>
 #include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_ttf.h>
+
+#ifdef SMPEG_SUPPORT
 #include <smpeg/smpeg.h>
+#endif
+
+#include "avi_duck/simple_avi.h"
 
 extern const int FiveBitToEightBitLookupTable [32];
 extern const int FiveBitToEightBitLookupTable_SDL [32];
@@ -35,11 +40,22 @@ struct anim_surf
     Anim_info    info;
 };
 
-struct anim_avi
+#ifdef SMPEG_SUPPORT
+struct anim_mpg
 {
     SDL_Surface *img;
     SMPEG       *mpg;
     SMPEG_Info   inf;
+    bool         pld;
+    bool        loop;
+    int32_t  lastfrm;
+};
+#endif
+
+struct anim_avi
+{
+    SDL_Surface *img;
+    avi_file     *av;
     bool         pld;
     bool        loop;
     int32_t  lastfrm;

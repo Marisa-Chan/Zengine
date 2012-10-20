@@ -26,9 +26,12 @@ struct animnode
     {
         anim_surf *rlf;
         anim_avi  *avi;
+#ifdef SMPEG_SUPPORT
+        anim_mpg  *mpg;
+#endif
     } anim;
     scaler   *scal;
-    bool   vid;
+    int8_t   vid;
     int32_t  playID;
     bool playing;
 };

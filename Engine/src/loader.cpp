@@ -89,6 +89,66 @@ void adpcm8_decode(void *in, void *out, int8_t stereo, int32_t n)
     }
 }
 
+
+void adpcm8_decode(void *in, void *out, int8_t stereo, int32_t n,adpcm_context *ctx)
+{
+    uint8_t *m1;
+    uint16_t *m2;
+    m1 = (uint8_t *)in;
+    m2 = (uint16_t *)out;
+    uint32_t a, x;
+    int32_t b, i;
+
+    while (n)
+    {
+        a = *m1;
+        i = ctx->t[ctx->j+2];
+        x = t2[i];
+        b = 0;
+
+        if(a & 0x40)
+            b += x;
+        if(a & 0x20)
+            b += x >> 1;
+        if(a & 0x10)
+            b += x >> 2;
+        if(a & 8)
+            b += x >> 3;
+        if(a & 4)
+            b += x >> 4;
+        if(a & 2)
+            b += x >> 5;
+        if(a & 1)
+            b += x >> 6;
+
+        if(a & 0x80)
+            b = -b;
+
+        b += ctx->t[ctx->j];
+
+        if(b > 32767)
+            b = 32767;
+        else if(b < -32768)
+            b = -32768;
+
+        i += t1[(a >> 4) & 7];
+
+        if(i < 0)
+            i = 0;
+        else if(i > 88)
+            i = 88;
+
+        ctx->t[ctx->j] = b;
+        ctx->t[ctx->j+2] = i;
+        ctx->j = (ctx->j + 1) & stereo;
+        *m2 = b;
+
+        m1++;
+        m2++;
+        n--;
+    }
+}
+
 struct ZGI_SND_PARAMS
 {
     int8_t pkd;
