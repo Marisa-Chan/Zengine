@@ -173,7 +173,7 @@ safenode * CreateSafeNode()
     tmp->radius_outer = 0;
     tmp->radius_inner_sq = 0;
     tmp->radius_outer_sq = 0;
-    tmp->cur_frame = 0;
+    tmp->cur_frame = -1;
     tmp->to_frame = 0;
     tmp->frame_time = 0;
     InitRect(&tmp->rectangle);
@@ -1169,12 +1169,12 @@ void control_safe_draw(ctrlnode *ct)
         if (safe->cur_frame < safe->to_frame)
         {
             safe->cur_frame++;
-            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->cur_frame+1);
+            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->cur_frame);
         }
         else
         {
             safe->cur_frame--;
-            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->num_states*2 - safe->cur_frame + 1);
+            anim_RenderAnimFrame(safe->anm, safe->rectangle.x, safe->rectangle.y, safe->rectangle.w, safe->rectangle.h , safe->num_states*2 - safe->cur_frame);
         }
 
         safe->frame_time = safe->anm->framerate;
