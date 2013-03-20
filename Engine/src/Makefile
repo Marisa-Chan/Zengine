@@ -39,13 +39,25 @@ WINOBJ = \
 linux_zgi: $(OBJS)
 	$(CXX) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 	$(CXX) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET)_wide $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+	
+linux_zgi_trace: $(OBJS)
+	$(CXX) -Wno-write-strings -DTRACE -DGAME_ZGI -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
 linux_znem: $(OBJS)
 	$(CXX) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
 
+linux_znem_trace: $(OBJS)
+	$(CXX) -Wno-write-strings -DTRACE -DGAME_NEMESIS -O3 -Os -o $(TARGET) $(OBJS) $(LIBS) -I /usr/include/ -I /usr/include/SDL/
+
+win32_zgi_trace: $(OBJS) $(WINOBJ)
+	$(CXX_WIN) -Wno-write-strings -DTRACE -DGAME_ZGI -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+	
 win32_zgi: $(OBJS) $(WINOBJ)
 	$(CXX_WIN) -Wno-write-strings -DGAME_ZGI -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 	$(CXX_WIN) -Wno-write-strings -DWIDESCREEN -DGAME_ZGI -O3 -Os -o $(TARGET)_wide.exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
+
+win32_znem_trace: $(OBJS) $(WINOBJ)
+	$(CXX_WIN) -Wno-write-strings -DTRACE -DGAME_NEMESIS -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/
 
 win32_znem: $(OBJS) $(WINOBJ)
 	$(CXX_WIN) -Wno-write-strings -DGAME_NEMESIS -O3 -Os -o $(TARGET).exe $(OBJS) $(WINOBJ) $(LIBS_WIN) -I $(MINGW)/include/ -I $(MINGW)/include/SDL/

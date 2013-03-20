@@ -9,7 +9,7 @@
 
 #ifdef GAME_ZGI
 //TITLE
-#define TITLE       "Z-Engine: Zork Grand Inquisitor (RC1) [build: "__DATE__" "__TIME__"]"
+#define TITLE       "Z-Engine: Zork Grand Inquisitor [build: "__DATE__" "__TIME__"]"
 #define GAME_TITLE  "Zork: Grand Inquisitor"
 
 //ScriptSystem params
@@ -135,7 +135,7 @@
 
 
 //TITLE
-#define TITLE       "Z-Engine: Zork Nemesis (dev) [build: "__DATE__" "__TIME__"]"
+#define TITLE       "Z-Engine: Zork Nemesis [build: "__DATE__" "__TIME__"]"
 #define GAME_TITLE  "Zork: Nemesis"
 
 //ScriptSystem params

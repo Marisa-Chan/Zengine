@@ -13,6 +13,44 @@ Nemesis Code: [####################]
 
 Wooooooo, I completely passed both games on my Zengine.
 
+[Needed lib's]
+SDL
+SDL_image
+SDL_mixer
+SDL_gfx
+SDL_ttf
+
+[Build targets:]
+linux_zgi
+linux_zgi_trace
+linux_znem
+linux_znem_trace
+win32_zgi_trace
+win32_zgi
+win32_znem_trace
+win32_znem
+
+Targets trace - for output to stdout debug info about what scripts actions is doing now.
+
+zgi - Zork Grand Inquisitor
+znem - Zork Nemesis
+
+win32 targets is for building by mingw, I use cross-compilation, you need to correct paths in Makefile.
+
+
+cd Engine/src/
+
+make *target*
+
+
+
+[Useful things]
+- You may change gamma level by "CTRL"+"+" and "CTRL"+"-"
+- For run in fullscreen use -f key
+- Switch to fullscreen ALT+ENTER
+- You may run game binary file with "path/to/game/resources" parameter, but game saves will be in current dir.
+
+
 [How to run it:]
 For running games you need original games.
 
@@ -47,9 +85,7 @@ For running games you need original games.
    ZASSETS/ASYLUM
    VIDEO
    
-P.S. You may change gamma level by "CTRL"+"+" and "CTRL"+"-"
-
-
+4. For Nemesis you need to copy res/MIDI folder to game dir.
 
 -----------------bottom--------------------
 

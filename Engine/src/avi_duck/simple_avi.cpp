@@ -585,6 +585,82 @@ void avi_to_surf(avi_file *av, SDL_Surface *srf)
 
         SDL_UnlockSurface(srf);
     }
+    else
+    {
+        //printf("not match avi size %dx%d and surface:%dx%d\n",av->w,av->h,srf->w,srf->h);
+        if (srf->format->BitsPerPixel != 32)
+        {
+            printf("Not supported bit depth\n");
+            return;
+        }
+
+        float xperc = (float)av->w / (float)srf->w;
+        float yperc = (float)av->h / (float)srf->h;
+
+        SDL_LockSurface(srf);
+        if (av->pix_fmt == 16)
+        {
+            //fopen(av->)
+            uint16_t *img = (uint16_t *) av->frame;
+
+            if (av->translate == 0)
+            {
+                for (int32_t y=0; y< srf->h; y++)
+                {
+                    uint32_t *line = (uint32_t *)((uint8_t *)srf->pixels + y*srf->pitch);
+                    for (int32_t x=0; x< srf->w; x++)
+                    {
+                        uint8_t r,g,b;
+                        COLOR_RGBA16_5551(img[av->w * (int32_t)(y * yperc) + (int32_t)(x*xperc)],b,g,r);
+                        r = FiveBitToEightBitLookupTable_SDL[r];
+                        g = FiveBitToEightBitLookupTable_SDL[g];
+                        b = FiveBitToEightBitLookupTable_SDL[b];
+                        line[x] = 0xFF000000 | r << 16 | g << 8 | b;
+                    }
+                }
+            }
+            else
+            {
+                for (int32_t y=0; y< srf->h; y++)
+                {
+                    uint32_t *line = (uint32_t *)((uint8_t *)srf->pixels + y*srf->pitch);
+                    for (int32_t x=0; x< srf->w; x++)
+                    {
+                        uint8_t r,g,b;
+                        COLOR_RGBA16_5551(img[(int32_t)(x*yperc)*av->h+(int32_t)(y*xperc)],b,g,r);
+                        r = FiveBitToEightBitLookupTable_SDL[r];
+                        g = FiveBitToEightBitLookupTable_SDL[g];
+                        b = FiveBitToEightBitLookupTable_SDL[b];
+                        line[x] = 0xFF000000 | r << 16 | g << 8 | b;
+                    }
+                }
+            }
+        }
+        else
+        {
+            uint32_t *img = (uint32_t *) av->frame;
+            if (av->translate == 0)
+            {
+                for (int32_t y=0; y< srf->h; y++)
+                {
+                    uint32_t *line = (uint32_t *)((uint8_t *)srf->pixels + y*srf->pitch);
+                    for (int32_t x=0; x< srf->w; x++)
+                        line[x] = img[av->w * (int32_t)(y * yperc) + (int32_t)(x*xperc)];
+                }
+            }
+            else
+            {
+                for (int32_t y=0; y< srf->h; y++)
+                {
+                    uint32_t *line = (uint32_t *)((uint8_t *)srf->pixels + y*srf->pitch);
+                    for (int32_t x=0; x< srf->w; x++)
+                        line[x] = img[(int32_t)(x*yperc)*av->h+(int32_t)(y*xperc)];
+                }
+            }
+        }
+
+        SDL_UnlockSurface(srf);
+    }
 
 }
 
