@@ -1670,7 +1670,7 @@ int Parse_Control_HotMov(MList *controlst, mfile *fl, uint32_t slot)
             char file[MINIBUFSZ];
             sscanf(str,"%s",file);
             hotm->anm = anim_CreateAnim();
-            anim_LoadAnim(hotm->anm,str,0,0,0,0);
+            anim_LoadAnim(hotm->anm,file,0,0,0,0);
         }
         else if (strCMP(str,"rectangle")==0)
         {
