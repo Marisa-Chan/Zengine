@@ -416,6 +416,10 @@ void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst)
                     {
                         ifs += *dlt;
                         *ofs = *ifs;
+                        *ofs = (((*ifs & scal->surf->format->Rmask) >> scal->surf->format->Rshift) << dst->format->Rshift) |
+                        (((*ifs & scal->surf->format->Gmask) >> scal->surf->format->Gshift) << dst->format->Gshift) |
+                        (((*ifs & scal->surf->format->Bmask) >> scal->surf->format->Bshift) << dst->format->Bshift) |
+                        (((*ifs & scal->surf->format->Amask) >> scal->surf->format->Ashift) << dst->format->Ashift);
                         ofs++;
                         dlt++;
                     }
@@ -486,7 +490,10 @@ void DrawScaler(scaler *scal,int16_t x, int16_t y, SDL_Surface *dst)
                         ifs += *dlt;
                         if (ofs >= minofs && ofs < maxofs &&
                                 xx >= lx && xx < rx)
-                            *ofs = *ifs;
+                        *ofs = (((*ifs & scal->surf->format->Rmask) >> scal->surf->format->Rshift) << dst->format->Rshift) |
+                        (((*ifs & scal->surf->format->Gmask) >> scal->surf->format->Gshift) << dst->format->Gshift) |
+                        (((*ifs & scal->surf->format->Bmask) >> scal->surf->format->Bshift) << dst->format->Bshift) |
+                        (((*ifs & scal->surf->format->Amask) >> scal->surf->format->Ashift) << dst->format->Ashift);
                         ofs++;
                         dlt++;
                     }
