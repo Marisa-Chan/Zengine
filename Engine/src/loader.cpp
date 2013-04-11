@@ -1109,7 +1109,10 @@ void loader_openzfs(const char *file , MList *list)
 {
     FILE *fl = fopen(file,"rb");
     if (!fl)
+    {
+        printf("No such file %s\n", file);
         return;
+    }
 
     header_zfs hdr;
     fread(&hdr,sizeof(hdr),1,fl);
