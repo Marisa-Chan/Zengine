@@ -1107,15 +1107,26 @@ static MList *zfs_arch_list = NULL;
 
 void loader_openzfs(const char *file , MList *list)
 {
+#ifdef DEBUG_LOADER
+    printf("Loading ZFS : %s\n",file);
+#endif // DEBUG_LOADER
     FILE *fl = fopen(file,"rb");
     if (!fl)
+    {
+#ifdef DEBUG_LOADER
+        printf("Can't open ZFS\n");
+#endif // DEBUG_LOADER
         return;
+    }
 
     header_zfs hdr;
     fread(&hdr,sizeof(hdr),1,fl);
 
     if (hdr.magic != 0x4653465A)
     {
+#ifdef DEBUG_LOADER
+        printf("Not ZFS\n");
+#endif // DEBUG_LOADER
         fclose(fl);
         return;
     }
@@ -1153,6 +1164,10 @@ void loader_openzfs(const char *file , MList *list)
                 strcpy(nod->Path,fil.name);
                 nod->File=nod->Path;
 
+#ifdef DEBUG_LOADER
+                printf("Adding zfs file : %s\n",nod->File);
+#endif // DEBUG_LOADER
+
                 nod->zfs = new(zfs_file);
                 nod->zfs->archive = tmp;
                 nod->zfs->offset = fil.offset;
@@ -1162,6 +1177,9 @@ void loader_openzfs(const char *file , MList *list)
             }
         }
     }
+#ifdef DEBUG_LOADER
+    printf("End of ZFS : %s\n",file);
+#endif // DEBUG_LOADER
 }
 
 void unxor(void *buf,uint32_t size,uint32_t xork)

@@ -74,7 +74,11 @@ int main(int argc, char **argv)
     FILE *dirs=fopen(buf,"rb");
 
     if (!dirs)
+    {
+        printf("Can't open %s\n",buf);
         exit(1);
+    }
+
 
     while(!feof(dirs))
     {

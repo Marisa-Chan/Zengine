@@ -375,6 +375,10 @@ void ListDir(char *dir)
         len--;
     }
 
+#ifdef DEBUG_LOADER
+    printf("Listing dir: %s\n",dir);
+#endif // DEBUG_LOADER
+
 
     DIR *dr=opendir(buf);
 
@@ -400,6 +404,10 @@ void ListDir(char *dir)
             FManNode *nod = new(FManNode);
             AddToMList(FMan,nod);
 
+#ifdef DEBUG_LOADER
+    printf("Adding file : %s\n",buf2);
+#endif // DEBUG_LOADER
+
             nod->Path=(char *) malloc(strlen(buf2)+1);
             strcpy(nod->Path,buf2);
             nod->File=nod->Path+len+1;
@@ -410,7 +418,9 @@ void ListDir(char *dir)
         de=readdir(dr);
     }
     closedir(dr);
-
+#ifdef DEBUG_LOADER
+    printf("Closing dir: %s\n",dir);
+#endif // DEBUG_LOADER
 }
 
 void AddReplacer(const char *ext, const char *ext2)
