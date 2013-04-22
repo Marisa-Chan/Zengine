@@ -86,10 +86,15 @@ int main(int argc, char **argv)
         if (fgets(buf,128,dirs) == NULL)
             break;
         char *sstr=TrimRight(TrimLeft(buf));
+	int sstr_l = strlen(sstr);
         if (sstr!=NULL)
-            if (strlen(sstr)>1)
+            if (sstr_l > 1)
             {
-                sprintf(buf2,"%s/%s",pa,buf);
+		for (int i=0; i < sstr_l; i++)
+		    if (sstr[i] == '\\')
+		        sstr[i] = '/';
+			
+                sprintf(buf2,"%s/%s",pa,sstr);
 
                 ListDir(buf2);
             }
