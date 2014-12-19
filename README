@@ -1,6 +1,6 @@
-[Windows Current Builds 2012-03-20] 
-ZGI_GOG:      https://www.dropbox.com/s/blc0qjxd1x3ul5q/WIN_ZGI_GOG_2013_03_20.zip
-NEMESIS_GOG:  https://www.dropbox.com/s/8wfgqdkkvbvnsbw/WIN_ZNEM_GOG_2013_03_20.zip
+This engine was ported into scummvm, please use scummvm implementation because it better
+https://github.com/scummvm/scummvm
+
 
 [Needed lib's]
 SDL
